@@ -55,7 +55,7 @@ class EQGameRules extends Gamerules;
  function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> damageType, vector HitLocation)
  {
 
-     if ( (NextGameRules != none ) && NextGameRules.PreventDeath(Killed,Killer, damageType,HitLocation) )
+     if ( (NextGameRules != none) && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation) )
 	    return true; // No Killing! So return.
 
      EQMut.EvaluateKillingEvent(Killed, Killer, damageType, HitLocation);

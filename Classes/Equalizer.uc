@@ -41,8 +41,6 @@ class Equalizer extends Mutator config(Equalizer);
 
  /** String with Version of the Mutator */
  var   string                                     Version;
- /** String with Description of the Mutator */
- var   localized cache string                     Description;
 
  /*
   * Configurable Variables
@@ -92,4 +90,5 @@ class Equalizer extends Mutator config(Equalizer);
  {
     Version="1.0"
     Description="Equalizes and encourages CTF team gameplay."
+    FriendlyName="DivineJustice"
  }
