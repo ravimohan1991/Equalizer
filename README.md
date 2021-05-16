@@ -1,2 +1,2 @@
 # Equalizer
-A UT2004 mod to equalize CTF teams
+A UT2004 mutator to equalize CTF teams
