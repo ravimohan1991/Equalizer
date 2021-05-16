@@ -33,7 +33,7 @@
  * @since 1.0
  */
 
-class Equalizer extends Mutator config;
+class Equalizer extends Mutator config(Equalizer);
 
 /*
  * Global Variables
@@ -54,13 +54,39 @@ class Equalizer extends Mutator config;
  * The function gets called just after game begins. So we set up the
  * environmnet for Equalizer to operate.
  *
- * @since version 1A
+ * @since version 1.0
  */
 
  function PostBeginPlay()
  {
- 	Log("Equalizer Initialized!", 'Equalizer');
+    local EQGameRules EQGRules;
+
+ 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
+ 	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
+ 	EQGRules.EQMut = self;
+ 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
  }
+
+/**
+ * Method to evaluate Covers, Seals and all that.
+ *
+ * @param Killed The Pawn class getting screwed.
+ * @param Killer The Controller class screwing around.
+ * @param damageType The nature of damage.
+ * @param HitLocation The place of crime.
+ *
+ * TODO: Rigorously test the Cover/Seal Hypothesis
+ *
+ * @see #EQGameRules.PreventDeath(Killed, Killer, damageType, HitLocation)
+ * @since version 1.0
+ * authors of this routine can be found at http://wiki.unrealadmin.org/SmartCTF
+ */
+
+ function EvaluateKillingEvent(Pawn Killed, Controller Killer, class<DamageType> damageType, vector HitLocation)
+ {
+  	Log("Killed "$Killed.PlayerReplicationInfo.PlayerName$" Killer "$Killer.PlayerReplicationInfo.PlayerName, 'Equalizer');
+ }
+
 
  defaultproperties
  {
