@@ -348,8 +348,9 @@ class Equalizer extends Mutator config(Equalizer);
 		// Defense Kill
 		bKilledTeamHasFlag = true;
 		if(FCs[KilledPRI.Team.TeamIndex] == none) bKilledTeamHasFlag = false;
-		if(FCs[KilledPRI.Team.TeamIndex] != none &&
-		 FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
+		// Make sure to check if Killer flag is within the home zone too, if outside then no seal
+		//if(FCs[KilledPRI.Team.TeamIndex] != none &&
+		 //FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
 
 		// if Killed's FC has not been set / if Killed's FC doesn't have our Flag
 		if(!bKilledTeamHasFlag)
