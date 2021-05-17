@@ -29,8 +29,7 @@
  * towards CTF goals.								<br />
  *
  * @author The_Cowboy
- * @version 1.0
- * @since 1.0
+ * @since 0.1.0
  */
 
 class Equalizer extends Mutator config(Equalizer);
@@ -52,7 +51,7 @@ class Equalizer extends Mutator config(Equalizer);
  * The function gets called just after game begins. So we set up the
  * environmnet for Equalizer to operate.
  *
- * @since version 1.0
+ * @since version 0.1.0
  */
 
  function PostBeginPlay()
@@ -76,7 +75,7 @@ class Equalizer extends Mutator config(Equalizer);
  * TODO: Rigorously test the Cover/Seal Hypothesis
  *
  * @see #EQGameRules.PreventDeath(Killed, Killer, damageType, HitLocation)
- * @since version 1.0
+ * @since version 0.1.0
  * authors of this routine can be found at http://wiki.unrealadmin.org/SmartCTF
  */
 
@@ -88,7 +87,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  defaultproperties
  {
-    Version="1.0"
+    Version="0.1.0"
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineJustice"
  }

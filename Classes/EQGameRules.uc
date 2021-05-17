@@ -27,8 +27,7 @@
  * @see Equalizer.PostBeginPlay()
  *
  * @author The_Cowboy
- * @version 1.0
- * @since 1.0
+ * @since 0.1.0
  */
 
 class EQGameRules extends Gamerules;
@@ -49,7 +48,7 @@ class EQGameRules extends Gamerules;
  * @param HitLocation The place of crime.
  *
  * @see #Engine.GameInfo.PreventDeath(Killed, Killer, damageType, HitLocation)
- * @since version 1.0
+ * @since version 0.1.0
  */
 
  function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> damageType, vector HitLocation)
