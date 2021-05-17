@@ -96,8 +96,6 @@ class Equalizer extends Mutator config(Equalizer);
  	// To be obtained from Piglet
  	var   string           EQGuid;
 
- 	/** Player's name with the Nation prefix, e.g The_Cowboy(IN) */
- 	var    string          EQPlayerName;
 
  	/*
  	* Some more information
@@ -113,8 +111,8 @@ class Equalizer extends Mutator config(Equalizer);
  	*  For Mutator's internal purposes only. Not to be sent to backend!
  	*/
 
- 	/** Player's identification number for a match */
- 	var    int             EQPlayerID;
+ 	/** Player's replicationifo */
+ 	var    PlayerReplicationInfo             EQPRI;
 
  	/** This is not C++ so can't pass null struct */
  	var    bool            bNull;
@@ -139,6 +137,9 @@ class Equalizer extends Mutator config(Equalizer);
  /** Controller Array of CTF's Flag Carriers.*/
  var   Controller                                 FCs[2];
 
+ /** Equalizer's silent spectator.*/
+ var   MessagingSpectator                         Witness;
+
  /*
   * Configurable Variables
   */
@@ -146,6 +147,9 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           bool         bActivated;
  var()   config           int          CoverReward;
  var()   config           int          CoverAdrenalineUnits;
+
+ /** Switch for broadcasting Monsterkill and above.*/
+ var()   config           bool         bBroadcastMonsterKillsAndAbove;
 
 /**
  * The function gets called just after game begins. So we set up the
@@ -157,13 +161,22 @@ class Equalizer extends Mutator config(Equalizer);
  function PostBeginPlay()
  {
 	local EQGameRules EQGRules;
-	
+
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
 	SaveConfig();
 	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
-	
+	RegisterBroadcastHandler();
+	Witness = Level.Game.Spawn(class'UTServerAdminSpectator');
+     if(Witness != none)
+     {
+        Log("Successfully Spawned the Witness"@Witness, 'Equalizer');
+        Witness.PlayerReplicationInfo.PlayerName = "Witness";
+     }
+     else
+        Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
+
 	super.PostBeginPlay();
  }
 
@@ -179,7 +192,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local Controller Cont;
-	
+
 	while(Level.Game.CurrentID > CurrID)
 	{
 		for(Cont = Level.ControllerList; Cont != none; Cont = Cont.nextController)
@@ -195,6 +208,24 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * The function for setting the EQBroadcastHandler at the begining of the
+ * linked list of BroadcastHandlers.
+ *
+ * @since 0.1.0
+ */
+
+ function RegisterBroadcastHandler()
+ {
+
+    local EQBroadcastHandler EQBH;
+
+    EQBH = Level.Game.Spawn(class'EQBroadcastHandler');
+    EQBH.EQMut = self;
+
+    Level.Game.BroadcastHandler.RegisterBroadcastHandler(EQBH);
+ }
+
+/**
  * The function to check track the bot join.
  *
  * @param Other The Pawn instance of humanplayer or bot
@@ -206,25 +237,25 @@ class Equalizer extends Mutator config(Equalizer);
 	local Controller BotController;
 	local bool bMatchFound;
 	local int i;
-	
+
 	if(AIController(Other.Controller) != none)
 	{
 		BotController = Other.Controller;
 		for(i = 0; i < EQPlayers.Length; i++)
 		{
-			if(EQPlayers[i].EQPlayerID == BotController.PlayerReplicationInfo.PlayerID)
+			if(EQPlayers[i].EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
 			{
 				bMatchFound = true;
 				break;
 			}
 		}
-	
+
 		if(!bMatchFound)
 		{
 			PlayerJoin(BotController);
 		}
 	}
-	
+
 	if(NextMutator != None)
 		NextMutator.ModifyPlayer(Other);
  }
@@ -239,13 +270,11 @@ class Equalizer extends Mutator config(Equalizer);
  function PlayerJoin(Controller FreshMeat)
  {
 	local EQPlayerInformation EQPI;
-	
-	EQPI.EQPlayerID           = FreshMeat.PlayerReplicationInfo.PlayerID;
-	EQPI.EQPlayerName         = FreshMeat.PlayerReplicationInfo.PlayerName;
-	
+
+	EQPI.EQPRI                = FreshMeat.PlayerReplicationInfo;
 	EQPlayers[EQPlayers.Length] = EQPI;
-	
-	Log("Started tracking player "$EQPI.EQPlayerName, 'Equalizer');
+
+	Log("Started tracking player "$EQPI.EQPRI.PlayerName, 'Equalizer');
  }
 
 /**
@@ -270,13 +299,13 @@ class Equalizer extends Mutator config(Equalizer);
 	local EQPlayerInformation KillerInfo, KilledInfo;
 	local PlayerReplicationInfo KilledPRI, KillerPRI;
 	local bool bKilledTeamHasFlag;
-	
+
 	if(Killed == none || Killed.Controller == none) return;
 	KilledPRI = Killed.PlayerReplicationInfo;
 	if(KilledPRI == none || (KilledPRI.bIsSpectator && !KilledPRI.bWaitingPlayer)) return;
-	
+
 	KilledInfo = GetInfoByID(Killed.PlayerReplicationInfo.PlayerID);
-	
+
 	if(!KilledInfo.bNull)
 	{
 		KilledInfo.FragSpree = 0;// Reset FragSpree for Victim
@@ -284,22 +313,22 @@ class Equalizer extends Mutator config(Equalizer);
 		KilledInfo.SpawnKillSpree = 0;
 		Log("Spreecounter cleared", 'Equalizer');
 	}
-	
+
 	if(Killer == none || Killer == Killed.Controller)
 	{
 		if(!KilledInfo.bNull) KilledInfo.Suicides++;
 		return;
 	}
-	
+
 	Log("Looking into Killer info", 'Equalizer');
 	KillerPRI = Killer.PlayerReplicationInfo;
 	if(KillerPRI == none && (KillerPRI.bIsSpectator && !KillerPRI.bWaitingPlayer)) return;
-	
+
 	KillerInfo = GetInfoByID(Killer.PlayerReplicationInfo.PlayerID);
-	
+
 	if(KilledPRI.Team == KillerPRI.Team)
 		return;// Mistakes can happen :) TeamKill logic should be put here
-	
+
 	// Increase Frags and FragSpree for Killer
 	if(!KillerInfo.bNull)
 	{
@@ -310,12 +339,14 @@ class Equalizer extends Mutator config(Equalizer);
 		{
 		  KillerInfo.FlagKills++;
 		}
-		
+
 		// HeadShot tracking
 		if(damageType == Class'UTClassic.DamTypeClassicHeadshot')
 		KillerInfo.HeadShots++;
+
+		Log(KillerInfo.EQPRI.PlayerName$" has total frags = "$KillerInfo.Frags);
 	}
-	
+
 	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
 	{
 		// COVER FRAG  / SEAL BASE
@@ -338,36 +369,37 @@ class Equalizer extends Mutator config(Equalizer);
 		|| (VSize(Killer.Pawn.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1536*1.125 && Killed.Controller.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1024*1.125 && Killer.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
-		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 768*1.125 && Killed.Controller.LineOfSightTo(FCs[KillerPRI.Team.TeamIndex].Pawn))){
-		// Killer DEFENDED THE Flag CARRIER
+		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 768*1.125 && Killed.Controller.LineOfSightTo(FCs[KillerPRI.Team.TeamIndex].Pawn)))
+        {
+		    // Killer DEFENDED THE Flag CARRIER
 			if(!KillerInfo.bNull)
 			{
 				KillerInfo.Covers++;
 				KillerInfo.CoverSpree++;// Increment Cover spree
-				/*if(KillerInfo.CoverSpree == 3)
-				{// Cover x 3
-					BroadcastLocalizedMessage(class'SmartCTFMoreMessages', 2, KillerPRI);
+				if(KillerInfo.CoverSpree < 3)
+				{// Cover
+					BroadcastLocalizedMessage(class'EQMoreMessages', 0, KillerPRI);
 				}
-				else if(KillerStats.CoverSpree == 4)
-				{// Cover x 4
-					BroadcastLocalizedMessage(class'SmartCTFMoreMessages', 1, KillerPRI);
+				else if(KillerInfo.CoverSpree == 3)
+				{// Cover x 3
+					BroadcastLocalizedMessage(class'EQMoreMessages', 1, KillerPRI);
 				}
 				else
-				{// Cover
-					BroadcastLocalizedMessage(class'SmartCTFMoreMessages', 0, KillerPRI);
-				}*/
+				{// Good Job!
+					BroadcastLocalizedMessage(class'EQMoreMessages', 2, KillerPRI);
+				}
 			}
 			KillerPRI.Score += CoverReward;// Cover Bonus
 			Killer.AwardAdrenaline(CoverAdrenalineUnits);
 			Log("Cover detected", 'Equalizer');
 		}
-		
+
 		// Defense Kill
 		bKilledTeamHasFlag = true;
 		if(FCs[KilledPRI.Team.TeamIndex] == none) bKilledTeamHasFlag = false;
 		if(FCs[KilledPRI.Team.TeamIndex] != none &&
 		 FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
-		
+
 		// if Killed's FC has not been set / if Killed's FC doesn't have our Flag
 		/*if(!bKilledTeamHasFlag)
 		{
@@ -385,6 +417,149 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * Method to intercept the broadcasted messages which contain important clues
+ * about the Flag and FlagCarriers and Ingame events. We spawned the
+ * UTServerAdminSpectator Class instance as the Witness to interpret message only Once.
+ *
+ * @param Sender The Actor class sending the message.
+ * @param Receiver The Controller class receiving the message.
+ * @param Message The real message.
+ * @param switch Category of Message.
+ * @param Related_PRI1 Involved PlayerReplicationInfo 1
+ * @param Related_PRI2 Involved PlayerReplicationInfo 2
+ * @param OptionalObject Involved Object (Could be a Flag)
+ *
+ * @see #UnrealGame.CTFMessage
+ * @since 0.1.0
+ * authors of this routine can be found at http://wiki.unrealadmin.org/SmartCTF
+ */
+
+ function EvaluateMessageEvent(Actor Sender, PlayerController Receiver, class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject){
+
+    local CTFFlag Flag;
+    local EQPlayerInformation ReceiverInfo;
+
+    // First Blood register
+    if(Message == class'FirstBloodMessage')
+    {
+       if(UTServerAdminSpectator(Receiver) == none) return;
+       if(MessagingSpectator(Receiver) == Witness)
+       {
+          ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+          if(!ReceiverInfo.bNull) ReceiverInfo.bFirstBlood = true;
+       }
+    }
+
+    // "Became a Spectator" fix!
+    if(Message == Level.Game.GameMessageClass){
+       switch(Switch)
+       {
+          case 14:
+             RelatedPRI_1.bIsSpectator = true;
+             break;
+       }
+    }
+
+    if(bBroadcastMonsterKillsAndAbove && Message == class'xDeathMessage')
+    {
+       if(UTServerAdminSpectator(Receiver) == none || RelatedPRI_1 == none || RelatedPRI_1.Owner == none || UnrealPlayer(RelatedPRI_1.Owner) == none) return;
+       if(MessagingSpectator(Receiver) == Witness)
+       {
+          switch(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel)
+          {
+             case 5:
+             case 6:
+             case 7:
+                Level.Game.Broadcast(none, RelatedPRI_1.PlayerName@"had a"@
+                class'MultiKillMessage'.default.KillString[Min(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel,7)-1]);
+                break;
+          }
+       }
+    }
+
+    if(Message == class'CTFMessage')
+    {
+       if(Sender.IsA('CTFGame'))
+       {
+          foreach DynamicActors(class'CTFFlag', Flag)
+             if(Flag.Team == UnrealTeamInfo(OptionalObject))
+                break;
+       }
+       else
+          if(Sender.IsA('CTFFlag')) Flag = CTFFlag(Sender);
+       else
+          return;
+       if(Flag == None)
+          return;
+       if(UTServerAdminSpectator(Receiver) == none) return;// No use going further.
+       switch(Switch)
+       {
+          // CAPTURE
+          // Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
+          case 0:
+             if(MessagingSpectator(Receiver) == Witness)
+             {//Controller(RelatedPRI_1.Owner)){
+                ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+                if(!ReceiverInfo.bNull) ReceiverInfo.Captures++;
+                ResetSprees(0);
+                ResetSprees(1);
+                FCs[0] = none;
+                FCs[1] = none;
+             }
+             break;
+
+          // DROP
+          // Sender: CTFFlag, PRI: OldHolder.PlayerReplicationInfo, OptObj: TheFlag.Team
+          case 2:
+             FCs[1-Flag.TeamNum] = none;// Just to be safe
+             break;
+
+          // PICKUP (after the FC dropped it)
+          // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
+          case 4:
+             if(MessagingSpectator(Receiver) == Witness)
+             {
+                FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
+             }
+             break;
+
+          // GRAB (from the base mount-point)
+          // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
+          case 6:
+             if(MessagingSpectator(Receiver) == Witness)
+             {// Receiver == FirstHuman
+                FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
+                ReceiverInfo = GetInfoByID(FCs[1-Flag.TeamNum].PlayerReplicationInfo.PlayerID);
+                if(!ReceiverInfo.bNull) ReceiverInfo.Grabs++;
+             }
+             break;
+
+          // RETURN
+          case 1:
+          case 3:
+          case 5:
+             if(MessagingSpectator(Receiver) == Witness)
+                ResetSprees(Flag.TeamNum);
+                //return;
+             break;
+       }
+     }
+ }
+
+/**
+ * Method to reset sprees
+ *
+ * @param Team The team of players whose sprees are to be reset
+ * @since 0.1.0
+ */
+
+ function ResetSprees(int Team)
+ {
+
+
+ }
+
+/**
  * Method to return the EQPlayerInformation object.
  *
  * @param ID The ID of the player.
@@ -399,16 +574,16 @@ class Equalizer extends Mutator config(Equalizer);
 
 	local int i;
 	local EQPlayerInformation NullEQP;
-	
+
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
-		if(EQPlayers[i].EQPlayerID == ID)
+		if(EQPlayers[i].EQPRI.PlayerID == ID)
 		{
 			Log("Player found!", 'Equalizer');
 			return EQPLayers[i];
 		}
 	}
-	
+
 	NullEQP.bNull = true;
 	Log("Could not find the EQPlayerInformation of the ID: "$ID);
 	return NullEQP;
@@ -422,4 +597,5 @@ class Equalizer extends Mutator config(Equalizer);
     FriendlyName="DivineIntervention"
     CoverReward=2
     CoverAdrenalineUnits=5
+    bBroadcastMonsterKillsAndAbove=True
  }
