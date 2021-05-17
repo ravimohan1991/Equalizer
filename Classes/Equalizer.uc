@@ -26,97 +26,13 @@
  * played between teams of equal calibre. It will further acknowledge and	<br />
  * encourage the team gameplay leading to a justly competitive match.		<br />
  * The aim is to gauge the match awareness, reactivity and commitment		<br />
- * towards CTF goals.		<br />
+ * towards CTF goals.
  *
  * @author The_Cowboy
  * @since 0.1.0
  */
 
 class Equalizer extends Mutator config(Equalizer);
-
-/* Structures */
-
- /**
- * CTF specific and other useful player information
- *
- * @since 0.1.0
- */
- struct EQPlayerInformation
- {
- 	/*
- 	* CTF (teambased) type variables
- 	*/
-
- 	/** Number of flag captures */
- 	var    int             Captures;
-
- 	/** Number of flag grabs */
- 	var    int             Grabs;
-
- 	/** Number of flag carrier covers */
- 	var    int             Covers;                 // Number of covers. Universal, nah joking. Universal Covers exist in Geometry only.
-
- 	/** Number of base seals */
- 	var    int             Seals;
-
- 	/** Number of flag carrier kills */
- 	var    int             FlagKills;
-
- 	/*
- 	* DM (personal) type variables
- 	* TODO: Think about vehicles and stuff
- 	*/
-
- 	/** Number of frags */
- 	var    int             Frags;
-
- 	/** Number of headshots */
- 	var    int             HeadShots;
-
- 	/** Number of shieldbelts picked */
- 	var    int             ShieldBelts;
-
- 	/** Number of amplifiers picked */
- 	var    int             Amps;
-
- 	/** Number of suicides */
- 	var    int             Suicides;
-
- 	/** If the player drew the first blood */
- 	var    bool            bFirstBlood;
-
- 	/*
- 	* Other information
- 	*/
-
- 	/** Player's netspeed */
- 	var    int             NetSpeed;
-
- 	/** Player's unique identification number */
- 	// To be obtained from Piglet
- 	var   string           EQGuid;
-
-
- 	/*
- 	* Some more information
- 	*/
-
- 	/** Some sprees */
- 	var    int             FragSpree;
- 	var    int             CoverSpree;
- 	var    int             SpawnKillSpree;
- 	var    float           PlayerScore;
-
- 	/*
- 	*  For Mutator's internal purposes only. Not to be sent to backend!
- 	*/
-
- 	/** Player's replicationifo */
- 	var    PlayerReplicationInfo             EQPRI;
-
- 	/** This is not C++ so can't pass null struct */
- 	var    bool            bNull;
- };
 
 /*
  * Global Variables
@@ -137,6 +53,12 @@ class Equalizer extends Mutator config(Equalizer);
  /** Controller Array of CTF's Flag Carriers.*/
  var   Controller                                 FCs[2];
 
+ /** Flags' home location */
+ var(Movement)   vector                           FlagHomeLocations[2];
+
+ /** Are flaglocations set? */
+ var     bool                                     bFlagHomeLocationsSet;
+
  /** Equalizer's silent spectator.*/
  var   MessagingSpectator                         Witness;
 
@@ -147,6 +69,10 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           bool         bActivated;
  var()   config           int          CoverReward;
  var()   config           int          CoverAdrenalineUnits;
+ var()   config           int          SealAward;
+ var()   config           int          SealAdrenalineUnits;
+ var()   config           bool         bShowFCLocation;
+ var()   config           float        SealDistance;
 
  /** Switch for broadcasting Monsterkill and above.*/
  var()   config           bool         bBroadcastMonsterKillsAndAbove;
@@ -164,20 +90,33 @@ class Equalizer extends Mutator config(Equalizer);
 
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
 	SaveConfig();
-	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
+    EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
-	Witness = Level.Game.Spawn(class'UTServerAdminSpectator');
-     if(Witness != none)
-     {
-        Log("Successfully Spawned the Witness"@Witness, 'Equalizer');
-        Witness.PlayerReplicationInfo.PlayerName = "Witness";
-     }
-     else
-        Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
+    if(bShowFCLocation)
+        Level.Game.HUDType = string(class'EQHUDFCLocation');
+
 
 	super.PostBeginPlay();
+ }
+
+/**
+ * Here we set the Flags' home locations.
+ *
+ * @since 0.1.0
+ */
+
+ function SetFlagHomeLocations()
+ {
+	local CTFFlag Flag;
+
+    foreach AllActors(class'CTFFlag', Flag)
+    {
+         FlagHomeLocations[Flag.TeamNum] = Flag.HomeBase.Location;
+         bFlagHomeLocationsSet = true;
+    }
+
  }
 
 /**
@@ -197,7 +136,7 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		for(Cont = Level.ControllerList; Cont != none; Cont = Cont.nextController)
 		{
-			if(PlayerController(Cont) != none && Cont.PlayerReplicationInfo != none && Cont.PlayerReplicationInfo.PlayerID == CurrID)
+			if(Cont != Witness && PlayerController(Cont) != none && Cont.PlayerReplicationInfo != none && Cont.PlayerReplicationInfo.PlayerID == CurrID)
 			{
 				PlayerJoin(Cont);
 				break;
@@ -211,6 +150,7 @@ class Equalizer extends Mutator config(Equalizer);
  * The function for setting the EQBroadcastHandler at the begining of the
  * linked list of BroadcastHandlers.
  *
+ * TODO: Make the first handler in the list?
  * @since 0.1.0
  */
 
@@ -238,7 +178,24 @@ class Equalizer extends Mutator config(Equalizer);
 	local bool bMatchFound;
 	local int i;
 
-	if(AIController(Other.Controller) != none)
+	if(!bFlagHomeLocationsSet)
+	{
+        SetFlagHomeLocations();
+    }
+
+    if(Witness == none)
+    {
+    Witness = Level.Game.Spawn(class'UTServerAdminSpectator');
+     if(Witness != none)
+     {
+        Log("Successfully Spawned the Witness"@Witness, 'Equalizer');
+        Witness.PlayerReplicationInfo.PlayerName = "Witness";
+     }
+     else
+        Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
+     }
+
+    if(AIController(Other.Controller) != none)
 	{
 		BotController = Other.Controller;
 		for(i = 0; i < EQPlayers.Length; i++)
@@ -271,10 +228,10 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation EQPI;
 
-	EQPI.EQPRI                = FreshMeat.PlayerReplicationInfo;
-	EQPlayers[EQPlayers.Length] = EQPI;
+	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 
-	Log("Started tracking player "$EQPI.EQPRI.PlayerName, 'Equalizer');
+    EQPI.EQPRI                = FreshMeat.PlayerReplicationInfo;
+	EQPlayers[EQPlayers.Length] = EQPI;
  }
 
 /**
@@ -287,7 +244,7 @@ class Equalizer extends Mutator config(Equalizer);
  *
  * TODO: Rigorously test the Cover/Seal Hypothesis
  * TODO: Log teamkills
- * TODO: Coverspree broadcast
+ * TODO: Test if seal algorithm is working
  *
  * @see #EQGameRules.PreventDeath(Killed, Killer, damageType, HitLocation)
  * @since 0.1.0
@@ -306,21 +263,19 @@ class Equalizer extends Mutator config(Equalizer);
 
 	KilledInfo = GetInfoByID(Killed.PlayerReplicationInfo.PlayerID);
 
-	if(!KilledInfo.bNull)
+	if(KilledInfo != none)
 	{
 		KilledInfo.FragSpree = 0;// Reset FragSpree for Victim
 		KilledInfo.CoverSpree = 0;
 		KilledInfo.SpawnKillSpree = 0;
-		Log("Spreecounter cleared", 'Equalizer');
 	}
 
 	if(Killer == none || Killer == Killed.Controller)
 	{
-		if(!KilledInfo.bNull) KilledInfo.Suicides++;
+		if(KilledInfo != none) KilledInfo.Suicides++;
 		return;
 	}
 
-	Log("Looking into Killer info", 'Equalizer');
 	KillerPRI = Killer.PlayerReplicationInfo;
 	if(KillerPRI == none && (KillerPRI.bIsSpectator && !KillerPRI.bWaitingPlayer)) return;
 
@@ -330,9 +285,8 @@ class Equalizer extends Mutator config(Equalizer);
 		return;// Mistakes can happen :) TeamKill logic should be put here
 
 	// Increase Frags and FragSpree for Killer
-	if(!KillerInfo.bNull)
+	if(KillerInfo != none)
 	{
-		Log("Analyzing killer info!", 'Equalizer');
 		KillerInfo.Frags++;
 		KillerInfo.FragSpree++;
 		if(KilledPRI.HasFlag != None)
@@ -343,8 +297,6 @@ class Equalizer extends Mutator config(Equalizer);
 		// HeadShot tracking
 		if(damageType == Class'UTClassic.DamTypeClassicHeadshot')
 		KillerInfo.HeadShots++;
-
-		Log(KillerInfo.EQPRI.PlayerName$" has total frags = "$KillerInfo.Frags);
 	}
 
 	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
@@ -372,7 +324,7 @@ class Equalizer extends Mutator config(Equalizer);
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 768*1.125 && Killed.Controller.LineOfSightTo(FCs[KillerPRI.Team.TeamIndex].Pawn)))
         {
 		    // Killer DEFENDED THE Flag CARRIER
-			if(!KillerInfo.bNull)
+			if(KillerInfo != none)
 			{
 				KillerInfo.Covers++;
 				KillerInfo.CoverSpree++;// Increment Cover spree
@@ -391,7 +343,6 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 			KillerPRI.Score += CoverReward;// Cover Bonus
 			Killer.AwardAdrenaline(CoverAdrenalineUnits);
-			Log("Cover detected", 'Equalizer');
 		}
 
 		// Defense Kill
@@ -401,18 +352,19 @@ class Equalizer extends Mutator config(Equalizer);
 		 FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
 
 		// if Killed's FC has not been set / if Killed's FC doesn't have our Flag
-		/*if(!bKilledTeamHasFlag)
+		if(!bKilledTeamHasFlag)
 		{
 			// If Killed and Killer's FC are in Killer's Flag Zone
-			if(IsInZone(KilledPRI, KillerPRI.Team.TeamIndex) && IsInzone(FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo, KillerPRI.Team.TeamIndex)){
+			if(IsInZone(Killed, KillerPRI.Team.TeamIndex) && IsInzone(FCs[KillerPRI.Team.TeamIndex].Pawn, KillerPRI.Team.TeamIndex))
+            {
 				// Killer SEALED THE BASE
-				if(KillerStats != none)
-					KillerStats.Seals++;
-				BroadcastLocalizedMessage(class'SmartCTFMoreMessages', 3, KillerPRI);
+				if(KillerInfo != none)
+					KillerInfo.Seals++;
+				BroadcastLocalizedMessage(class'EQMoreMessages', 3, KillerPRI);
 				KillerPRI.Score += SealAward;//Seal Bonus
 				Killer.AwardAdrenaline(SealAdrenalineUnits);
 			}
-		}*/
+		}
 	}
  }
 
@@ -420,6 +372,8 @@ class Equalizer extends Mutator config(Equalizer);
  * Method to intercept the broadcasted messages which contain important clues
  * about the Flag and FlagCarriers and Ingame events. We spawned the
  * UTServerAdminSpectator Class instance as the Witness to interpret message only Once.
+ *
+ * TODO: Score gradient based on flag return distance
  *
  * @param Sender The Actor class sending the message.
  * @param Receiver The Controller class receiving the message.
@@ -446,7 +400,7 @@ class Equalizer extends Mutator config(Equalizer);
        if(MessagingSpectator(Receiver) == Witness)
        {
           ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-          if(!ReceiverInfo.bNull) ReceiverInfo.bFirstBlood = true;
+          if(ReceiverInfo != none) ReceiverInfo.bFirstBlood = true;
        }
     }
 
@@ -500,7 +454,7 @@ class Equalizer extends Mutator config(Equalizer);
              if(MessagingSpectator(Receiver) == Witness)
              {//Controller(RelatedPRI_1.Owner)){
                 ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-                if(!ReceiverInfo.bNull) ReceiverInfo.Captures++;
+                if(ReceiverInfo != none) ReceiverInfo.Captures++;
                 ResetSprees(0);
                 ResetSprees(1);
                 FCs[0] = none;
@@ -511,7 +465,7 @@ class Equalizer extends Mutator config(Equalizer);
           // DROP
           // Sender: CTFFlag, PRI: OldHolder.PlayerReplicationInfo, OptObj: TheFlag.Team
           case 2:
-             FCs[1-Flag.TeamNum] = none;// Just to be safe
+             //FCs[1-Flag.TeamNum] = none;// Just to be safe
              break;
 
           // PICKUP (after the FC dropped it)
@@ -530,7 +484,7 @@ class Equalizer extends Mutator config(Equalizer);
              {// Receiver == FirstHuman
                 FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
                 ReceiverInfo = GetInfoByID(FCs[1-Flag.TeamNum].PlayerReplicationInfo.PlayerID);
-                if(!ReceiverInfo.bNull) ReceiverInfo.Grabs++;
+                if(ReceiverInfo != none) ReceiverInfo.Grabs++;
              }
              break;
 
@@ -539,8 +493,11 @@ class Equalizer extends Mutator config(Equalizer);
           case 3:
           case 5:
              if(MessagingSpectator(Receiver) == Witness)
+             {
+                FCs[1-Flag.TeamNum] = none;
                 ResetSprees(Flag.TeamNum);
                 //return;
+             }
              break;
        }
      }
@@ -555,8 +512,16 @@ class Equalizer extends Mutator config(Equalizer);
 
  function ResetSprees(int Team)
  {
+    local int i;
 
 
+    for(i = 0; i < EQPlayers.Length; i++)
+    {
+          if(EQPlayers[i].EQPRI.Team.TeamIndex == Team)
+          {
+             EQPlayers[i].CoverSpree = 0;
+          }
+    }
  }
 
 /**
@@ -573,20 +538,49 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local int i;
-	local EQPlayerInformation NullEQP;
 
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
 		if(EQPlayers[i].EQPRI.PlayerID == ID)
 		{
-			Log("Player found!", 'Equalizer');
 			return EQPLayers[i];
 		}
 	}
 
-	NullEQP.bNull = true;
-	Log("Could not find the EQPlayerInformation of the ID: "$ID);
-	return NullEQP;
+	return none;
+ }
+
+/**
+ * Method to check if the Player is in Flag zone.
+ *
+ * @param PRI The PlayerReplicationInfo class of the Player.
+ * @param Team The team of Flag
+ *
+ * @see #EvaluateKillingEvent(Killed, Killer, DamageType, Location)
+ * @since 0.1.0
+ */
+
+ function bool IsInZone(Pawn P, byte Team)
+ {
+
+    local(Movement)   vector FlagLocation;
+
+    if(VSize(P.Location - FlagHomeLocations[Team]) < SealDistance)
+     return true;
+
+    return false;
+ }
+
+ function Mutate(string MutateString, PlayerController Sender)
+ {
+	if(Sender != none)
+	{
+     if (MutateString ~= "dist")
+     Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - FlagHomeLocations[0])$" distance from blue flag: "$VSize(Sender.Pawn.Location - FlagHomeLocations[1]));
+    }
+
+    if ( NextMutator != None )
+		NextMutator.Mutate(MutateString, Sender);
  }
 
  defaultproperties
@@ -597,5 +591,9 @@ class Equalizer extends Mutator config(Equalizer);
     FriendlyName="DivineIntervention"
     CoverReward=2
     CoverAdrenalineUnits=5
-    bBroadcastMonsterKillsAndAbove=True
+    SealAward=2
+    SealAdrenalineUnits=5
+    bBroadcastMonsterKillsAndAbove=true
+    bShowFCLocation=true
+    SealDistance=2200
  }
