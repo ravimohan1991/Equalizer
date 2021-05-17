@@ -34,12 +34,101 @@
 
 class Equalizer extends Mutator config(Equalizer);
 
+/* Structures */
+
+ /**
+ * CTF specific and other useful player information
+ *
+ * @since 0.1.0
+ */
+ struct EQPlayerInformation
+ {
+ 	/*
+ 	* CTF (teambased) type variables
+ 	*/
+
+ 	/** Number of flag captures */
+ 	var    int				Captures;
+
+ 	/** Number of flag grabs */
+ 	var    int             Grabs;
+
+ 	/** Number of flag carrier covers */
+ 	var    int             Covers;                 // Number of covers. Universal, nah joking. Universal Covers exist in Geometry only.
+
+ 	/** Number of base seals */
+ 	var    int             Seals;
+
+ 	/** Number of flag carrier kills */
+ 	var    int             FlagKills;
+
+ 	/*
+ 	* DM (personal) type variables (Replicated)
+ 	* TODO: Think about vehicles and stuff
+ 	*/
+
+ 	/** Number of frags */
+ 	var    int             Frags;
+
+ 	/** Number of headshots */
+ 	var    int             HeadShots;
+
+ 	/** Number of shieldbelts picked */
+ 	var    int             ShieldBelts;
+
+ 	/** Number of amplifiers picked */
+ 	var    int             Amps;
+
+ 	/** Number of suicides */
+ 	var    int             Suicides;
+
+ 	/** If the player drew the first blood */
+ 	var    bool            bFirstBlood;
+
+ 	/*
+ 	* Other information
+ 	*/
+
+ 	/** Player's netspeed */
+ 	var    int             NetSpeed;
+
+ 	/** Player's unique identification number */
+ 	// To be obtained from Piglet
+ 	var   string           EQGuid;
+
+ 	/** Player's name with the Nation prefix, e.g The_Cowboy(IN) */
+ 	var    string          EQPlayerName;
+
+ 	/*
+ 	* Some more information
+ 	*/
+
+    /** Some sprees */
+ 	var    int             FragSpree;
+ 	var    int             CoverSpree;
+ 	var    int             SpawnKillSpree;
+ 	var    float           PlayerScore;
+
+ 	/*
+ 	*  For Mutator's internal purposes only. Not to be sent to backend!
+ 	*/
+
+ 	/** Player's identification number for a match */
+ 	var    int             SPlayerID;
+ };
+
 /*
  * Global Variables
  */
 
  /** String with Version of the Mutator */
  var   string                                     Version;
+
+ /** Number of times Equalizer has been built */
+ var   float                                      BuildNumber;
+
+ /** Equalizer PlayerInformation structure array */
+ var   array<EQPlayerInformation>                 EQPlayers;
 
  /*
   * Configurable Variables
@@ -56,7 +145,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PostBeginPlay()
  {
-    local EQGameRules EQGRules;
+ 	local EQGameRules EQGRules;
 
  	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
  	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
@@ -88,6 +177,7 @@ class Equalizer extends Mutator config(Equalizer);
  defaultproperties
  {
     Version="0.1.0"
+    BuildNumber=14
     Description="Equalizes and encourages CTF team gameplay."
-    FriendlyName="DivineJustice"
+    FriendlyName="DivineIntervention"
  }
