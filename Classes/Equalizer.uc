@@ -22,11 +22,11 @@
  */
 
 /**
- * Equalizer is a Mutator which makes sure that the CTF matches are			<br />
+ * Equalizer is a Mutator which makes sure that the CTF matches are		<br />
  * played between teams of equal calibre. It will further acknowledge and	<br />
  * encourage the team gameplay leading to a justly competitive match.		<br />
  * The aim is to gauge the match awareness, reactivity and commitment		<br />
- * towards CTF goals.														<br />
+ * towards CTF goals.		<br />
  *
  * @author The_Cowboy
  * @since 0.1.0
@@ -63,7 +63,7 @@ class Equalizer extends Mutator config(Equalizer);
  	var    int             FlagKills;
 
  	/*
- 	* DM (personal) type variables (Replicated)
+ 	* DM (personal) type variables
  	* TODO: Think about vehicles and stuff
  	*/
 

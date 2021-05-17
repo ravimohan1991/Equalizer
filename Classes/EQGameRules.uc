@@ -48,16 +48,16 @@ class EQGameRules extends Gamerules;
  * @param HitLocation The place of crime.
  *
  * @see #Engine.GameInfo.PreventDeath(Killed, Killer, damageType, HitLocation)
- * @since version 0.1.0
+ * @since 0.1.0
  */
 
  function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> damageType, vector HitLocation)
  {
 
-     if ( (NextGameRules != none) && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation) )
-	    return true; // No Killing! So return.
-
-     EQMut.EvaluateKillingEvent(Killed, Killer, damageType, HitLocation);
-
-     return false;
+	if ( (NextGameRules != none) && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation) )
+		return true; // No Killing! So return.
+	
+	EQMut.EvaluateKillingEvent(Killed, Killer, damageType, HitLocation);
+	
+	return false;
  }
