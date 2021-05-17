@@ -103,7 +103,7 @@ class Equalizer extends Mutator config(Equalizer);
  	* Some more information
  	*/
 
-    /** Some sprees */
+ 	/** Some sprees */
  	var    int             FragSpree;
  	var    int             CoverSpree;
  	var    int             SpawnKillSpree;
