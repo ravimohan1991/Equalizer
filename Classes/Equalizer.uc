@@ -136,9 +136,12 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		for(Cont = Level.ControllerList; Cont != none; Cont = Cont.nextController)
 		{
-			if(Cont != Witness && PlayerController(Cont) != none && Cont.PlayerReplicationInfo != none && Cont.PlayerReplicationInfo.PlayerID == CurrID)
+			if(PlayerController(Cont) != none && Cont.PlayerReplicationInfo != none && Cont.PlayerReplicationInfo.PlayerID == CurrID)
 			{
-				PlayerJoin(Cont);
+				if(Cont != Witness)
+				{
+					PlayerJoin(Cont);
+				}
 				break;
 			}
 		}
@@ -232,6 +235,8 @@ class Equalizer extends Mutator config(Equalizer);
 
     EQPI.EQPRI                = FreshMeat.PlayerReplicationInfo;
 	EQPlayers[EQPlayers.Length] = EQPI;
+
+	Log("Started tracking player "$EQPI.EQPRI.PlayerName, 'Equalizer');
  }
 
 /**
@@ -394,43 +399,40 @@ class Equalizer extends Mutator config(Equalizer);
     local CTFFlag Flag;
     local EQPlayerInformation ReceiverInfo;
 
-    // First Blood register
+    if(UTServerAdminSpectator(Receiver) == none || MessagingSpectator(Receiver) != Witness) return;// No use going further.
+	
+	// First Blood register
     if(Message == class'FirstBloodMessage')
     {
-       if(UTServerAdminSpectator(Receiver) == none) return;
-       if(MessagingSpectator(Receiver) == Witness)
-       {
-          ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-          if(ReceiverInfo != none) ReceiverInfo.bFirstBlood = true;
-       }
+		ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+		if(ReceiverInfo != none) ReceiverInfo.bFirstBlood = true;
     }
 
-    // "Became a Spectator" fix!
-    if(Message == Level.Game.GameMessageClass){
-       switch(Switch)
-       {
-          case 14:
-             RelatedPRI_1.bIsSpectator = true;
-             break;
-       }
-    }
+    // "Became a Spectator" fix! Not sure if required
+	/*
+		if(Message == Level.Game.GameMessageClass){
+		   switch(Switch)
+		   {
+		      case 14:
+		         RelatedPRI_1.bIsSpectator = true;
+		         break;
+		   }
+		}
+	*/
 
     if(bBroadcastMonsterKillsAndAbove && Message == class'xDeathMessage')
     {
-       if(UTServerAdminSpectator(Receiver) == none || RelatedPRI_1 == none || RelatedPRI_1.Owner == none || UnrealPlayer(RelatedPRI_1.Owner) == none) return;
-       if(MessagingSpectator(Receiver) == Witness)
-       {
-          switch(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel)
-          {
-             case 5:
-             case 6:
-             case 7:
-                Level.Game.Broadcast(none, RelatedPRI_1.PlayerName@"had a"@
-                class'MultiKillMessage'.default.KillString[Min(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel,7)-1]);
-                break;
-          }
-       }
-    }
+       if(RelatedPRI_1 == none || RelatedPRI_1.Owner == none || UnrealPlayer(RelatedPRI_1.Owner) == none) return;
+		switch(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel)
+		   {
+		      case 5:
+		      case 6:
+		      case 7:
+		         Level.Game.Broadcast(none, RelatedPRI_1.PlayerName@"had a"@
+		         class'MultiKillMessage'.default.KillString[Min(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel,7)-1]);
+		         break;
+		   }
+	}
 
     if(Message == class'CTFMessage')
     {
@@ -444,24 +446,24 @@ class Equalizer extends Mutator config(Equalizer);
           if(Sender.IsA('CTFFlag')) Flag = CTFFlag(Sender);
        else
           return;
-       if(Flag == None)
+       
+	   if(Flag == None)
           return;
-       if(UTServerAdminSpectator(Receiver) == none) return;// No use going further.
+
        switch(Switch)
        {
           // CAPTURE
           // Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
           case 0:
-             if(MessagingSpectator(Receiver) == Witness)
-             {//Controller(RelatedPRI_1.Owner)){
-                ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-                if(ReceiverInfo != none) ReceiverInfo.Captures++;
-                ResetSprees(0);
-                ResetSprees(1);
-                FCs[0] = none;
-                FCs[1] = none;
-             }
-             break;
+				//Controller(RelatedPRI_1.Owner))
+				ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+				if(ReceiverInfo != none) ReceiverInfo.Captures++;
+				ResetSprees(0);
+				ResetSprees(1);
+				FCs[0] = none;
+				FCs[1] = none;
+			
+			break;
 
           // DROP
           // Sender: CTFFlag, PRI: OldHolder.PlayerReplicationInfo, OptObj: TheFlag.Team
@@ -472,33 +474,25 @@ class Equalizer extends Mutator config(Equalizer);
           // PICKUP (after the FC dropped it)
           // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
           case 4:
-             if(MessagingSpectator(Receiver) == Witness)
-             {
-                FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
-             }
-             break;
+				FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
+			break;
 
           // GRAB (from the base mount-point)
           // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
           case 6:
-             if(MessagingSpectator(Receiver) == Witness)
-             {// Receiver == FirstHuman
+             // Receiver == FirstHuman
                 FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
                 ReceiverInfo = GetInfoByID(FCs[1-Flag.TeamNum].PlayerReplicationInfo.PlayerID);
                 if(ReceiverInfo != none) ReceiverInfo.Grabs++;
-             }
              break;
 
           // RETURN
           case 1:
           case 3:
           case 5:
-             if(MessagingSpectator(Receiver) == Witness)
-             {
                 FCs[1-Flag.TeamNum] = none;
                 ResetSprees(Flag.TeamNum);
                 //return;
-             }
              break;
        }
      }
