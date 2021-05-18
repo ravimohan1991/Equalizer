@@ -34,73 +34,73 @@ class EQPlayerInformation extends Actor;
  * Global Variables
  */
 
-   /*
- 	* CTF (teambased) type variables
- 	*/
+ /*
+ * CTF (teambased) type variables
+ */
 
- 	/** Number of flag captures */
- 	var    int             Captures;
+ /** Number of flag captures */
+ var    int             Captures;
 
- 	/** Number of flag grabs */
- 	var    int             Grabs;
+ /** Number of flag grabs */
+ var    int             Grabs;
 
- 	/** Number of flag carrier covers */
- 	var    int             Covers;                 // Number of covers. Universal, nah joking. Universal Covers exist in Geometry only.
+ /** Number of flag carrier covers */
+ var    int             Covers;                 // Number of covers. Universal, nah joking. Universal Covers exist in Geometry only.
 
- 	/** Number of base seals */
- 	var    int             Seals;
+ /** Number of base seals */
+ var    int             Seals;
 
- 	/** Number of flag carrier kills */
- 	var    int             FlagKills;
+ /** Number of flag carrier kills */
+ var    int             FlagKills;
 
- 	/*
- 	* DM (personal) type variables
- 	* TODO: Think about vehicles and stuff
- 	*/
+ /*
+ * DM (personal) type variables
+ * TODO: Think about vehicles and stuff
+ */
 
- 	/** Number of frags */
- 	var    int             Frags;
+ /** Number of frags */
+ var    int             Frags;
 
- 	/** Number of headshots */
- 	var    int             HeadShots;
+ /** Number of headshots */
+ var    int             HeadShots;
 
- 	/** Number of shieldbelts picked */
- 	var    int             ShieldBelts;
+ /** Number of shieldbelts picked */
+ var    int             ShieldBelts;
 
- 	/** Number of amplifiers picked */
- 	var    int             Amps;
+ /** Number of amplifiers picked */
+ var    int             Amps;
 
- 	/** Number of suicides */
- 	var    int             Suicides;
+ /** Number of suicides */
+ var    int             Suicides;
 
- 	/** If the player drew the first blood */
- 	var    bool            bFirstBlood;
+ /** If the player drew the first blood */
+ var    bool            bFirstBlood;
 
- 	/*
- 	* Other information
- 	*/
+ /*
+ * Other information
+ */
 
- 	/** Player's netspeed */
- 	var    int             NetSpeed;
+ /** Player's netspeed */
+ var    int             NetSpeed;
 
- 	/** Player's unique identification number */
- 	// To be obtained from Piglet
- 	var   string           EQGuid;
+ /** Player's unique identification number */
+ // To be obtained from Piglet
+ var   string           EQGuid;
 
 
- 	/*
- 	* Some more information
- 	*/
+ /*
+ * Some more information
+ */
 
- 	/** Some sprees */
- 	var    int             FragSpree;
- 	var    int             CoverSpree;
- 	var    int             SpawnKillSpree;
- 	var    float           PlayerScore;
+ /** Some sprees */
+ var    int             FragSpree;
+ var    int             CoverSpree;
+ var    int             SpawnKillSpree;
+ var    float           PlayerScore;
 
- 	/*
- 	*  For Mutator's internal purposes only. Not to be sent to backend!
- 	*/
+ /*
+ *  For Mutator's internal purposes only. Not to be sent to backend!
+ */
 
- 	/** Player's replicationifo */
- 	var    PlayerReplicationInfo             EQPRI;
+ /** Player's replicationifo */
+ var    PlayerReplicationInfo             EQPRI;
