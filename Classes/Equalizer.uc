@@ -205,6 +205,7 @@ class Equalizer extends Mutator config(Equalizer);
 	local Controller BotController;
 	local bool bMatchFound;
 	local int i;
+	local PlayerReplicationInfo EQPRI;
 
 	if(!bEQFlagsSet)
 	{
@@ -228,7 +229,8 @@ class Equalizer extends Mutator config(Equalizer);
 		BotController = Other.Controller;
 		for(i = 0; i < EQPlayers.Length; i++)
 		{
-			if(EQPlayers[i].EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
+			EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
+            if(EQPRI != none && EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
 			{
 				bMatchFound = true;
 				break;
@@ -258,7 +260,6 @@ class Equalizer extends Mutator config(Equalizer);
 
 	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 
-	EQPI.EQPRI	= FreshMeat.PlayerReplicationInfo;
 	EQPlayers[EQPlayers.Length]	= EQPI;
  }
 
@@ -531,13 +532,15 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
- function ResetSprees(int Team)
+ function ResetSprees(int TeamIndex)
  {
 	local int i;
+	local PlayerReplicationInfo EQPRI;
 
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
-		if(EQPlayers[i].EQPRI.Team.TeamIndex == Team)
+		EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
+        if(EQPRI != none && EQPRI.Team != none && EQPRI.Team.TeamIndex == TeamIndex)
 		{
 			EQPlayers[i].CoverSpree = 0;
 		}
@@ -558,10 +561,12 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local int i;
+	local PlayerReplicationInfo EQPRI;
 
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
-		if(EQPlayers[i].EQPRI.PlayerID == ID)
+	    EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
+		if(EQPRI != none && EQPRI.PlayerID == ID)
 		{
 			return EQPLayers[i];
 		}
@@ -614,7 +619,7 @@ class Equalizer extends Mutator config(Equalizer);
  defaultproperties
  {
     Version="0.1.0"
-    BuildNumber=14
+    BuildNumber=63
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
     CoverReward=2

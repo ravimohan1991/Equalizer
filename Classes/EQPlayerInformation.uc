@@ -103,4 +103,4 @@ class EQPlayerInformation extends Actor;
  */
 
  /** Player's replicationifo */
- var    PlayerReplicationInfo             EQPRI;
+ //var    PlayerReplicationInfo             EQPRI;
