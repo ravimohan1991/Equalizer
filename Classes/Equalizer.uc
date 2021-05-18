@@ -92,12 +92,12 @@ class Equalizer extends Mutator config(Equalizer);
 
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
 	SaveConfig();
-	EQGRules		= Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
-	EQGRules.EQMut	= self;
+	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
+	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
 	if(bShowFCLocation)
-		Level.Game.HUDType	= string(class'EQHUDFCLocation');
+		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
 	super.PostBeginPlay();
  }
@@ -114,8 +114,8 @@ class Equalizer extends Mutator config(Equalizer);
 
 	foreach AllActors(class'CTFFlag', Flag)
 	{
-		EQFlags[Flag.TeamNum]	= Flag;
-		bEQFlagsSet				= true;
+		EQFlags[Flag.TeamNum] = Flag;
+		bEQFlagsSet = true;
 	}
  }
 
