@@ -103,7 +103,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Here we set the Flags' home locations.
+ * Here we store the reference to the CTFFlag instances.
  *
  * @since 0.1.0
  */
