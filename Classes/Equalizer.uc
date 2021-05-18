@@ -391,7 +391,8 @@ class Equalizer extends Mutator config(Equalizer);
  * authors of this routine can be found at http://wiki.unrealadmin.org/SmartCTF
  */
 
- function EvaluateMessageEvent(Actor Sender, PlayerController Receiver, class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject){
+ function EvaluateMessageEvent(Actor Sender, PlayerController Receiver, class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
+ {
 
 	local CTFFlag Flag;
 	local int FlagIndex;
@@ -423,14 +424,14 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		if(RelatedPRI_1 == none || RelatedPRI_1.Owner == none || UnrealPlayer(RelatedPRI_1.Owner) == none) return;
 		switch(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel)
-			{
-				case 5:
-				case 6:
-				case 7:
-						Level.Game.Broadcast(none, RelatedPRI_1.PlayerName@"had a"@
-						class'MultiKillMessage'.default.KillString[Min(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel,7)-1]);
-					break;
-			}
+		{
+			case 5:
+			case 6:
+			case 7:
+					Level.Game.Broadcast(none, RelatedPRI_1.PlayerName@"had a"@
+					class'MultiKillMessage'.default.KillString[Min(UnrealPlayer(RelatedPRI_1.Owner).MultiKillLevel,7)-1]);
+				break;
+		}
 	}
 
 	if(Message == class'CTFMessage')
@@ -459,7 +460,6 @@ class Equalizer extends Mutator config(Equalizer);
 			// CAPTURE
 			// Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 0:
-					//Controller(RelatedPRI_1.Owner))
 					ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
 					if(ReceiverInfo != none) ReceiverInfo.Captures++;
 					ResetSprees(0);
