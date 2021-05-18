@@ -18,7 +18,7 @@ The aim is to encourage the CTF team gameplay and balance the team using a metri
   - Configurable points and adrenaline for Covers/Seals
 - FlagCarrier's location on HUD
 
-Some more statistics including teamkills and suicides are on TODO list.
+Some more statistics including spawnkills, teamkills and suicides are on TODO list.
 
 There is a long TODO list for balancing teams
 - A backend for accepting the above statistics along with (points per hour) PPH and comeup with a player rating points (PRP)
