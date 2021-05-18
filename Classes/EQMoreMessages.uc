@@ -64,22 +64,23 @@ class EQMoreMessages extends CriticalEventPlus;
 	)
  {
 	if(RelatedPRI_1 == none)
-	   return "";
+		return "";
 
-    switch(Switch){
-       case 0:  // Cover
-          return RelatedPRI_1.PlayerName @ default.CoverMessage;
-          break;
-       case 1:  // CoverSpree
-          return RelatedPRI_1.PlayerName @ default.CoverSpreeMessage;
-          break;
-       case 2:  // UltraCover
-          return RelatedPRI_1.PlayerName @ default.UltraCoverMessage;
-          break;
-       case 3:  // Seal
-          return RelatedPRI_1.PlayerName @ default.SealMessage;
-          break;
-    }
+	switch(Switch)
+	{
+		case 0:  // Cover
+				return RelatedPRI_1.PlayerName @ default.CoverMessage;
+			break;
+		case 1:  // CoverSpree
+				return RelatedPRI_1.PlayerName @ default.CoverSpreeMessage;
+			break;
+		case 2:  // UltraCover
+				return RelatedPRI_1.PlayerName @ default.UltraCoverMessage;
+			break;
+		case 3:  // Seal
+				return RelatedPRI_1.PlayerName @ default.SealMessage;
+			break;
+	}
  }
 
 /**
@@ -96,27 +97,27 @@ class EQMoreMessages extends CriticalEventPlus;
  */
 
  static function ClientReceive(
-    PlayerController P,
-    optional int Switch,
-    optional PlayerReplicationInfo RelatedPRI_1,
-    optional PlayerReplicationInfo RelatedPRI_2,
-    optional Object OptionalObject
-    )
+	PlayerController P,
+	optional int Switch,
+	optional PlayerReplicationInfo RelatedPRI_1,
+	optional PlayerReplicationInfo RelatedPRI_2,
+	optional Object OptionalObject
+	)
  {
-    //local sound NewSound;
+	//local sound NewSound;
 
-    Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-    switch(Switch){
-
-       case 0:
-       case 1:
-         /* NewSound = Sound(DynamicLoadObject(Default.CoverMessage, class'Sound', true));
-          if(NewSound != none)
-             P.PlayAnnouncement(NewSound, 1, true);
-          else
-             Log("Can't load new sound from AnnouncerClassic");*/
-          break;
-    }
+	Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+	switch(Switch)
+	{
+		case 0:
+		case 1:
+				/* NewSound = Sound(DynamicLoadObject(Default.CoverMessage, class'Sound', true));
+				if(NewSound != none)
+					P.PlayAnnouncement(NewSound, 1, true);
+				else
+					Log("Can't load new sound from AnnouncerClassic");*/
+			break;
+	}
  }
 
  defaultproperties

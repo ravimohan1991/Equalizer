@@ -23,11 +23,12 @@
 
 /**
  * This is a custom Class to manage/intercept the Broadcasted messages
- * for appropriate interpretation (Equalizer.EvaluateMessageEvent). This
+ * for appropriate interpretation. This
  * object is added to the linked list of of BroadcastHandler (Level.Game.BroadcastHandler)
  * by the function Equalizer.RegisterBroadcastHandler().
  *
  * @author The_Cowboy
+ * @see Equalizer.EvaluateMessageEvent
  * @since 0.1.0
  */
 
@@ -57,8 +58,8 @@ class EQBroadcastHandler extends BroadcastHandler;
 
  function BroadcastLocalized(Actor Sender, PlayerController Receiver, class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
  {
-    EQMut.EvaluateMessageEvent(Sender, Receiver, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-
-    super.BroadcastLocalized(Sender, Receiver, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+	EQMut.EvaluateMessageEvent(Sender, Receiver, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+	
+	super.BroadcastLocalized(Sender, Receiver, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
  }
 

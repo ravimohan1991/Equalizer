@@ -27,6 +27,7 @@
  * @see Equalizer.PostBeginPlay()
  *
  * @author The_Cowboy
+ * @see Equalizer.EvaluateKillingEvent
  * @since 0.1.0
  */
 

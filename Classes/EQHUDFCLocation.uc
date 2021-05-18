@@ -30,7 +30,6 @@
 
 class EQHUDFCLocation extends HudCCaptureTheFlag;
 
-
 /**
  * The function gets called just at the Client while drawing the CTF HUD.
  *
@@ -52,21 +51,21 @@ simulated function ShowTeamScorePassA(Canvas C)
 		DrawSpriteWidget (C, TeamScoreBackgroundDisc[0]);
 		DrawSpriteWidget (C, TeamScoreBackgroundDisc[1]);
 
-        TeamScoreBackground[0].Tints[TeamIndex] = HudColorBlack;
-        TeamScoreBackground[0].Tints[TeamIndex].A = 150;
-        TeamScoreBackground[1].Tints[TeamIndex] = HudColorBlack;
-        TeamScoreBackground[1].Tints[TeamIndex].A = 150;
-
-        DrawSpriteWidget (C, NewFlagWidgets[0]);
-        DrawSpriteWidget (C, NewFlagWidgets[1]);
-
-        NewFlagWidgets[0].Tints[0] = HudColorTeam[0];
-        NewFlagWidgets[0].Tints[1] = HudColorTeam[0];
-
-        NewFlagWidgets[1].Tints[0] = HudColorTeam[1];
-        NewFlagWidgets[1].Tints[1] = HudColorTeam[1];
-
-        DrawSpriteWidget (C, VersusSymbol );
+		TeamScoreBackground[0].Tints[TeamIndex] = HudColorBlack;
+		TeamScoreBackground[0].Tints[TeamIndex].A = 150;
+		TeamScoreBackground[1].Tints[TeamIndex] = HudColorBlack;
+		TeamScoreBackground[1].Tints[TeamIndex].A = 150;
+		
+		DrawSpriteWidget (C, NewFlagWidgets[0]);
+		DrawSpriteWidget (C, NewFlagWidgets[1]);
+		
+		NewFlagWidgets[0].Tints[0] = HudColorTeam[0];
+		NewFlagWidgets[0].Tints[1] = HudColorTeam[0];
+		
+		NewFlagWidgets[1].Tints[0] = HudColorTeam[1];
+		NewFlagWidgets[1].Tints[1] = HudColorTeam[1];
+		
+		DrawSpriteWidget (C, VersusSymbol );
 	 	DrawNumericWidget (C, ScoreTeam[0], DigitsBig);
 		DrawNumericWidget (C, ScoreTeam[1], DigitsBig);
 
@@ -91,39 +90,41 @@ simulated function ShowTeamScorePassA(Canvas C)
 			Draw2DLocationDot(C, BlueBase.Location,0.5 + BLUEtmpPosX*HUDScale, BLUEtmpPosY*HUDScale, BLUEtmpScaleX*HUDScale, BLUEtmpScaleY*HUDScale);
 		}
 
-        if ( PlayerOwner.GameReplicationInfo == None )
+		if ( PlayerOwner.GameReplicationInfo == None )
 			return;
+
 		for (i = 0; i < 2; i++)
 		{
 			if ( PlayerOwner.GameReplicationInfo.FlagState[i] == EFlagState.FLAG_HeldEnemy )
-			DrawSpriteWidget (C, FlagHeldWidgets[i]);
+				DrawSpriteWidget (C, FlagHeldWidgets[i]);
 			else if ( PlayerOwner.GameReplicationInfo.FlagState[i] == EFlagState.FLAG_Down )
-			DrawSpriteWidget (C, FlagDownWidgets[i]);
+				DrawSpriteWidget (C, FlagDownWidgets[i]);
 		}
 
 		for(i = 0; i < PlayerOwner.GameReplicationInfo.PRIArray.Length; i++)
-        {
-		   if(PlayerOwner.GameReplicationInfo.PRIArray[i].HasFlag != none && PlayerOwner.PlayerReplicationInfo.Team.TeamIndex ==
-                 PlayerOwner.GameReplicationInfo.PRIArray[i].Team.TeamIndex && PlayerOwner.PlayerReplicationInfo != PlayerOwner.GameReplicationInfo.PRIArray[i])
-                 {
-              LPRI = PlayerOwner.GameReplicationInfo.PRIArray[i];
-              C.Font = LoadFontStatic(7);
-              C.StrLen("FC:"$LPRI.GetLocationName(), XL, YL);
-		      if(LPRI.Team.TeamIndex == 0)
-              {
-		            C.DrawColor = WhiteColor;//C.static.MakeColor(Rand(255), Rand(50), Rand(50));
-		            C.SetPos(C.ClipX / 2 + C.ClipX * 0.03, C.ClipY * 0.08);
-                 }
-		      else
-              {
-                 C.DrawColor = WhiteColor;//C.static.MakeColor(Rand(50), Rand(50), Rand(255));
-                 C.SetPos(C.ClipX / 2 - C.ClipX * 0.03 - XL, C.ClipY * 0.08);
-                 }
-              C.DrawText("FC:"$LPRI.GetLocationName());
-              break;
-           }
-        }
+		{
+			if(PlayerOwner.GameReplicationInfo.PRIArray[i].HasFlag != none && PlayerOwner.PlayerReplicationInfo.Team.TeamIndex ==
+				PlayerOwner.GameReplicationInfo.PRIArray[i].Team.TeamIndex && PlayerOwner.PlayerReplicationInfo != PlayerOwner.GameReplicationInfo.PRIArray[i])
+			{
+				LPRI = PlayerOwner.GameReplicationInfo.PRIArray[i];
+				C.Font = LoadFontStatic(7);
+				C.StrLen("FC:"$LPRI.GetLocationName(), XL, YL);
 
+				if(LPRI.Team.TeamIndex == 0)
+				{
+					C.DrawColor = WhiteColor;
+					C.SetPos(C.ClipX / 2 + C.ClipX * 0.03, C.ClipY * 0.08);
+				}
+				else
+				{
+					C.DrawColor = WhiteColor;
+					C.SetPos(C.ClipX / 2 - C.ClipX * 0.03 - XL, C.ClipY * 0.08);
+				}
+
+				C.DrawText("FC:"$LPRI.GetLocationName());
+				break;
+			}
+		}
 	}
  }
 
