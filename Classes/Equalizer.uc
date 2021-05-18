@@ -72,7 +72,7 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           int          SealAward;
  var()   config           int          SealAdrenalineUnits;
  var()   config           bool         bShowFCLocation;
- 
+
  /** The radius of the bubble around the flag for tracking seals */
  var()   config           float        SealDistance;
 
@@ -150,6 +150,31 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * The function clears the EQPlayers array          <br />
+ * In future, we will hook algorithm to send        <br />
+ * the data to backend, here.
+ *
+ * @since 0.1.0
+ */
+
+ function NotifyLogout(Controller Exiting)
+ {
+
+    local int PlayerIndex;
+
+    for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
+    {
+        if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
+        {
+            EQPlayers.Remove(PlayerIndex, 1);
+            break;
+        }
+    }
+
+    super.NotifyLogout(Exiting);
+ }
+
+/**
  * The function for setting the EQBroadcastHandler at the begining of the
  * linked list of BroadcastHandlers.
  *
@@ -161,10 +186,10 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local EQBroadcastHandler EQBH;
-	
+
 	EQBH = Level.Game.Spawn(class'EQBroadcastHandler');
 	EQBH.EQMut = self;
-	
+
 	Level.Game.BroadcastHandler.RegisterBroadcastHandler(EQBH);
  }
 
@@ -233,7 +258,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 
-	EQPI.EQPR	= FreshMeat.PlayerReplicationInfo;
+	EQPI.EQPRI	= FreshMeat.PlayerReplicationInfo;
 	EQPlayers[EQPlayers.Length]	= EQPI;
  }
 
@@ -451,10 +476,10 @@ class Equalizer extends Mutator config(Equalizer);
 			if(Sender.IsA('CTFFlag')) Flag = CTFFlag(Sender);
 		else
 			return;
-	
+
 		if(Flag == None)
 			return;
-	
+
 		switch(Switch)
 		{
 			// CAPTURE
@@ -467,19 +492,19 @@ class Equalizer extends Mutator config(Equalizer);
 					FCs[0] = none;
 					FCs[1] = none;
 				break;
-	
+
 			// DROP
 			// Sender: CTFFlag, PRI: OldHolder.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 2:
 					//FCs[1-Flag.TeamNum] = none;// Just to be safe
 				break;
-			
+
 			// PICKUP (after the FC dropped it)
 			// Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
-			case 4:	
+			case 4:
 					FCs[1-Flag.TeamNum] = Controller(RelatedPRI_1.Owner);
 				break;
-	
+
 			// GRAB (from the base mount-point)
 			// Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 6:
@@ -487,7 +512,7 @@ class Equalizer extends Mutator config(Equalizer);
 					ReceiverInfo = GetInfoByID(FCs[1-Flag.TeamNum].PlayerReplicationInfo.PlayerID);
 					if(ReceiverInfo != none) ReceiverInfo.Grabs++;
 				break;
-			
+
 			// RETURN
 			case 1:
 			case 3:
@@ -560,7 +585,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(VSize(SubjectLocation - EQFlags[Team].HomeBase.Location) < SealDistance)
 		return true;
-	
+
 	return false;
  }
 
@@ -581,7 +606,7 @@ class Equalizer extends Mutator config(Equalizer);
 		if (MutateString ~= "dist")
 		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - EQFlags[1].HomeBase.Location));
 	}
-	
+
 	if ( NextMutator != None )
 		NextMutator.Mutate(MutateString, Sender);
  }*/
