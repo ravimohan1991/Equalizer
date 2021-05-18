@@ -53,11 +53,11 @@ class Equalizer extends Mutator config(Equalizer);
  /** Controller Array of CTF's Flag Carriers.*/
  var   Controller                                 FCs[2];
 
- /** Flags' home location */
- var(Movement)   vector                           FlagHomeLocations[2];
+ /** Flags instances */
+ var   CTFFlag                                  EQFlags[2];
 
  /** Are flaglocations set? */
- var     bool                                     bFlagHomeLocationsSet;
+ var     bool                                     bEQFlagsSet;
 
  /** Equalizer's silent spectator.*/
  var   MessagingSpectator                         Witness;
@@ -107,14 +107,14 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
- function SetFlagHomeLocations()
+ function SetEQFlags()
  {
 	local CTFFlag Flag;
 
     foreach AllActors(class'CTFFlag', Flag)
     {
-         FlagHomeLocations[Flag.TeamNum] = Flag.HomeBase.Location;
-         bFlagHomeLocationsSet = true;
+         EQFlags[Flag.TeamNum] = Flag;
+         bEQFlagsSet = true;
     }
 
  }
@@ -181,9 +181,9 @@ class Equalizer extends Mutator config(Equalizer);
 	local bool bMatchFound;
 	local int i;
 
-	if(!bFlagHomeLocationsSet)
+	if(!bEQFlagsSet)
 	{
-        SetFlagHomeLocations();
+        SetEQFlags();
     }
 
     if(Witness == none)
@@ -306,8 +306,33 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
 	{
-		// COVER FRAG  / SEAL BASE
-		// if Killer's Team has had an FC
+		// SEAL BASE
+
+        // Defense Kill
+		bKilledTeamHasFlag = true;
+		if(FCs[KilledPRI.Team.TeamIndex] == none) bKilledTeamHasFlag = false;
+		// Make sure to check if Killer flag is within the home zone too, if outside then no seal
+		//if(FCs[KilledPRI.Team.TeamIndex] != none &&
+		 //FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
+
+		// if Killed's FC has not been set / if Killed's FC doesn't have our Flag
+		if(!bKilledTeamHasFlag)
+		{
+			// If Killed and Killer's FC are in Killer's Flag Zone
+			if(IsInZone(Killed.Location, KillerPRI.Team.TeamIndex) && IsInzone(FCs[KillerPRI.Team.TeamIndex].Pawn.Location, KillerPRI.Team.TeamIndex))
+            {
+				// Killer SEALED THE BASE
+				if(KillerInfo != none)
+					KillerInfo.Seals++;
+				BroadcastLocalizedMessage(class'EQMoreMessages', 3, KillerPRI);
+				KillerPRI.Score += SealAward;//Seal Bonus
+				Killer.AwardAdrenaline(SealAdrenalineUnits);
+				return;
+			}
+		}
+
+        // COVER FRAG
+        // if Killer's Team has had an FC
 		// if the FC has Flag Right now
 		// Defend kill
 		// org: if victim can see the FC or is within 600 unreal units (approx 40 feet) and has a line of sight to FC.
@@ -349,28 +374,6 @@ class Equalizer extends Mutator config(Equalizer);
 			KillerPRI.Score += CoverReward;// Cover Bonus
 			Killer.AwardAdrenaline(CoverAdrenalineUnits);
 		}
-
-		// Defense Kill
-		bKilledTeamHasFlag = true;
-		if(FCs[KilledPRI.Team.TeamIndex] == none) bKilledTeamHasFlag = false;
-		// Make sure to check if Killer flag is within the home zone too, if outside then no seal
-		//if(FCs[KilledPRI.Team.TeamIndex] != none &&
-		 //FCs[KilledPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag == none) bKilledTeamHasFlag = false;// Safety check
-
-		// if Killed's FC has not been set / if Killed's FC doesn't have our Flag
-		if(!bKilledTeamHasFlag)
-		{
-			// If Killed and Killer's FC are in Killer's Flag Zone
-			if(IsInZone(Killed, KillerPRI.Team.TeamIndex) && IsInzone(FCs[KillerPRI.Team.TeamIndex].Pawn, KillerPRI.Team.TeamIndex))
-            {
-				// Killer SEALED THE BASE
-				if(KillerInfo != none)
-					KillerInfo.Seals++;
-				BroadcastLocalizedMessage(class'EQMoreMessages', 3, KillerPRI);
-				KillerPRI.Score += SealAward;//Seal Bonus
-				Killer.AwardAdrenaline(SealAdrenalineUnits);
-			}
-		}
 	}
  }
 
@@ -397,10 +400,11 @@ class Equalizer extends Mutator config(Equalizer);
  function EvaluateMessageEvent(Actor Sender, PlayerController Receiver, class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject){
 
     local CTFFlag Flag;
+    local int FlagIndex;
     local EQPlayerInformation ReceiverInfo;
 
-    if(UTServerAdminSpectator(Receiver) == none || MessagingSpectator(Receiver) != Witness) return;// No use going further.
-	
+    if(MessagingSpectator(Receiver) != Witness) return;// No use going further.
+
 	// First Blood register
     if(Message == class'FirstBloodMessage')
     {
@@ -438,15 +442,20 @@ class Equalizer extends Mutator config(Equalizer);
     {
        if(Sender.IsA('CTFGame'))
        {
-          foreach DynamicActors(class'CTFFlag', Flag)
-             if(Flag.Team == UnrealTeamInfo(OptionalObject))
+          for(FlagIndex = 0; FlagIndex < 2; FlagIndex++)
+          {
+              if(EQFlags[FlagIndex].Team == UnrealTeamInfo(OptionalObject))
+              {
+                Flag = EQFlags[FlagIndex];
                 break;
+              }
+          }
        }
        else
           if(Sender.IsA('CTFFlag')) Flag = CTFFlag(Sender);
        else
           return;
-       
+
 	   if(Flag == None)
           return;
 
@@ -462,7 +471,7 @@ class Equalizer extends Mutator config(Equalizer);
 				ResetSprees(1);
 				FCs[0] = none;
 				FCs[1] = none;
-			
+
 			break;
 
           // DROP
@@ -491,7 +500,7 @@ class Equalizer extends Mutator config(Equalizer);
           case 3:
           case 5:
                 FCs[1-Flag.TeamNum] = none;
-                ResetSprees(Flag.TeamNum);
+                ResetSprees(1 - Flag.TeamNum);
                 //return;
              break;
        }
@@ -555,28 +564,36 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
- function bool IsInZone(Pawn P, byte Team)
+ function bool IsInZone(vector SubjectLocation, byte Team)
  {
 
-    local(Movement)   vector FlagLocation;
-
-    if(VSize(P.Location - FlagHomeLocations[Team]) < SealDistance)
+    if(VSize(SubjectLocation - EQFlags[Team].HomeBase.Location) < SealDistance)
      return true;
 
     return false;
  }
 
+/**
+ * For debugging purposes
+ *
+ * @param MutateString The string typed by the player
+ * @param Sender Human how typed the command
+ *
+ * @since 0.1.0
+ */
+
+ /*
  function Mutate(string MutateString, PlayerController Sender)
  {
 	if(Sender != none)
 	{
      if (MutateString ~= "dist")
-     Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - FlagHomeLocations[0])$" distance from blue flag: "$VSize(Sender.Pawn.Location - FlagHomeLocations[1]));
+     Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - EQFlags[1].HomeBase.Location));
     }
 
     if ( NextMutator != None )
 		NextMutator.Mutate(MutateString, Sender);
- }
+ }*/
 
  defaultproperties
  {
