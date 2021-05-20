@@ -325,7 +325,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 		// HeadShot tracking
 		if(damageType == Class'UTClassic.DamTypeClassicHeadshot')
-		KillerInfo.HeadShots++;
+			KillerInfo.HeadShots++;
 	}
 
 	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
@@ -540,7 +540,7 @@ class Equalizer extends Mutator config(Equalizer);
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
 		EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
-        if(EQPRI != none && EQPRI.Team != none && EQPRI.Team.TeamIndex == TeamIndex)
+		if(EQPRI != none && EQPRI.Team != none && EQPRI.Team.TeamIndex == TeamIndex)
 		{
 			EQPlayers[i].CoverSpree = 0;
 		}
