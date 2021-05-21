@@ -104,3 +104,6 @@ class EQPlayerInformation extends Actor;
 
  /** Player's replicationifo */
  //var    PlayerReplicationInfo             EQPRI;
+
+ /** This player killed the enemy FC at this distance from enemy flag */
+ var      vector                              KilledFCAtLocation;

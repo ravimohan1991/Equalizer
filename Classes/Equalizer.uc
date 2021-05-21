@@ -50,8 +50,12 @@ class Equalizer extends Mutator config(Equalizer);
  /** Equalizer PlayerInformation structure array */
  var   array<EQPlayerInformation>                 EQPlayers;
 
- /** Controller Array of CTF's Flag Carriers.*/
+ /** Controller Array of CTF's Flag Carriers */
  var   Controller                                 FCs[2];
+
+ /** Controller Array of FC killers (may do with single array, categorized for readability) */
+ var   array<EQPlayerInformation>                 RedFCKillers; // Killers in Red who killed Blue FC
+ var   array<EQPlayerInformation>                 BlueFCKillers;
 
  /** Flags instances */
  var   CTFFlag                                  EQFlags[2];
@@ -59,7 +63,7 @@ class Equalizer extends Mutator config(Equalizer);
  /** Are flaglocations set? */
  var     bool                                     bEQFlagsSet;
 
- /** Equalizer's silent spectator.*/
+ /** Equalizer's silent spectator */
  var   MessagingSpectator                         Witness;
 
  /*
@@ -72,6 +76,7 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           int          SealAward;
  var()   config           int          SealAdrenalineUnits;
  var()   config           bool         bShowFCLocation;
+ var()   config           float        FCProgressKillBonus;
 
  /** The radius of the bubble around the flag for tracking seals */
  var()   config           float        SealDistance;
@@ -306,7 +311,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 
 	KillerPRI = Killer.PlayerReplicationInfo;
-	if(KillerPRI == none && (KillerPRI.bIsSpectator && !KillerPRI.bWaitingPlayer)) return;
+	if(KillerPRI == none || (KillerPRI.bIsSpectator && !KillerPRI.bWaitingPlayer)) return;
 
 	KillerInfo = GetInfoByID(Killer.PlayerReplicationInfo.PlayerID);
 
@@ -321,6 +326,15 @@ class Equalizer extends Mutator config(Equalizer);
 		if(KilledPRI.HasFlag != None)
 		{
 			KillerInfo.FlagKills++;
+			KillerInfo.KilledFCAtLocation = Killed.Location;
+			if(KillerPRI.Team.TeamIndex == 0)
+			{
+               AddIfNotPresent(0, KillerInfo);
+            }
+		 	else
+		 	{
+                AddIfNotPresent(1, KillerInfo);
+            }
 		}
 
 		// HeadShot tracking
@@ -328,7 +342,7 @@ class Equalizer extends Mutator config(Equalizer);
 			KillerInfo.HeadShots++;
 	}
 
-	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
+	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].Pawn != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
 	{
 		// SEAL BASE
 
@@ -367,7 +381,7 @@ class Equalizer extends Mutator config(Equalizer);
 		// Note:      The new measures probably appeared in version 4, but don't quote me on that.
 		// Also Note: Different Unreal Engines have different scales. Source: https://wiki.beyondunreal.com/Unreal_Unit
 		//            It roughly translates to 1 uu(UT) = 1.125 uu(UT2k4) ~(The_Cowboy)
-		if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
+        if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killer.Pawn.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1536*1.125 && Killed.Controller.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1024*1.125 && Killer.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
@@ -398,11 +412,41 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * Adds the item in array if it does not exist
+ *
+ * @param TeamIndex The team of FCKillers
+ * @param Info    The new information
+ * @since 0.2.0
+ */
+
+ function AddIfNotPresent(int TeamIndex, EQPlayerInformation Info)
+ {
+	local int i;
+
+	if(TeamIndex == 0)
+	{
+        for(i = 0; i < RedFCKillers.Length; i++)
+        {
+          if(RedFCKillers[i] == Info)
+             return;
+        }
+        RedFCKillers[RedFCKillers.Length] = Info;
+    }
+    else
+	{
+        for(i = 0; i < BlueFCKillers.Length; i++)
+        {
+          if(BlueFCKillers[i] == Info)
+             return;
+        }
+        BlueFCKillers[BlueFCKillers.Length] = Info;
+    }
+ }
+
+/**
  * Method to intercept the broadcasted messages which contain important clues
  * about the Flag and FlagCarriers and Ingame events. We spawned the
- * UTServerAdminSpectator Class instance as the Witness to interpret message only Once.
- *
- * TODO: Score gradient based on flag return distance
+ * UTServerAdminSpectator class instance as the Witness to interpret message only Once.
  *
  * @param Sender The Actor class sending the message.
  * @param Receiver The Controller class receiving the message.
@@ -515,11 +559,19 @@ class Equalizer extends Mutator config(Equalizer);
 				break;
 
 			// RETURN
+			//  Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 1:
+			       if(RelatedPRI_1 != none)
+		           {
+                      RewardFCKillers(RelatedPRI_1.Team.TeamIndex);
+                   }
+
+            // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 3:
 			case 5:
 					FCs[1-Flag.TeamNum] = none;
 					ResetSprees(1 - Flag.TeamNum);
+					ResetFCKillers(Flag.TeamNum);
 				break;
 		}
 	}
@@ -528,7 +580,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to reset sprees
  *
- * @param Team The team of players whose sprees are to be reset
+ * @param TeamIndex The team of player's whose sprees are to be reset
  * @since 0.1.0
  */
 
@@ -545,6 +597,81 @@ class Equalizer extends Mutator config(Equalizer);
 			EQPlayers[i].CoverSpree = 0;
 		}
 	}
+ }
+
+/**
+ * Method to reward FCKillers
+ *
+ * @param TeamIndex The team index of Flag, which has FCKillers
+ * @since 0.2.0
+ */
+
+ function RewardFCKillers(int TeamIndex)
+ {
+     local int i;
+     local PlayerReplicationInfo EQPRI;
+     local vector KillerBaseToFCBaseVector;
+     local vector KillerBaseToFCLocationVector;
+     local float  FCProgress;
+     local int ScoreToAward;
+
+     if(TeamIndex == 0)
+     {
+		KillerBaseToFCBaseVector = EQFlags[1].HomeBase.Location - EQFlags[0].HomeBase.Location;
+        for(i = 0; i < RedFCKillers.Length; i++)
+	    {
+              EQPRI = PlayerReplicationInfo(RedFCKillers[i].Owner);
+		      if(EQPRI != none)
+		      {
+			        KillerBaseToFCLocationVector = RedFCKillers[i].KilledFCAtLocation - EQFlags[0].HomeBase.Location;
+			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
+			        if(FCProgress > 0)
+			        {
+	    	    	    ScoreToAward = int(FCProgress / VSize(KillerBaseToFCBaseVector) * FCProgressKillBonus);
+	    	    	    EQPRI.Score += ScoreToAward;
+                    }
+
+              }
+        }
+     }
+     else
+     {
+        KillerBaseToFCBaseVector = EQFlags[0].HomeBase.Location - EQFlags[1].HomeBase.Location;
+        for(i = 0; i < BlueFCKillers.Length; i++)
+	    {
+              EQPRI = PlayerReplicationInfo(BlueFCKillers[i].Owner);
+		      if(EQPRI != none)
+		      {
+			        KillerBaseToFCLocationVector = BlueFCKillers[i].KilledFCAtLocation - EQFlags[1].HomeBase.Location;
+			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
+			        if(FCProgress > 0)
+			        {
+	    	    	    ScoreToAward = int(FCProgress / VSize(KillerBaseToFCBaseVector) * FCProgressKillBonus);
+	    	    	    EQPRI.Score += ScoreToAward;
+                    }
+
+              }
+        }
+     }
+ }
+
+/**
+ * Method to reset FCKillers
+ *
+ * @param TeamIndex The team index of Flag, which has FCKillers
+ * @since 0.2.0
+ */
+
+ function ResetFCKillers(int TeamIndex)
+ {
+     if(TeamIndex == 0)
+     {
+			RedFCKillers.Remove(0, RedFCKillers.Length);
+     }
+     else
+     {
+			BlueFCKillers.Remove(0, BlueFCKillers.Length);
+     }
  }
 
 /**
@@ -618,7 +745,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  defaultproperties
  {
-    Version="0.1.0"
+    Version="0.2.0"
     BuildNumber=63
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
@@ -629,4 +756,5 @@ class Equalizer extends Mutator config(Equalizer);
     bBroadcastMonsterKillsAndAbove=true
     bShowFCLocation=true
     SealDistance=2200
+    FCProgressKillBonus=4
  }
