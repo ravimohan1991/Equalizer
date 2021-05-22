@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added 
 
 - Changelog
+- UniqueIdentifier scheme, as suggested by Piglet ([154b235](https://github.com/ravimohan1991/Equalizer/commit/154b235452e8d6ca79858ba0930beeabcfd3d0c0))
 - Tracking spawnkills, teamkills and suicides
 - A backend for accepting the above statistics along with (points per hour) PPH and comeup with a player rating points (PRP)
 - Teams can be shuffled at match start in a way that tries to balance the potential team skill on both sides by aiming for only little difference in combined PRP for the players on each team
