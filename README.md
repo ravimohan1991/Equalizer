@@ -18,9 +18,8 @@ The aim is to encourage the CTF team gameplay and balance the team using a metri
   - Configurable points and adrenaline for Covers/Seals
 - FlagCarrier's location on HUD
 
-Some more statistics including spawnkills, teamkills and suicides are on TODO list.
-
 There is a long TODO list for balancing teams
+- Spawnkill detection?
 - A backend for accepting the above statistics along with (points per hour) PPH and comeup with a player rating points (PRP)
 - Teams can be shuffled at match start in a way that tries to balance the potential team skill on both sides by aiming for only little difference in combined PRP for the players on each team
 - Particularly short first rounds (e.g. caused by skilled players joining shortly after match start) can be reset with another team shuffling and PRP balancing
@@ -40,6 +39,7 @@ INI setting | Default value | Description
 `SealDistance` | 2200 | The radius of the imaginary bubble around the flag for evaluating Seals.
 `bShowFCLocation` | true | If set to true, your FC location will be shown in your HUD.
 `bBroadcastMonsterKillsAndAbove` | true | If you want to have global broadcast for achieveing MonsterKill or above.
+`UniqueIdentifierClass` | UniqueIdentifier.UniqueIdentifier | The \<PackageName\>.\<ClassName\> for the serverside class.
   ### Acronyms
   FC: Flag Carrier (The player who is carrying the flag)
 
