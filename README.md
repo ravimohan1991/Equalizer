@@ -39,7 +39,7 @@ INI setting | Default value | Description
 `SealDistance` | 2200 | The radius of the imaginary bubble around the flag for evaluating Seals.
 `bShowFCLocation` | true | If set to true, your FC location will be shown in your HUD.
 `bBroadcastMonsterKillsAndAbove` | true | If you want to have global broadcast for achieveing MonsterKill or above.
-`UniqueIdentifierClass` | UniqueIdentifier.UniqueIdentifier | The \<PackageName\>.\<ClassName\> for the serverside class.
+`UniqueIdentifierClass` | UniqueIdentifier.UniqueIdentifier | The \<PackageName\>.\<ClassName\> for the serverside class. See [UniqueIdentifier](https://github.com/ravimohan1991/Equalizer/edit/main/UniqueIdentifier.md) for more details.
   ### Acronyms
   FC: Flag Carrier (The player who is carrying the flag)
 
