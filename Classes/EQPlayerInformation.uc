@@ -53,6 +53,9 @@ class EQPlayerInformation extends Actor;
  /** Number of flag carrier kills */
  var    int             FlagKills;
 
+ /** Number of teamkills */
+ var    int             TeamKills;
+
  /*
  * DM (personal) type variables
  * TODO: Think about vehicles and stuff

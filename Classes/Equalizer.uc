@@ -316,7 +316,10 @@ class Equalizer extends Mutator config(Equalizer);
 	KillerInfo = GetInfoByID(Killer.PlayerReplicationInfo.PlayerID);
 
 	if(KilledPRI.Team == KillerPRI.Team)
-		return;// Mistakes can happen :) TeamKill logic should be put here
+	{
+		if(KillerInfo != none) KillerInfo.TeamKills++;
+        return;
+	}
 
 	// Increase Frags and FragSpree for Killer
 	if(KillerInfo != none)
@@ -627,8 +630,8 @@ class Equalizer extends Mutator config(Equalizer);
 			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
 			        if(FCProgress > 0)
 			        {
-	    	    	    ScoreToAward = int(FCProgress / VSize(KillerBaseToFCBaseVector) * FCProgressKillBonus);
-	    	    	    EQPRI.Score += ScoreToAward;
+	    	    	    ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
+                        EQPRI.Score += ScoreToAward;
                     }
 
               }
@@ -646,7 +649,7 @@ class Equalizer extends Mutator config(Equalizer);
 			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
 			        if(FCProgress > 0)
 			        {
-	    	    	    ScoreToAward = int(FCProgress / VSize(KillerBaseToFCBaseVector) * FCProgressKillBonus);
+	    	    	    ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
 	    	    	    EQPRI.Score += ScoreToAward;
                     }
 
