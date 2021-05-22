@@ -274,7 +274,10 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation EQPI;
 
-	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
+	if(FreshMeat.PlayerReplicationInfo == none || (FreshMeat.PlayerReplicationInfo.bIsSpectator && !FreshMeat.PlayerReplicationInfo.bWaitingPlayer))
+	   return;
+
+    EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
 	EQPlayers[EQPlayers.Length]	= EQPI;
