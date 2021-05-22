@@ -28,7 +28,7 @@
  * @since 0.1.0
  */
 
-class EQPlayerInformation extends Actor;
+class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 /*
  * Global Variables
@@ -88,7 +88,7 @@ class EQPlayerInformation extends Actor;
 
  /** Player's unique identification number */
  // To be obtained from Piglet
- var   string           EQGuid;
+ var   string           EQIdentifier;
 
 
  /*
@@ -110,3 +110,56 @@ class EQPlayerInformation extends Actor;
 
  /** This player killed the enemy FC at this distance from enemy flag */
  var      vector                              KilledFCAtLocation;
+
+ /** UniqueIdentifer reference */
+ var       UniqueIdentifier                   EQUID;
+
+ /**
+ * The function gets called just after ActorSpawns.
+ * So we do the necessary preparations here
+ *
+ * @since 0.2.0
+ */
+
+ function PostBeginPlay()
+ {
+	SetTimer(1.f, true);
+
+	super.PostBeginPlay();
+ }
+
+ /**
+ * Method to associate UniqueIdentifier reference
+ *
+ * @since 0.2.0
+ */
+
+ function SetUniqueIdentifierReference(Actor UID)
+ {
+	  EQUID = UniqueIdentifier(UID);
+      if(EQUID == none)
+         Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
+ }
+
+/**
+ * Standard Timer function.
+ *
+ * @since 0.2.0
+ */
+
+ event Timer()
+ {
+       if(EQIdentifier ~= "")
+       {
+          EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
+       }
+       else
+       {
+          SetTimer(0.f, false);
+       }
+ }
+
+ defaultproperties
+ {
+
+ }

@@ -66,6 +66,9 @@ class Equalizer extends Mutator config(Equalizer);
  /** Equalizer's silent spectator */
  var   MessagingSpectator                         Witness;
 
+ /** Equalizer's UniqueIdentifier reference */
+ var   Actor                                      EQUniqueIdentifier;
+
  /*
   * Configurable Variables
   */
@@ -77,6 +80,7 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           int          SealAdrenalineUnits;
  var()   config           bool         bShowFCLocation;
  var()   config           float        FCProgressKillBonus;
+ var()   config           string       UniqueIdentifierClass;
 
  /** The radius of the bubble around the flag for tracking seals */
  var()   config           float        SealDistance;
@@ -94,6 +98,7 @@ class Equalizer extends Mutator config(Equalizer);
  function PostBeginPlay()
  {
 	local EQGameRules EQGRules;
+	local class<Actor> UniqueID;
 
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
 	SaveConfig();
@@ -101,6 +106,12 @@ class Equalizer extends Mutator config(Equalizer);
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
+	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
+	if(UniqueID != none)
+	Log("Successfully loaded UniqueIdentifier class", 'Equalizer');
+	EQUniqueIdentifier = Spawn(UniqueID, self);
+	if(EQUniqueIdentifier != none)
+	Log("Successfully spawned UniqueIdentifier instance", 'Equalizer');
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
@@ -264,6 +275,7 @@ class Equalizer extends Mutator config(Equalizer);
 	local EQPlayerInformation EQPI;
 
 	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
+	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
 	EQPlayers[EQPlayers.Length]	= EQPI;
  }
@@ -760,4 +772,5 @@ class Equalizer extends Mutator config(Equalizer);
     bShowFCLocation=true
     SealDistance=2200
     FCProgressKillBonus=4
+    UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
  }
