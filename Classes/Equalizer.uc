@@ -108,10 +108,10 @@ class Equalizer extends Mutator config(Equalizer);
 	RegisterBroadcastHandler();
 	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none)
-	Log("Successfully loaded UniqueIdentifier class", 'Equalizer');
+		Log("Successfully loaded UniqueIdentifier class", 'Equalizer');
 	EQUniqueIdentifier = Spawn(UniqueID, self);
 	if(EQUniqueIdentifier != none)
-	Log("Successfully spawned UniqueIdentifier instance", 'Equalizer');
+		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer');
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
@@ -176,18 +176,18 @@ class Equalizer extends Mutator config(Equalizer);
  function NotifyLogout(Controller Exiting)
  {
 
-    local int PlayerIndex;
+	local int PlayerIndex;
+	
+	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
+	{
+		if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
+		{
+			EQPlayers.Remove(PlayerIndex, 1);
+			break;
+		}
+	}
 
-    for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
-    {
-        if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
-        {
-            EQPlayers.Remove(PlayerIndex, 1);
-            break;
-        }
-    }
-
-    super.NotifyLogout(Exiting);
+	super.NotifyLogout(Exiting);
  }
 
 /**
@@ -246,7 +246,7 @@ class Equalizer extends Mutator config(Equalizer);
 		for(i = 0; i < EQPlayers.Length; i++)
 		{
 			EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
-            if(EQPRI != none && EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
+			if(EQPRI != none && EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
 			{
 				bMatchFound = true;
 				break;
@@ -275,9 +275,9 @@ class Equalizer extends Mutator config(Equalizer);
 	local EQPlayerInformation EQPI;
 
 	if(FreshMeat.PlayerReplicationInfo == none || (FreshMeat.PlayerReplicationInfo.bIsSpectator && !FreshMeat.PlayerReplicationInfo.bWaitingPlayer))
-	   return;
+		return;
 
-    EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
+	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
 	EQPlayers[EQPlayers.Length]	= EQPI;
@@ -333,7 +333,7 @@ class Equalizer extends Mutator config(Equalizer);
 	if(KilledPRI.Team == KillerPRI.Team)
 	{
 		if(KillerInfo != none) KillerInfo.TeamKills++;
-        return;
+			return;
 	}
 
 	// Increase Frags and FragSpree for Killer
@@ -347,12 +347,12 @@ class Equalizer extends Mutator config(Equalizer);
 			KillerInfo.KilledFCAtLocation = Killed.Location;
 			if(KillerPRI.Team.TeamIndex == 0)
 			{
-               AddIfNotPresent(0, KillerInfo);
-            }
-		 	else
-		 	{
-                AddIfNotPresent(1, KillerInfo);
-            }
+				AddIfNotPresent(0, KillerInfo);
+			}
+			else
+			{
+				AddIfNotPresent(1, KillerInfo);
+			}
 		}
 
 		// HeadShot tracking
@@ -399,7 +399,7 @@ class Equalizer extends Mutator config(Equalizer);
 		// Note:      The new measures probably appeared in version 4, but don't quote me on that.
 		// Also Note: Different Unreal Engines have different scales. Source: https://wiki.beyondunreal.com/Unreal_Unit
 		//            It roughly translates to 1 uu(UT) = 1.125 uu(UT2k4) ~(The_Cowboy)
-        if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
+		if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killer.Pawn.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1536*1.125 && Killed.Controller.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1024*1.125 && Killer.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
@@ -443,22 +443,22 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(TeamIndex == 0)
 	{
-        for(i = 0; i < RedFCKillers.Length; i++)
-        {
-          if(RedFCKillers[i] == Info)
-             return;
-        }
-        RedFCKillers[RedFCKillers.Length] = Info;
-    }
-    else
+		for(i = 0; i < RedFCKillers.Length; i++)
+		{
+			if(RedFCKillers[i] == Info)
+				return;
+		}
+		RedFCKillers[RedFCKillers.Length] = Info;
+	}
+	else
 	{
-        for(i = 0; i < BlueFCKillers.Length; i++)
-        {
-          if(BlueFCKillers[i] == Info)
-             return;
-        }
-        BlueFCKillers[BlueFCKillers.Length] = Info;
-    }
+		for(i = 0; i < BlueFCKillers.Length; i++)
+		{
+			if(BlueFCKillers[i] == Info)
+				return;
+		}
+		BlueFCKillers[BlueFCKillers.Length] = Info;
+	}
  }
 
 /**
@@ -579,10 +579,10 @@ class Equalizer extends Mutator config(Equalizer);
 			// RETURN
 			//  Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 1:
-			       if(RelatedPRI_1 != none)
-		           {
-                      RewardFCKillers(RelatedPRI_1.Team.TeamIndex);
-                   }
+					if(RelatedPRI_1 != none)
+					{
+						RewardFCKillers(RelatedPRI_1.Team.TeamIndex);
+					}
 
             // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 3:
@@ -626,51 +626,49 @@ class Equalizer extends Mutator config(Equalizer);
 
  function RewardFCKillers(int TeamIndex)
  {
-     local int i;
-     local PlayerReplicationInfo EQPRI;
-     local vector KillerBaseToFCBaseVector;
-     local vector KillerBaseToFCLocationVector;
-     local float  FCProgress;
-     local int ScoreToAward;
+	local int i;
+	local PlayerReplicationInfo EQPRI;
+	local vector KillerBaseToFCBaseVector;
+	local vector KillerBaseToFCLocationVector;
+	local float  FCProgress;
+	local int ScoreToAward;
 
-     if(TeamIndex == 0)
-     {
+	if(TeamIndex == 0)
+	{
 		KillerBaseToFCBaseVector = EQFlags[1].HomeBase.Location - EQFlags[0].HomeBase.Location;
-        for(i = 0; i < RedFCKillers.Length; i++)
-	    {
-              EQPRI = PlayerReplicationInfo(RedFCKillers[i].Owner);
-		      if(EQPRI != none)
-		      {
-			        KillerBaseToFCLocationVector = RedFCKillers[i].KilledFCAtLocation - EQFlags[0].HomeBase.Location;
-			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
-			        if(FCProgress > 0)
-			        {
-	    	    	    ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
-                        EQPRI.Score += ScoreToAward;
-                    }
-
-              }
-        }
-     }
-     else
-     {
-        KillerBaseToFCBaseVector = EQFlags[0].HomeBase.Location - EQFlags[1].HomeBase.Location;
-        for(i = 0; i < BlueFCKillers.Length; i++)
-	    {
-              EQPRI = PlayerReplicationInfo(BlueFCKillers[i].Owner);
-		      if(EQPRI != none)
-		      {
-			        KillerBaseToFCLocationVector = BlueFCKillers[i].KilledFCAtLocation - EQFlags[1].HomeBase.Location;
-			        FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
-			        if(FCProgress > 0)
-			        {
-	    	    	    ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
-	    	    	    EQPRI.Score += ScoreToAward;
-                    }
-
-              }
-        }
-     }
+		for(i = 0; i < RedFCKillers.Length; i++)
+		{
+			EQPRI = PlayerReplicationInfo(RedFCKillers[i].Owner);
+			if(EQPRI != none)
+			{
+				KillerBaseToFCLocationVector = RedFCKillers[i].KilledFCAtLocation - EQFlags[0].HomeBase.Location;
+				FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
+				if(FCProgress > 0)
+				{
+					ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
+					EQPRI.Score += ScoreToAward;
+				}
+			}
+		}
+	}
+	else
+	{
+		KillerBaseToFCBaseVector = EQFlags[0].HomeBase.Location - EQFlags[1].HomeBase.Location;
+		for(i = 0; i < BlueFCKillers.Length; i++)
+		{
+			EQPRI = PlayerReplicationInfo(BlueFCKillers[i].Owner);
+			if(EQPRI != none)
+			{
+				KillerBaseToFCLocationVector = BlueFCKillers[i].KilledFCAtLocation - EQFlags[1].HomeBase.Location;
+				FCProgress = KillerBaseToFCLocationVector dot Normal(KillerBaseToFCBaseVector);
+				if(FCProgress > 0)
+				{
+					ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
+					EQPRI.Score += ScoreToAward;
+				}
+			}
+		}
+	}
  }
 
 /**
@@ -682,14 +680,14 @@ class Equalizer extends Mutator config(Equalizer);
 
  function ResetFCKillers(int TeamIndex)
  {
-     if(TeamIndex == 0)
-     {
-			RedFCKillers.Remove(0, RedFCKillers.Length);
-     }
-     else
-     {
-			BlueFCKillers.Remove(0, BlueFCKillers.Length);
-     }
+	if(TeamIndex == 0)
+	{
+		RedFCKillers.Remove(0, RedFCKillers.Length);
+	}
+	else
+	{
+		BlueFCKillers.Remove(0, BlueFCKillers.Length);
+	}
  }
 
 /**
@@ -710,7 +708,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
-	    EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
+		EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
 		if(EQPRI != none && EQPRI.PlayerID == ID)
 		{
 			return EQPLayers[i];

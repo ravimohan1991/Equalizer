@@ -136,9 +136,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function SetUniqueIdentifierReference(Actor UID)
  {
-	  EQUID = UniqueIdentifier(UID);
-      if(EQUID == none)
-         Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
+	EQUID = UniqueIdentifier(UID);
+	if(EQUID == none)
+		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
  }
 
 /**
@@ -149,20 +149,15 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  event Timer()
  {
-       if(Owner == none || PlayerReplicationInfo(Owner) == none)
-          return;
-
-       if(EQIdentifier ~= "")
-       {
-          EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
-       }
-       else
-       {
-          SetTimer(0.f, false);
-       }
- }
-
- defaultproperties
- {
-
+	if(Owner == none || PlayerReplicationInfo(Owner) == none)
+		return;
+	
+	if(EQIdentifier ~= "")
+	{
+		EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
+	}
+	else
+	{
+		SetTimer(0.f, false);
+	}
  }
