@@ -123,7 +123,20 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PostBeginPlay()
  {
-	SetTimer(1.f, true);
+	if(Owner == none || PlayerReplicationInfo(Owner) == none)
+	{
+        super.PostBeginPlay();
+        return;
+    }
+
+    if(PlayerReplicationInfo(Owner).bBot)
+	{
+       EQIdentifier = "BOT";
+    }
+    else
+    {
+       SetTimer(1.f, true);
+    }
 
 	super.PostBeginPlay();
  }
@@ -149,9 +162,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  event Timer()
  {
-	if(Owner == none || PlayerReplicationInfo(Owner) == none)
-		return;
-	
 	if(EQIdentifier ~= "")
 	{
 		EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
