@@ -323,10 +323,10 @@ class Equalizer extends Mutator config(Equalizer);
 	if(Killer == none || Killer == Killed.Controller)
 	{
 		if(KilledInfo != none)
-        {
+		{
 			KilledInfo.Suicides++;
 			//KilledInfo.UpdateScore();
-        }
+		}
 		return;
 	}
 
@@ -338,7 +338,7 @@ class Equalizer extends Mutator config(Equalizer);
 	if(KilledPRI.Team == KillerPRI.Team)
 	{
 		if(KillerInfo != none) KillerInfo.TeamKills++;
-			return;
+		return;
 	}
 
 	// Increase Frags and FragSpree for Killer
@@ -360,7 +360,7 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 		}
 
-        // HeadShot tracking
+		// HeadShot tracking
 		if(damageType == Class'UTClassic.DamTypeClassicHeadshot')
 		{
 			KillerInfo.HeadShots++;
@@ -449,14 +449,14 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation KillerInfo;
 
-    if(Killer != none && Killer.PlayerReplicationInfo != none)
+	if(Killer != none && Killer.PlayerReplicationInfo != none)
 	{
 		KillerInfo = GetInfoByID(Killer.PlayerReplicationInfo.PlayerID);
 		if(KillerInfo != none)
 		{
 			KillerInfo.UpdateScore();
-        }
-    }
+		}
+	}
  }
 
 /**
@@ -470,14 +470,14 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation ScorerInfo;
 
-    if(Scorer != none)
+	if(Scorer != none)
 	{
 		ScorerInfo = GetInfoByID(Scorer.PlayerID);
 		if(ScorerInfo != none)
 		{
 			ScorerInfo.UpdateScore(); // TODO: This is not working!!!!!!!!!!!!!!!
-        }
-    }
+		}
+	}
  }
 
 /**
@@ -546,35 +546,32 @@ class Equalizer extends Mutator config(Equalizer);
 		if(ReceiverInfo != none) ReceiverInfo.bFirstBlood = true;
 	}
 
-
-
-		if(Message == Level.Game.GameMessageClass)
+	if(Message == Level.Game.GameMessageClass)
+	{
+		switch(Switch)
 		{
-			switch(Switch)
-			{
-				case 14:
-                        if(RelatedPRI_1 != none)
-                        {
-                           SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-                           if(SpectatorJoinInfo != none)
-                           {
-                           		PlayerBecameSpectator(SpectatorJoinInfo);
-                           }
-                        }
-					break;
-				case 1:// @see #PlayerController.BecomeActivePlayer()
-                       if(RelatedPRI_1 != none)
-                       {
-                           SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-                           if(SpectatorJoinInfo != none)
-                           {
-                           		SpectatorBecamePlayer(SpectatorJoinInfo);
-                           }
-                       }
-					break;
-			}
+			case 14:
+					if(RelatedPRI_1 != none)
+					{
+						SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+						if(SpectatorJoinInfo != none)
+						{
+							PlayerBecameSpectator(SpectatorJoinInfo);
+						}
+					}
+				break;
+			case 1:// @see #PlayerController.BecomeActivePlayer()
+					if(RelatedPRI_1 != none)
+					{
+						SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+						if(SpectatorJoinInfo != none)
+						{
+							SpectatorBecamePlayer(SpectatorJoinInfo);
+						}
+					}
+				break;
 		}
-
+	}
 
 	if(bBroadcastMonsterKillsAndAbove && Message == class'xDeathMessage')
 	{
@@ -653,7 +650,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 					}
 
-            // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
+			// Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 3:
 			case 5:
 					FCs[1-Flag.TeamNum] = none;

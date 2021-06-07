@@ -77,7 +77,7 @@ class EQGameRules extends Gamerules;
  {
 	EQMut.UpdateEQKillerScore(Killer);
 
-    if ( NextGameRules != None )
+	if ( NextGameRules != None )
 		NextGameRules.ScoreKill(Killer,Killed);
  }
 
@@ -95,6 +95,6 @@ class EQGameRules extends Gamerules;
  {
 	EQMut.UpdateEQScorerScore(Scorer);
 
-    if ( NextGameRules != None )
+	if ( NextGameRules != None )
 		NextGameRules.ScoreObjective(Scorer,Score);
  }
