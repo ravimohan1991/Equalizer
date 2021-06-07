@@ -177,7 +177,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local int PlayerIndex;
-	
+
 	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
 		if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
@@ -266,6 +266,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Here, we add the Equalizer marker to the player.
  * It will facilitate the tracking of player stats.
+ * Furthermore, it allows us to associate the uniqueidentifier with the player.
  *
  * @since 0.1.0
  */
@@ -321,7 +322,11 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(Killer == none || Killer == Killed.Controller)
 	{
-		if(KilledInfo != none) KilledInfo.Suicides++;
+		if(KilledInfo != none)
+        {
+			KilledInfo.Suicides++;
+			//KilledInfo.UpdateScore();
+        }
 		return;
 	}
 
@@ -355,9 +360,11 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 		}
 
-		// HeadShot tracking
+        // HeadShot tracking
 		if(damageType == Class'UTClassic.DamTypeClassicHeadshot')
+		{
 			KillerInfo.HeadShots++;
+		}
 	}
 
 	if(KillerPRI.HasFlag == none && FCs[KillerPRI.Team.TeamIndex] != none && FCs[KillerPRI.Team.TeamIndex].Pawn != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo != none && FCs[KillerPRI.Team.TeamIndex].PlayerReplicationInfo.HasFlag != none)
@@ -376,7 +383,9 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 				// Killer SEALED THE BASE
 				if(KillerInfo != none)
+				{
 					KillerInfo.Seals++;
+				}
 				BroadcastLocalizedMessage(class'EQMoreMessages', 3, KillerPRI);
 				KillerPRI.Score += SealAward;//Seal Bonus
 				Killer.AwardAdrenaline(SealAdrenalineUnits);
@@ -427,6 +436,48 @@ class Equalizer extends Mutator config(Equalizer);
 			Killer.AwardAdrenaline(CoverAdrenalineUnits);
 		}
 	}
+ }
+
+/**
+ * Here we update the player scores in EQPlayerInformation
+ *
+ * @param Killer The controller class who is to be rewarded
+ * @since 0.2.0
+ */
+
+ function UpdateEQKillerScore(Controller Killer)
+ {
+	local EQPlayerInformation KillerInfo;
+
+    if(Killer != none && Killer.PlayerReplicationInfo != none)
+	{
+		KillerInfo = GetInfoByID(Killer.PlayerReplicationInfo.PlayerID);
+		if(KillerInfo != none)
+		{
+			KillerInfo.UpdateScore();
+        }
+    }
+ }
+
+/**
+ * Here we update the player scores in EQPlayerInformation
+ *
+ * @param Scorer The PlayerReplicationInfo class of the player who completed objective
+ * @since 0.2.0
+ */
+
+ function UpdateEQScorerScore(PlayerReplicationInfo Scorer)
+ {
+	local EQPlayerInformation ScorerInfo;
+
+    if(Scorer != none)
+	{
+		ScorerInfo = GetInfoByID(Scorer.PlayerID);
+		if(ScorerInfo != none)
+		{
+			ScorerInfo.UpdateScore(); // TODO: This is not working!!!!!!!!!!!!!!!
+        }
+    }
  }
 
 /**
@@ -484,7 +535,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	local CTFFlag Flag;
 	local int FlagIndex;
-	local EQPlayerInformation ReceiverInfo;
+	local EQPlayerInformation ReceiverInfo, SpectatorJoinInfo;
 
 	if(MessagingSpectator(Receiver) != Witness) return;// No use going further.
 
@@ -495,18 +546,35 @@ class Equalizer extends Mutator config(Equalizer);
 		if(ReceiverInfo != none) ReceiverInfo.bFirstBlood = true;
 	}
 
-	// "Became a Spectator" fix! Not sure if required
-	/*
+
+
 		if(Message == Level.Game.GameMessageClass)
 		{
 			switch(Switch)
 			{
 				case 14:
-						RelatedPRI_1.bIsSpectator = true;
+                        if(RelatedPRI_1 != none)
+                        {
+                           SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+                           if(SpectatorJoinInfo != none)
+                           {
+                           		PlayerBecameSpectator(SpectatorJoinInfo);
+                           }
+                        }
+					break;
+				case 1:// @see #PlayerController.BecomeActivePlayer()
+                       if(RelatedPRI_1 != none)
+                       {
+                           SpectatorJoinInfo = GetInfoByID(RelatedPRI_1.PlayerID);
+                           if(SpectatorJoinInfo != none)
+                           {
+                           		SpectatorBecamePlayer(SpectatorJoinInfo);
+                           }
+                       }
 					break;
 			}
 		}
-	*/
+
 
 	if(bBroadcastMonsterKillsAndAbove && Message == class'xDeathMessage')
 	{
@@ -582,6 +650,7 @@ class Equalizer extends Mutator config(Equalizer);
 					if(RelatedPRI_1 != none)
 					{
 						RewardFCKillers(RelatedPRI_1.Team.TeamIndex);
+
 					}
 
             // Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
@@ -593,6 +662,33 @@ class Equalizer extends Mutator config(Equalizer);
 				break;
 		}
 	}
+ }
+
+ /**
+ * Here we do the necessary arrangements when a player becomes
+ * a spectator
+ *
+ * @param SpectatorJoinInfo The EQPlayerInfo of the player who became spectator
+ * @since 0.2.0
+ */
+
+ function PlayerBecameSpectator(EQPlayerInformation SpectatorJoinInfo)
+ {
+	SpectatorJoinInfo.PlayerBecameSpectator();
+    // Maybe send the information to the backend
+ }
+
+ /**
+ * Here we do the necessary arrangements when a spectator
+ * becomes player
+ *
+ * @param SpectatorJoinInfo The EQPlayerInfo of the spectator who became player
+ * @since 0.2.0
+ */
+
+ function SpectatorBecamePlayer(EQPlayerInformation SpectatorJoinInfo)
+ {
+	SpectatorJoinInfo.SpectatorBecamePlayer();
  }
 
 /**
@@ -647,6 +743,7 @@ class Equalizer extends Mutator config(Equalizer);
 				{
 					ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
 					EQPRI.Score += ScoreToAward;
+					RedFCKillers[i].UpdateScore();
 				}
 			}
 		}
@@ -665,6 +762,7 @@ class Equalizer extends Mutator config(Equalizer);
 				{
 					ScoreToAward = int(FClamp(FCProgress / VSize(KillerBaseToFCBaseVector), 0.f, 1.f) * FCProgressKillBonus);
 					EQPRI.Score += ScoreToAward;
+					BlueFCKillers[i].UpdateScore();
 				}
 			}
 		}

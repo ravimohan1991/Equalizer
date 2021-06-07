@@ -61,6 +61,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  * TODO: Think about vehicles and stuff
  */
 
+ /** Total score of the player */
+ var    float           Score;
+
  /** Number of frags */
  var    int             Frags;
 
@@ -101,6 +104,11 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  var    int             SpawnKillSpree;
  var    float           PlayerScore;
 
+ /** Total time played in seconds */
+ var       int       TimePlayedHours;
+ var       int       TimePlayedMinutes;
+ var       int       StartTime;
+
  /*
  *  For Mutator's internal purposes only. Not to be sent to backend!
  */
@@ -138,7 +146,26 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
        SetTimer(1.f, true);
     }
 
+    StartTime = Level.TimeSeconds;
+
 	super.PostBeginPlay();
+ }
+
+/**
+ * Here we update the score and match with that of PlayerReplicationInfo
+ *
+ * @since 0.2.0
+ */
+
+ function UpdateScore()
+ {
+	if(Owner == none || PlayerReplicationInfo(Owner) == none)
+    {
+       return;
+    }
+
+    Score = PlayerReplicationInfo(Owner).Score;
+    PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("EQPlayerInformation Score Updated to "$Score);
  }
 
  /**
@@ -151,7 +178,42 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  {
 	EQUID = UniqueIdentifier(UID);
 	if(EQUID == none)
+	{
 		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
+	}
+ }
+
+/**
+ * Here we do the necessary computations when a player
+ * chooses to become spectator
+ *
+ * @since 0.2.0
+ */
+
+ function PlayerBecameSpectator()
+ {
+	local int Seconds;
+
+	Seconds = Level.TimeSeconds - StartTime;
+	TimePlayedMinutes = Seconds / 60;
+    TimePlayedHours = TimePlayedMinutes / 60;
+    Seconds = Seconds - ( TimePlayedMinutes * 60 );
+    TimePlayedMinutes = TimePlayedMinutes - ( TimePlayedHours * 60 );
+
+    PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("Marking the spectator start epoch!");
+ }
+
+/**
+ * Here we do the necessary chores when spectator
+ * chooses to become a player
+ *
+ * @since 0.2.0
+ */
+
+ function SpectatorBecamePlayer()
+ {
+	StartTime = Level.TimeSeconds;
+	PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("Marking the player start epoch!");
  }
 
 /**
