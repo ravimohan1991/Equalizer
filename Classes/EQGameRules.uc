@@ -80,21 +80,3 @@ class EQGameRules extends Gamerules;
 	if ( NextGameRules != None )
 		NextGameRules.ScoreKill(Killer,Killed);
  }
-
-/**
- * For updating the scores of EQPlayerInformation
- *
- * @param Scorer The PlayerReplicationInfo class of the player who completed objective
- * @param Score The Score :)
- *
- * @see #Engine.GameInfo.ScoreKill(Killer, Other)
- * @since 0.2.0
- */
-
- function ScoreObjective(PlayerReplicationInfo Scorer, Int Score)
- {
-	EQMut.UpdateEQScorerScore(Scorer);
-
-	if ( NextGameRules != None )
-		NextGameRules.ScoreObjective(Scorer,Score);
- }

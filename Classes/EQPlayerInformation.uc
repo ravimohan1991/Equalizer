@@ -165,7 +165,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 
 	Score = PlayerReplicationInfo(Owner).Score;
-	PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("EQPlayerInformation Score Updated to "$Score);
  }
 
  /**
@@ -199,8 +198,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	TimePlayedHours = TimePlayedMinutes / 60;
 	Seconds = Seconds - ( TimePlayedMinutes * 60 );
 	TimePlayedMinutes = TimePlayedMinutes - ( TimePlayedHours * 60 );
-	
-	PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("Marking the spectator start epoch!");
  }
 
 /**
@@ -213,7 +210,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function SpectatorBecamePlayer()
  {
 	StartTime = Level.TimeSeconds;
-	PlayerController(Controller(PlayerReplicationInfo(Owner).Owner)).ClientMessage("Marking the player start epoch!");
  }
 
 /**

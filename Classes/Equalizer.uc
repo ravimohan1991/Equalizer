@@ -182,7 +182,9 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
 		{
-			EQPlayers.Remove(PlayerIndex, 1);
+			EQPlayers[PlayerIndex].UpdateScore();
+			EQPlayers[PlayerIndex].SetTimer(0.f, false);
+            EQPlayers.Remove(PlayerIndex, 1);
 			break;
 		}
 	}
@@ -291,10 +293,6 @@ class Equalizer extends Mutator config(Equalizer);
  * @param Killer The Controller class screwing around.
  * @param damageType The nature of damage.
  * @param HitLocation The place of crime.
- *
- * TODO: Rigorously test the Cover/Seal Hypothesis
- * TODO: Log teamkills
- * TODO: Test if seal algorithm is working
  *
  * @see #EQGameRules.PreventDeath(Killed, Killer, damageType, HitLocation)
  * @since 0.1.0
@@ -455,27 +453,6 @@ class Equalizer extends Mutator config(Equalizer);
 		if(KillerInfo != none)
 		{
 			KillerInfo.UpdateScore();
-		}
-	}
- }
-
-/**
- * Here we update the player scores in EQPlayerInformation
- *
- * @param Scorer The PlayerReplicationInfo class of the player who completed objective
- * @since 0.2.0
- */
-
- function UpdateEQScorerScore(PlayerReplicationInfo Scorer)
- {
-	local EQPlayerInformation ScorerInfo;
-
-	if(Scorer != none)
-	{
-		ScorerInfo = GetInfoByID(Scorer.PlayerID);
-		if(ScorerInfo != none)
-		{
-			ScorerInfo.UpdateScore(); // TODO: This is not working!!!!!!!!!!!!!!!
 		}
 	}
  }
