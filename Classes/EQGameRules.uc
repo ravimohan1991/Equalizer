@@ -75,7 +75,15 @@ class EQGameRules extends Gamerules;
 
  function ScoreKill(Controller Killer, Controller Killed)
  {
-	EQMut.UpdateEQKillerScore(Killer);
+	if(Killer != none)
+	{
+     EQMut.UpdateEQKillerScore(Killer);
+    }
+    // We detected a possible suicide. So Killed is essentially the Killer.
+    else if(Killed != none)
+    {
+     EQMut.UpdateEQKillerScore(Killed);
+    }
 
 	if ( NextGameRules != None )
 		NextGameRules.ScoreKill(Killer,Killed);

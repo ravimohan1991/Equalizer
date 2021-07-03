@@ -165,7 +165,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 
 	Score = PlayerReplicationInfo(Owner).Score;
-	Log("Score updated to " $ Score, 'Equalizer');
+	Log(PlayerReplicationInfo(Owner).PlayerName $ ": Score updated to " $ Score, 'Equalizer');
+	PlayerController(Owner.Owner).ClientMessage("The score after capture is " $ Score);
  }
 
  /**
@@ -230,3 +231,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		SetTimer(0.f, false);
 	}
  }
+
+DefaultProperties
+{
+    bHidden=True
+}
+

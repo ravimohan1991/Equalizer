@@ -595,7 +595,11 @@ class Equalizer extends Mutator config(Equalizer);
 			// Sender: CTFGame, PRI: Scorer.PlayerReplicationInfo, OptObj: TheFlag.Team
 			case 0:
 					ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
-					if(ReceiverInfo != none) ReceiverInfo.Captures++;
+					if(ReceiverInfo != none)
+					{
+                     ReceiverInfo.Captures++;
+					 ReceiverInfo.UpdateScore();
+                    }
 					ResetSprees(0);
 					ResetSprees(1);
 					FCs[0] = none;
@@ -628,7 +632,6 @@ class Equalizer extends Mutator config(Equalizer);
 					if(RelatedPRI_1 != none)
 					{
 						RewardFCKillers(RelatedPRI_1.Team.TeamIndex);
-
 					}
 
 			// Sender: CTFFlag, PRI: Holder.PlayerReplicationInfo, OptObj: TheFlag.Team
