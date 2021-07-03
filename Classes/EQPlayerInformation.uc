@@ -165,6 +165,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 
 	Score = PlayerReplicationInfo(Owner).Score;
+	Log("Score updated to " $ Score, 'Equalizer');
  }
 
  /**

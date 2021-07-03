@@ -182,7 +182,11 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
 		{
-			EQPlayers[PlayerIndex].UpdateScore();
+			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
+			{
+            EQPlayers[PlayerIndex].UpdateScore();
+            }
+			Log("The exiting player is " $ Exiting.PlayerReplicationInfo.PlayerName $ " with bIsSpectator = " $ Exiting.PlayerReplicationInfo.bIsSpectator $ " and bWaitingPlayer = " $ Exiting.PlayerReplicationInfo.bWaitingPlayer $ " and bOnlySpectator = " $ Exiting.PlayerReplicationInfo.bOnlySpectator, 'Equalizer');
 			EQPlayers[PlayerIndex].SetTimer(0.f, false);
             EQPlayers.Remove(PlayerIndex, 1);
 			break;
