@@ -177,6 +177,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local int PlayerIndex;
+	local bool bIsDirtyFlagged;
 
 	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
@@ -185,10 +186,12 @@ class Equalizer extends Mutator config(Equalizer);
 			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
 			{
             EQPlayers[PlayerIndex].UpdateScore();
-            }
-			Log("The exiting player is " $ Exiting.PlayerReplicationInfo.PlayerName $ " with bIsSpectator = " $ Exiting.PlayerReplicationInfo.bIsSpectator $ " and bWaitingPlayer = " $ Exiting.PlayerReplicationInfo.bWaitingPlayer $ " and bOnlySpectator = " $ Exiting.PlayerReplicationInfo.bOnlySpectator, 'Equalizer');
+            EQPlayers[PlayerIndex].PlayersLastPlayingMoment();
 			EQPlayers[PlayerIndex].SetTimer(0.f, false);
+			bIsDirtyFlagged = EQPlayers[PlayerIndex].Destroy();
+			Log("The exiting player is " $ Exiting.PlayerReplicationInfo.PlayerName $ " with bIsSpectator = " $ Exiting.PlayerReplicationInfo.bIsSpectator $ " and bWaitingPlayer = " $ Exiting.PlayerReplicationInfo.bWaitingPlayer $ " and bOnlySpectator = " $ Exiting.PlayerReplicationInfo.bOnlySpectator $ " marked for destruction: " $ bIsDirtyFlagged, 'Equalizer');
             EQPlayers.Remove(PlayerIndex, 1);
+            }
 			break;
 		}
 	}

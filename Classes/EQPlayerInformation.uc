@@ -64,6 +64,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /** Total score of the player */
  var    float           Score;
 
+ /** Points per hour */
+ var    float           PPH;
+
  /** Number of frags */
  var    int             Frags;
 
@@ -102,7 +105,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  var    int             FragSpree;
  var    int             CoverSpree;
  var    int             SpawnKillSpree;
- var    float           PlayerScore;
 
  /** Total time played in seconds */
  var       int       TimePlayedHours;
@@ -165,8 +167,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 
 	Score = PlayerReplicationInfo(Owner).Score;
-	Log(PlayerReplicationInfo(Owner).PlayerName $ ": Score updated to " $ Score, 'Equalizer');
-	PlayerController(Owner.Owner).ClientMessage("The score after capture is " $ Score);
+	//Log(PlayerReplicationInfo(Owner).PlayerName $ ": Score updated to " $ Score, 'Equalizer');
+	//PlayerController(Owner.Owner).ClientMessage("The score now is " $ Score);
  }
 
  /**
@@ -193,13 +195,40 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PlayerBecameSpectator()
  {
-	local int Seconds;
+	 PlayersLastPlayingMoment();
+ }
+
+/**
+ * The last playing moment related computations
+ *
+ * @since 0.2.0
+ */
+
+ function PlayersLastPlayingMoment()
+ {
+    local int Seconds;
 
 	Seconds = Level.TimeSeconds - StartTime;
 	TimePlayedMinutes = Seconds / 60;
 	TimePlayedHours = TimePlayedMinutes / 60;
 	Seconds = Seconds - ( TimePlayedMinutes * 60 );
 	TimePlayedMinutes = TimePlayedMinutes - ( TimePlayedHours * 60 );
+
+	ComputePPH();
+ }
+
+/**
+ * Computes the points per hour for this player
+ *
+ * @since 0.2.0
+ */
+
+ function ComputePPH()
+ {
+	if(TimePlayedMinutes > 0)
+     PPH = Score / (TimePlayedHours + TimePlayedMinutes / 60.0);
+    else
+     PPH = 0;
  }
 
 /**
@@ -222,7 +251,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  event Timer()
  {
-	if(EQIdentifier ~= "")
+    if(EQIdentifier ~= "")
 	{
 		EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
 	}
