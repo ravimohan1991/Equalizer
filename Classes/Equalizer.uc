@@ -69,6 +69,16 @@ class Equalizer extends Mutator config(Equalizer);
  /** Equalizer's UniqueIdentifier reference */
  var   Actor                                      EQUniqueIdentifier;
 
+ /** if HTTP actor is active. */
+ var bool HttpClientInstanceStarted;
+
+ /** The HTTP client instance. */
+ var EQHTTPClient HttpClientInstance;
+
+ /** Number of restarts.*/
+ var int NumHTTPRestarts;
+
+
  /*
   * Configurable Variables
   */
@@ -87,6 +97,24 @@ class Equalizer extends Mutator config(Equalizer);
 
  /** Switch for broadcasting Monsterkill and above.*/
  var()   config           bool         bBroadcastMonsterKillsAndAbove;
+
+ /** Hosts with the capability of resovling Nations.*/
+ var()   config           string        QueryServerHost;
+
+ /** File path on Hosts.*/
+ var()   config           string        QueryServerFilePath;
+
+ /** Port for query.*/
+ var()   config           int           QueryServerPort;
+
+ /** Limit for the timeout.*/
+ var()   config           int           MaxTimeout;
+
+ /** Limt for errors.*/
+ var()   config           int           ErrorLimit;
+
+ /** Query server resolved address.*/
+ var()   config           string        ResolvedAddress;
 
 /**
  * The function gets called just after game begins. So we set up the
@@ -115,8 +143,66 @@ class Equalizer extends Mutator config(Equalizer);
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
+	InitHTTPFunctions();
+
 	super.PostBeginPlay();
  }
+
+/**
+ * HTTP setup to communicate with the webserver
+ *
+ * @since 0.2.0
+ */
+
+ function InitHTTPFunctions()
+ {
+   if(!HttpClientInstanceStarted)
+   {
+		HttpClientInstance = Spawn(class'EQHTTPClient');
+		HttpClientInstance.EQMut = self;
+		HttpClientInstanceStarted = true;
+   }
+ }
+
+/**
+ * Function to restart the HTTPClient instance upon faliure
+ *
+ * @since 0.2.0
+ */
+
+ function RestartHTTPClient()
+ {
+    HttpClientInstance.Destroy();
+	HttpClientInstanceStarted = False;
+
+	if(NumHTTPRestarts < 4)
+	{
+		Log("Too many HTTP errors in one session, HTTP client restarting.", 'Equalizer');
+
+		InitHTTPFunctions();
+		NumHTTPRestarts++;
+	}
+	else
+	{
+		Log("Too many HTTP client restarts in one session, HTTP functions disabled.", 'Equalizer');
+	}
+ }
+
+/**
+ * Experimental function to send data to webserver
+ *
+ * @param Something The string of information to be sent
+ * @since 0.2.0
+ */
+
+ function string SendData(string Something)
+ {
+    if(HttpClientInstanceStarted)
+        return HttpClientInstance.SendData(Something);
+	else
+		return "!Disabled";
+ }
+
 
 /**
  * Here we store the reference to the CTFFlag instances.
@@ -177,7 +263,6 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local int PlayerIndex;
-	local bool bIsDirtyFlagged;
 
 	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
@@ -188,8 +273,7 @@ class Equalizer extends Mutator config(Equalizer);
             EQPlayers[PlayerIndex].UpdateScore();
             EQPlayers[PlayerIndex].PlayersLastPlayingMoment();
 			EQPlayers[PlayerIndex].SetTimer(0.f, false);
-			bIsDirtyFlagged = EQPlayers[PlayerIndex].Destroy();
-			Log("The exiting player is " $ Exiting.PlayerReplicationInfo.PlayerName $ " with bIsSpectator = " $ Exiting.PlayerReplicationInfo.bIsSpectator $ " and bWaitingPlayer = " $ Exiting.PlayerReplicationInfo.bWaitingPlayer $ " and bOnlySpectator = " $ Exiting.PlayerReplicationInfo.bOnlySpectator $ " marked for destruction: " $ bIsDirtyFlagged, 'Equalizer');
+			EQPlayers[PlayerIndex].Destroy();
             EQPlayers.Remove(PlayerIndex, 1);
             }
 			break;
@@ -828,18 +912,21 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
- /*
+
  function Mutate(string MutateString, PlayerController Sender)
  {
 	if(Sender != none)
 	{
+	    HttpClientInstance.SendData(MutateString);
+	    /*
 		if (MutateString ~= "dist")
 		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - EQFlags[1].HomeBase.Location));
+		*/
 	}
 
 	if ( NextMutator != None )
 		NextMutator.Mutate(MutateString, Sender);
- }*/
+ }
 
  defaultproperties
  {
@@ -856,4 +943,9 @@ class Equalizer extends Mutator config(Equalizer);
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
+    QueryServerHost="iptocountry.ut-files.com"
+    QueryServerFilePath="/iptocountry16.php"
+    QueryServerPort=80
+    MaxTimeout=10
+    ErrorLimit=5
  }
