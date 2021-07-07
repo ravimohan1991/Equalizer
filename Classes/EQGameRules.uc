@@ -77,13 +77,13 @@ class EQGameRules extends Gamerules;
  {
 	if(Killer != none)
 	{
-     EQMut.UpdateEQKillerScore(Killer);
-    }
-    // We detected a possible suicide. So Killed is essentially the Killer.
-    else if(Killed != none)
-    {
-     EQMut.UpdateEQKillerScore(Killed);
-    }
+		EQMut.UpdateEQKillerScore(Killer);
+	}
+	// We detected a possible suicide. So Killed is essentially the Killer.
+	else if(Killed != none)
+	{
+		EQMut.UpdateEQKillerScore(Killed);
+	}
 
 	if ( NextGameRules != None )
 		NextGameRules.ScoreKill(Killer,Killed);

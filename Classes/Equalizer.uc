@@ -156,12 +156,12 @@ class Equalizer extends Mutator config(Equalizer);
 
  function InitHTTPFunctions()
  {
-   if(!HttpClientInstanceStarted)
-   {
+	if(!HttpClientInstanceStarted)
+	{
 		HttpClientInstance = Spawn(class'EQHTTPClient');
 		HttpClientInstance.EQMut = self;
 		HttpClientInstanceStarted = true;
-   }
+	}
  }
 
 /**
@@ -172,7 +172,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  function RestartHTTPClient()
  {
-    HttpClientInstance.Destroy();
+	HttpClientInstance.Destroy();
 	HttpClientInstanceStarted = False;
 
 	if(NumHTTPRestarts < 4)
@@ -197,8 +197,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function string SendData(string Something)
  {
-    if(HttpClientInstanceStarted)
-        return HttpClientInstance.SendData(Something);
+	if(HttpClientInstanceStarted)
+		return HttpClientInstance.SendData(Something);
 	else
 		return "!Disabled";
  }
