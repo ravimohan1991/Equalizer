@@ -1,8 +1,16 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <title>My first PHP script</title>
-  </head>
-  <body>
-    <p><?php echo "I am The_Cowboy. Who are you?";?></p>
-  </body>
+<html>
+ <body>
+  <div id="header"><h1>PHP & MySQL: The Missing Manual</h1></div>
+  <div id="example">Example 4-1</div>
+
+  <div id="content">
+    <h1>SQL Connection test</h1>
+    <form action="connect.php" method="POST">
+      <fieldset class="center">
+        <input type="submit" value="Connect to MySQL" />
+      </fieldset>
+    </form>
+  </div>
+  <div id="footer"></div>
+ </body>
 </html>
