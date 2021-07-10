@@ -110,9 +110,6 @@ class Equalizer extends Mutator config(Equalizer);
  /** Limit for the timeout.*/
  var()   config           int           MaxTimeout;
 
- /** Limt for errors.*/
- var()   config           int           ErrorLimit;
-
  /** Query server resolved address.*/
  var()   config           string        ResolvedAddress;
 
@@ -943,9 +940,8 @@ class Equalizer extends Mutator config(Equalizer);
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
-    QueryServerHost="iptocountry.ut-files.com"
-    QueryServerFilePath="/iptocountry16.php"
+    QueryServerHost="stats.miasma.rocks"
+    QueryServerFilePath="/var/www/clients/client0/web1/iptocountry16.php"
     QueryServerPort=80
     MaxTimeout=10
-    ErrorLimit=5
  }

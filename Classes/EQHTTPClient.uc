@@ -42,18 +42,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  /** Queue Array of information. */
  var string QueryQueue[64];
 
- /***/
+ /** Should we continue to send data (one last time?) when the connection is closed or dropped. */
  var bool bContinueAtClose;
 
- /***/
+ /** Is address resolution in progress? */
  var bool bResolutionRequest;
 
- /***/
+ /** Just received the latest data. Set to false in the begining of every new query. */
  var bool bReceivedData;
-
-
- /***/
- var int Errors;
 
  function CheckAddresses()
  {
@@ -61,26 +57,26 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
  		bResolutionRequest = True;
  		bQueryInProgress = True;
- 
+
  		Resolve(EQMut.QueryServerHost);
  	}
  }
- 
+
  event Resolved(IpAddr Addr)
  {
  	if(bResolutionRequest)
  	{
  		EQMut.ResolvedAddress = IpAddrToString(Addr);
- 
+
  		// strip out port number
  		if (InStr(EQMut.ResolvedAddress, ":") != -1)
  			EQMut.ResolvedAddress = Left(EQMut.ResolvedAddress, InStr(EQMut.resolvedAddress, ":"));
- 
+
  		EQMut.SaveConfig();
- 
+
  		bResolutionRequest = False;
  		bQueryInProgress = False;
- 
+
  		SendQueue();
  	}
  	else
@@ -88,14 +84,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		Super.Resolved(Addr);
  	}
  }
- 
+
  event ResolveFailed()
  {
  	if(bResolutionRequest)
  	{
  		Log("Error while resolving" @ EQMut.QueryServerHost @ "to an IP.", 'Equalizer');
  		Log("If the error continues this could indicate that the operating system is not configured to resolve DNS records.", 'Equalizer');
- 
+
  		EQMut.RestartHTTPClient();
  	}
  	else
@@ -104,11 +100,11 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		SetError(-4);
  	}
  }
- 
+
  function string SendData(string Information)
  {
  	local Equalizer Equality;
- 
+
  	if(EQMut == None)
  	{
  		foreach AllActors(class'Equalizer', Equality)
@@ -117,33 +113,33 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  			break;
  		}
  	}
- 
+
  	AddToQueue(Information);
  	SendQueue();
- 
+
  	return "";
  }
- 
+
  function HTTPReceivedData(string Data)
  {
  	local string result;
- 
+
  	result = ParseString(Data);
- 
+
  	Super.SetTimer(0.0, false); // disable the timeout count
  	bReceivedData = true;
- 
+
  	Log("The data received is " $ Data, 'Equalizer');
- 
+
  	bQueryInProgress = False;
- 
+
  	SendQueue();
  }
- 
+
  event Opened()
  {
  	Enable('Tick');
- 
+
  	if(ProxyServerAddress != "")
  	{
  		SendBufferedData("GET http://"$ServerAddress$":"$string(ServerPort)$ServerURI$" HTTP/1.1"$CR$LF);
@@ -152,14 +148,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
  		SendBufferedData("GET "$ServerURI$" HTTP/1.1"$CR$LF);
  	}
- 
+
  	SendBufferedData("Connection: close" $ CR $ LF);
  	SendBufferedData("Host: " $ EQMut.QueryServerHost $ ":" $ EQMut.QueryServerPort $ CR $ LF);
  	SendBufferedData("User-Agent: Mozilla/5.0 (Unreal Tournament)" $ CR $ LF $ CR $ LF);
- 
+
  	CurrentState = WaitingForHeader;
  }
- 
+
  function DoBind()
  {
  	if(BindPort() == 0)
@@ -167,7 +163,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		SetError(-2);
  		return;
  	}
- 
+
  	Open(ServerIpAddr);
  	bClosed = False;
  }
@@ -175,7 +171,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  function SetError(int Code)
  {
  	Super.SetError(Code);
- 
+
  	switch(Code)
  	{
  		case -1:
@@ -193,8 +189,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		default:
  			Log("Server received HTTP error with code " $ string(Code)$" from " $ EQMut.QueryServerHost);
  	}
- 
- 	// sometimes the connection doesn't break immediately, it is probably due to some bug in BrowserHTTPClient, if it happens we have to wait for it inside event Closed() cause we cannot open the same socket if it is already opened
+
+ 	// sometimes the connection doesn't break immediately, it is probably due to some bug in EQBrowserHTTPClient, if it happens we have to wait for it inside event Closed() cause we cannot open the same socket if it is already opened
  	EQMut.RestartHTTPClient();
  }
 
@@ -202,7 +198,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	Super.Closed();
  	bQueryInProgress = False;
- 
+
  	if(bContinueAtClose)
  	{
  		bContinueAtClose = False;
@@ -215,24 +211,24 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	local int i;
  	local string QueryString;
- 
+
  	CheckAddresses();
- 
+
  	if(IsConnected())
  	{
  		bContinueAtClose = True;
  	}
- 
+
  	if(bQueryInProgress || (QueryQueue[0] == ""))
  	{
  		return;
  	}
- 
+
  	for(i = 0; i< ArrayCount(QueryQueue); i++)
  	{
  		if(QueryQueue[i] == "")
  			continue;
- 
+
  		if(QueryString == "")
  			QueryString = QueryQueue[i];
  		else
@@ -240,21 +236,22 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
 		QueryQueue[i] = "";
  	}
- 
+
  	if(QueryString == "")
  	{
  		return;
  	}
- 
+
  	bQueryInProgress = True;
- 
+ 	bReceivedData = False;
+
  	Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?ip=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
  }
- 
+
  function AddToQueue(string Data)
  {
  	local int i;
- 
+
  	for(i = 0; i < ArrayCount(QueryQueue); i++)
  	{
  		if(QueryQueue[i] != "")
@@ -267,14 +264,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		break;
  	}
  }
- 
+
  function string ParseString (String Input)
  {
  	local int LCRLF;
  	local string result;
- 
+
  	LCRLF = InStr(Input, CR$LF);
- 
+
  	// No CR or LF in string
  	if (LCRLF == -1)
  		return Input;
@@ -286,7 +283,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		return result;
  	}
  }
- 
+
  defaultproperties
  {
      Tag='EQHTTPClient'
