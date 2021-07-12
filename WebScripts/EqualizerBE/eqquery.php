@@ -6,20 +6,24 @@ header("Content-Type: text/html; charset=utf-8");
  ******************************************************************************/
 
 error_reporting(E_ALL);
-include_once 'connect.php';
+include_once 'main.php';
 
-$tableName;
+$infoArray;
 
 /**
  * Get an array of information out of query string to process.
  *
  * @token arpan The identifier for information meant to be submitted
- * @since 0.1.0
+ * @since 0.2.0
  */
 
 if(isset($_GET['arpan']))
 {
+    global $infoArray;
+    
     $infoArray = explode(',', $_GET['arpan']);
+    createDatabaseConnection();
+    storeInformation();
 }
 else
 {
@@ -27,30 +31,44 @@ else
     die();
 }
 
-createDatabaseConnection();
 
 /**
- * Spit out the useful information as per the made query.
+ * Fill up the database with relevant information
  *
- * @since 0.1.0
+ * The information cipher [TableName] : [EQUniqueIdentifer] : [Captures] ...
+ * Note: multiple information can be stored with delimiter "," like information1,information2 ...
+ * 
+ * @since 0.2.0
  */
-$index = 0;
-$bFirstElement = true;
-foreach ($infoArray as $info)
+
+function storeInformation()
 {
-    global $tableName;
-    
-    if($bFirstElement)
+    global $infoArray;
+      
+    foreach ($infoArray as $info)
     {
-        $tableName = $info;
-        createTable($tableName);
-        $bFirstElement = false;
-    }
-    else 
-    {
-        fillTable($tableName, $info, $index++);
-        echo "," . $info;
+        global $tableName;
+
+        $infoColumns = explode(':', $info);
+        
+        $bFirstElement = true;
+        $index = 0;
+        
+        foreach($infoColumns as $columns)
+        {
+            if($bFirstElement)
+            {
+                $tableName = $columns;
+                createTable($tableName);
+                $bFirstElement = false;
+            }
+            else 
+            {   
+                $columnArrayData[$index++] = $columns;
+            }
+        }
+        
+        fillTable($tableName, $columnArrayData);
     }
 }
-
 ?>
