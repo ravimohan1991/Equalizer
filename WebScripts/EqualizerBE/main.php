@@ -28,6 +28,7 @@ $password = "BWxFPjNuIYBPxxg0";
 $database = "CowboysTestDatabase";
 
 $conn;
+$tableName;
 $columnArray[0] = "EQIdentifier";
 $columnArray[1] = "Captures";
 $columnArray[2] = "TimePlayedMinutes";
@@ -59,15 +60,22 @@ function createDatabaseConnection()
 /**
  * Table creation method with relevant columns corresponding to player statistics.
  * 
- * @token $tableName The name of the table
+ * @token $tName The name of the table
  * @see $columnArray, $columnArrayAttributes
  * @since 0.2.0
  */
 
-function createTable($tableName)
+function createTable($tName)
 {
-    global $conn, $columnArray, $columnArrayAttributes;
+    global $conn, $tableName, $columnArray, $columnArrayAttributes;
     global $database;
+    
+    $tableName = $tName;
+    
+    if(doesItExist($tableName))
+    {
+        return;
+    }
     
     $createTableString = "CREATE TABLE `$database`.`$tableName` (";
     
@@ -95,19 +103,43 @@ function createTable($tableName)
 }
 
 /**
+ * Discerning the existence of table with particular name
+ * 
+ * @token $tName The name of the table
+ 
+ * @since 0.2.0
+ */
+
+function doesItExist($tName)
+{
+    global $conn;
+    
+    $result = $conn->query("SHOW TABLES LIKE '" . $tName . "'");
+    
+    if($result->num_rows == 1) 
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
+}
+
+
+/**
  * Fillup the table (in form of row) with desired information received from game-server
  * 
- * @token $tableName The name of the table
  * @token $dataArray Array containing player specific data in some order (of collection?)
  * @see $columnArray
  * @since 0.2.0
  */
 
-function fillTable($tableName, $dataArray)
+function fillTable($dataArray)
 {
-    global $conn, $columnArray;
+    global $conn, $tableName, $columnArray;
     $fillColumnsString = "INSERT INTO `$tableName` ( ";
-    
+  
     $bFirstElement = true;
     foreach ($columnArray as $column)
     {
@@ -139,6 +171,7 @@ function fillTable($tableName, $dataArray)
     }
     
     $fillColumnsString = $fillColumnsString . " )";
+    
     $conn->query($fillColumnsString);
 }
 

@@ -42,7 +42,8 @@ if(isset($_GET['arpan']))
     
     $infoArray = explode(',', $_GET['arpan']);
     createDatabaseConnection();
-    storeInformation();
+    createTable("EQPlayerInformation");
+    storeModifyInformation();
 }
 else
 {
@@ -60,14 +61,12 @@ else
  * @since 0.2.0
  */
 
-function storeInformation()
+function storeModifyInformation()
 {
     global $infoArray;
       
     foreach ($infoArray as $info)
     {
-        global $tableName;
-
         $infoColumns = explode(':', $info);
         
         $bFirstElement = true;
@@ -77,8 +76,6 @@ function storeInformation()
         {
             if($bFirstElement)
             {
-                $tableName = $columns;
-                createTable($tableName);
                 $bFirstElement = false;
             }
             else 
@@ -87,7 +84,7 @@ function storeInformation()
             }
         }
         
-        fillTable($tableName, $columnArrayData);
+        fillTable($columnArrayData);
     }
 }
 ?>
