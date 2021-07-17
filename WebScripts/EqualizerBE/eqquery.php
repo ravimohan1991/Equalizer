@@ -43,7 +43,7 @@ if(isset($_GET['arpan']))
     $infoArray = explode(',', $_GET['arpan']);
     createDatabaseConnection();
     createTable("EQPlayerInformation");
-    storeModifyInformation();
+    storeInformation();
 }
 else
 {
@@ -55,13 +55,13 @@ else
 /**
  * Fill up the database with relevant information
  *
- * The information cipher [TableName] : [EQUniqueIdentifer] : [Captures] ...
+ * The information cipher [EQUniqueIdentifer] : [Captures] ... : [Name]
  * Note: multiple information can be stored with delimiter "," like information1,information2 ...
  * 
  * @since 0.2.0
  */
 
-function storeModifyInformation()
+function storeInformation()
 {
     global $infoArray;
       
@@ -69,22 +69,14 @@ function storeModifyInformation()
     {
         $infoColumns = explode(':', $info);
         
-        $bFirstElement = true;
         $index = 0;
         
         foreach($infoColumns as $columns)
         {
-            if($bFirstElement)
-            {
-                $bFirstElement = false;
-            }
-            else 
-            {   
-                $columnArrayData[$index++] = $columns;
-            }
+            $columnArrayData[$index++] = $columns;  
         }
         
-        fillTable($columnArrayData);
+        addModifyRow($columnArrayData);
     }
 }
 ?>

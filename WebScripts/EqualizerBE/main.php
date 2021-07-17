@@ -32,9 +32,11 @@ $tableName;
 $columnArray[0] = "EQIdentifier";
 $columnArray[1] = "Captures";
 $columnArray[2] = "TimePlayedMinutes";
+$columnArray[3] = "EQName";
 $columnArrayAttributes[0] = "CHAR(80) NULL DEFAULT NULL";
 $columnArrayAttributes[1] = "INT NULL DEFAULT NULL";
 $columnArrayAttributes[2] = "INT NULL DEFAULT NULL";
+$columnArrayAttributes[3] = "CHAR(80) NULL DEFAULT NULL";
 
 /**
  * Here we connect to the relevant database
@@ -72,7 +74,7 @@ function createTable($tName)
     
     $tableName = $tName;
     
-    if(doesItExist($tableName))
+    if(doesTableExist($tableName))
     {
         return;
     }
@@ -110,7 +112,7 @@ function createTable($tName)
  * @since 0.2.0
  */
 
-function doesItExist($tName)
+function doesTableExist($tName)
 {
     global $conn;
     
@@ -126,19 +128,79 @@ function doesItExist($tName)
     }
 }
 
+/**
+ * Searches the table for the uniqueidentifier. If it finds it, the relevant information is modified
+ * else new row is added.
+ * 
+ * @token $dataArray Array containing player specific data in some order (of collection?). $dataArray[0] is always EQIdentifier
+ * @see $columnArray
+ * @since 0.2.0
+ */
+ 
+function addModifyRow($dataArray)
+{
+    global $conn, $tableName, $columnArray;
+    
+    $result = $conn->query("SELECT * FROM `$tableName` WHERE `$columnArray[0]` LIKE '$dataArray[0]'");
+    
+    if($result->num_rows == 1) 
+    {
+        modifyRow($dataArray);
+    }
+    else 
+    {
+        addRow($dataArray);
+    }
+}
 
 /**
- * Fillup the table (in form of row) with desired information received from game-server
+ * Modifies the row with updated information.
  * 
- * @token $dataArray Array containing player specific data in some order (of collection?)
+ * @token $dataArray Array containing player specific data in some order (of collection?). $dataArray[0] is always EQIdentifier
+ * @see $columnArray
+ * @since 0.2.0
+ */ 
+function modifyRow($dataArray)
+{
+    global $conn, $tableName, $columnArray;
+    
+    $updateRowString = "UPDATE `$tableName` SET";
+    
+    $bFirstElement = true;
+    $index = 0;
+    foreach ($columnArray as $column)
+    {
+        if($bFirstElement)
+        {
+            $bFirstElement = false;
+            $updateRowString = $updateRowString . " `$column` = '$dataArray[$index]'";
+        }
+        else
+        {
+            $updateRowString = $updateRowString . ", `$column` = '$dataArray[$index]'";
+        }
+        
+        $index++;
+    }
+    
+    $updateRowString = $updateRowString . " WHERE `$tableName`.`$columnArray[0]` = '$dataArray[0]'";
+    
+    $conn->query($updateRowString);
+}
+
+/**
+ * Fillup the table (in form of new row) with desired information received from game-server
+ * 
+ * @token $dataArray Array containing player specific data in some order (of collection?). $dataArray[0] is always EQIdentifier
  * @see $columnArray
  * @since 0.2.0
  */
 
-function fillTable($dataArray)
+function addRow($dataArray)
 {
     global $conn, $tableName, $columnArray;
-    $fillColumnsString = "INSERT INTO `$tableName` ( ";
+    
+    $addRowString = "INSERT INTO `$tableName` ( ";
   
     $bFirstElement = true;
     foreach ($columnArray as $column)
@@ -146,15 +208,15 @@ function fillTable($dataArray)
         if($bFirstElement)
         {
             $bFirstElement = false;
-            $fillColumnsString = $fillColumnsString . "`$column`";
+            $addRowString = $addRowString . "`$column`";
         }
         else
         {
-            $fillColumnsString = $fillColumnsString . " , " . "`$column`";
+            $addRowString = $addRowString . " , `$column`";
         }
     }
     
-    $fillColumnsString = $fillColumnsString . " )  VALUES ( ";
+    $addRowString = $addRowString . " )  VALUES ( ";
     
     $bFirstElement = true;
     foreach($dataArray as $data)
@@ -162,17 +224,17 @@ function fillTable($dataArray)
        if($bFirstElement)
        {
            $bFirstElement = false;
-           $fillColumnsString = $fillColumnsString . "'$data'";
+           $addRowString = $addRowString . "'$data'";
        }
        else 
        {
-           $fillColumnsString = $fillColumnsString . " , " . "'$data'"; 
+           $addRowString = $addRowString . " , '$data'"; 
        }
     }
     
-    $fillColumnsString = $fillColumnsString . " )";
+    $addRowString = $addRowString . " )";
     
-    $conn->query($fillColumnsString);
+    $conn->query($addRowString);
 }
 
 /**
