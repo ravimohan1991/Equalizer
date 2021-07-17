@@ -48,15 +48,15 @@ function createDatabaseConnection()
 {
     global $servername, $username, $password, $database;
     global $conn;
+    
     // Create connection
     $conn = new mysqli($servername, $username, $password, $database);
 
     // Check connection
     if ($conn->connect_error) 
     {
-      die("Connection failed: " . $conn->connect_error);
+      die("DatabaseConnectionError");
     }
-    echo "Connected successfully";
 }
 
 /**
@@ -102,6 +102,47 @@ function createTable($tName)
     
     $conn->query($createTableString);
     $conn->query("ALTER TABLE `$tableName` ADD UNIQUE(`EQIdentifier`);");
+}
+
+/**
+ * Query the database and return the relevant information string
+ * 
+ * @token $info EQIdentifier to be queried
+ 
+ * @since 0.2.0
+ */
+
+function getEQInfo($info)
+{
+    global $conn, $tableName, $columnArray;
+    
+    $result = $conn->query("SELECT * FROM `$tableName` WHERE `$columnArray[0]` LIKE '$info'");
+    
+    $returnString;
+    if($result->num_rows == 1) 
+    {
+        $infoArray = $result->fetch_row();
+        
+        $bFirstElement = true;
+        foreach ($infoArray as $information)
+        {
+            if($bFirstElement)
+            {
+                $bFirstElement = false;
+                $returnString = $information;
+            }
+            else
+            {
+                $returnString = $returnString . ":" . $information;
+            }
+        }
+    }
+    else 
+    {
+        $returnString = "NOTFOUND";
+    }
+    
+    return $returnString;
 }
 
 /**
