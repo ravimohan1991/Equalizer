@@ -103,7 +103,7 @@ function storeInformation($infoArray)
         
         foreach($infoColumns as $columns)
         {
-            $columnArrayData[$index++] = $columns;  
+            $columnArrayData[$index++] = $columns;
         }
         
         addModifyRow($columnArrayData);

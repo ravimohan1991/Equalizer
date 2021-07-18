@@ -31,12 +31,26 @@ $conn;
 $tableName;
 $columnArray[0] = "EQIdentifier";
 $columnArray[1] = "Captures";
-$columnArray[2] = "TimePlayedMinutes";
-$columnArray[3] = "EQName";
+$columnArray[2] = "Grabs";
+$columnArray[3] = "Covers";
+$columnArray[4] = "Seals";
+$columnArray[5] = "FlagKills";
+$columnArray[6] = "TeamKills";
+$columnArray[7] = "Points";
+$columnArray[8] = "TimePlayedMinutes";
+$columnArray[9] = "TimePlayedHours";
+$columnArray[10] = "EQName";
 $columnArrayAttributes[0] = "CHAR(80) NULL DEFAULT NULL";
-$columnArrayAttributes[1] = "INT NULL DEFAULT NULL";
-$columnArrayAttributes[2] = "INT NULL DEFAULT NULL";
-$columnArrayAttributes[3] = "CHAR(80) NULL DEFAULT NULL";
+$columnArrayAttributes[1] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[2] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[3] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[4] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[5] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[6] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[7] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[8] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[9] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[10] = "CHAR(80) NULL DEFAULT NULL";
 
 /**
  * Here we connect to the relevant database
@@ -274,7 +288,6 @@ function addRow($dataArray)
     }
     
     $addRowString = $addRowString . " )";
-    
     $conn->query($addRowString);
 }
 
