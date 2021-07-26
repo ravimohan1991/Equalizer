@@ -138,7 +138,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		super.PostBeginPlay();
 		return;
 	}
-
+     EQIdentifier = "Pucchi";
 	if(PlayerReplicationInfo(Owner).bBot)
 	{
 		EQIdentifier = "BOT";
@@ -226,10 +226,45 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function ComputePPH()
  {
 	if(TimePlayedMinutes > 0)
-     PPH = Score / (TimePlayedHours + TimePlayedMinutes / 60.0);
-    else
-     PPH = 0;
+ 		PPH = Score / (TimePlayedHours + TimePlayedMinutes / 60.0);
+ 	else
+ 		PPH = 0;
  }
+
+/**
+ * Functionto generate the relevant string composed ofEQPlaerInformation
+ * to "arpan" the webserver where the infrmaton is sored n MySQL database.
+ *
+ * For string formatting see: https://github.com/ravimohan1991/Equalizer/blob/main/WebScripts/EqualizerBE/main.php#L32
+ * The string shall be generated strictly in accordance with the $colunArray elements order (which itself is random)
+ *
+ * @since 0.2.0
+ */
+
+ function string GenerateArpanString()
+ {
+ 	local string ReturnString;
+ 	local string PlayerName;
+
+ 	if(PlayerReplicationInfo(Owner) != none)
+ 	{
+ 		PlayerName = PlayerReplicationInfo(Owner).PlayerName;
+ 	}
+ 	else
+ 	{
+ 		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer');
+ 		PlayerName = "NONAME_StreetRat";
+ 	}
+
+ 	ReturnString = EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
+ 		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills
+ 		$ ":" $ Score $ ":" $ TimePlayedMinutes $ ":"
+ 		$ TimeplayedHours $ ":" $ PlayerName;
+
+ 	Log("Generated arpan string: " $ ReturnString);
+ 	return ReturnString;
+ }
+
 
 /**
  * Here we do the necessary chores when spectator

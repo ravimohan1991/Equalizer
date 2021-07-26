@@ -51,6 +51,10 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  /** Just received the latest data. Set to false in the begining of every new query. */
  var bool bReceivedData;
 
+ /** Enumtype stuff for specifying the type of query. */
+ const SubmitEQInfo      = 0;
+ const QueryEQInfo       = 1;
+
  function CheckAddresses()
  {
  	if(!bResolutionRequest && EQMut.ResolvedAddress == "")
@@ -101,7 +105,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	}
  }
 
- function string SendData(string Information)
+ function string SendData(string Information, int QueryType)
  {
  	local Equalizer Equality;
 
@@ -114,8 +118,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  	}
 
- 	AddToQueue(Information);
- 	SendQueue();
+ 	AddToQueue(Information, QueryType);
+ 	SendQueue(QueryType);
 
  	return "";
  }
@@ -207,7 +211,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	}
  }
 
- function SendQueue()
+ function SendQueue(optional int QueryType)
  {
  	local int i;
  	local string QueryString;
@@ -245,10 +249,19 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	bQueryInProgress = True;
  	bReceivedData = False;
 
- 	Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?ip=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+ 	switch(QueryType)
+ 	{
+     case SubmitEQInfo:
+      Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+      break;
+
+     case QueryEQInfo:
+      Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+      break;
+    }
  }
 
- function AddToQueue(string Data)
+ function AddToQueue(string Data, int QueryType)
  {
  	local int i;
 
@@ -260,12 +273,12 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 		QueryQueue[i] = Data;
 
 		if(!bQueryInProgress)
- 			SendQueue();
+ 			SendQueue(QueryType);
  		break;
  	}
  }
 
- function string ParseString (String Input)
+ function string ParseString(String Input)
  {
  	local int LCRLF;
  	local string result;

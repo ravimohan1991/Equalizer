@@ -195,7 +195,7 @@ class Equalizer extends Mutator config(Equalizer);
  function string SendData(string Something)
  {
 	if(HttpClientInstanceStarted)
-		return HttpClientInstance.SendData(Something);
+		return HttpClientInstance.SendData(Something, HttpClientInstance.SubmitEQInfo);
 	else
 		return "!Disabled";
  }
@@ -681,9 +681,9 @@ class Equalizer extends Mutator config(Equalizer);
 					ReceiverInfo = GetInfoByID(RelatedPRI_1.PlayerID);
 					if(ReceiverInfo != none)
 					{
-                     ReceiverInfo.Captures++;
-					 ReceiverInfo.UpdateScore();
-                    }
+						ReceiverInfo.Captures++;
+						ReceiverInfo.UpdateScore();
+					}
 					ResetSprees(0);
 					ResetSprees(1);
 					FCs[0] = none;
@@ -912,12 +912,27 @@ class Equalizer extends Mutator config(Equalizer);
 
  function Mutate(string MutateString, PlayerController Sender)
  {
-	if(Sender != none)
+	local EQPlayerInformation EQPlayerInfo ;
+
+    if(Sender != none)
 	{
-	    HttpClientInstance.SendData(MutateString);
-	    /*
+
+		// allset in backend only for addition of new records. Was trying to test that!
+        EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
+        if(EQPlayerInfo != none)
+        {
+           Log("Sending Info", 'Equalizer');
+           HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+           Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+        }
+
+
+
+
+		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
+		/*
 		if (MutateString ~= "dist")
-		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - EQFlags[1].HomeBase.Location));
+		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - 				EQFlags[1].HomeBase.Location));
 		*/
 	}
 
@@ -940,8 +955,8 @@ class Equalizer extends Mutator config(Equalizer);
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
-    QueryServerHost="stats.miasma.rocks"
-    QueryServerFilePath="/var/www/clients/client0/web1/iptocountry16.php"
+    QueryServerHost="192.168.1.2"
+    QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10
  }

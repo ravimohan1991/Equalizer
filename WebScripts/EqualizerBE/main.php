@@ -210,6 +210,7 @@ function addModifyRow($dataArray)
 
 /**
  * Modifies the row with updated information.
+ * TODO: Sum the value with already existing value
  * 
  * @token $dataArray Array containing player specific data in some order (of collection?). $dataArray[0] is always EQIdentifier
  * @see $columnArray
@@ -232,7 +233,21 @@ function modifyRow($dataArray)
         }
         else
         {
-            $updateRowString = $updateRowString . ", `$column` = '$dataArray[$index]'";
+            $selectRowElement = "SELECT `$column` FROM `$tableName` WHERE `$tableName`.`$columnArray[0]` = '$dataArray[0]'";
+            $result = $conn->query($selectRowElement);
+            
+            $fieldValue = $result->fetch_array();
+            $fieldInfo = $result->fetch_field();
+            
+            if($fieldInfo->type == 4) // For float data type
+            {
+                $fieldValueToBeAdded = $fieldValue[0] + $dataArray[$index];
+                $updateRowString = $updateRowString . ", `$column` = '$fieldValueToBeAdded'";
+            }
+            else
+            {
+                $updateRowString = $updateRowString . ", `$column` = '$dataArray[$index]'";  
+            }
         }
         
         $index++;
