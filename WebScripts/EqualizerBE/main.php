@@ -255,7 +255,12 @@ function modifyRow($dataArray)
     
     $updateRowString = $updateRowString . " WHERE `$tableName`.`$columnArray[0]` = '$dataArray[0]'";
     
-    $conn->query($updateRowString);
+    $result = $conn->query($updateRowString);
+    
+    if($result == 1)
+        echo "SUCCESSFULLY_MODIFIED_ROW";
+    else
+        echo "COULDNT_MODIFIED_NEW_ROW";
 }
 
 /**
@@ -303,7 +308,13 @@ function addRow($dataArray)
     }
     
     $addRowString = $addRowString . " )";
-    $conn->query($addRowString);
+    
+    $result = $conn->query($addRowString);
+    
+    if($result == 1)
+        echo "SUCCESSFULLY_ADDED_ROW";
+    else
+        echo "COULDNT_ADD_NEW_ROW";
 }
 
 /**

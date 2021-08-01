@@ -921,7 +921,7 @@ class Equalizer extends Mutator config(Equalizer);
         EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
         if(EQPlayerInfo != none)
         {
-           Log("Sending Info", 'Equalizer');
+           EQPlayerInfo.PlayersLastPlayingMoment();
            HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
            Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
         }

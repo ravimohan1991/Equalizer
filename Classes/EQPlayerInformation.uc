@@ -261,7 +261,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		$ ":" $ Score $ ":" $ TimePlayedMinutes $ ":"
  		$ TimeplayedHours $ ":" $ PlayerName;
 
- 	Log("Generated arpan string: " $ ReturnString);
  	return ReturnString;
  }
 
