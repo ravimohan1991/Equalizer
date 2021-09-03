@@ -943,7 +943,7 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
-
+ /*
  function Mutate(string MutateString, PlayerController Sender)
  {
 	local EQPlayerInformation EQPlayerInfo ;
@@ -964,20 +964,21 @@ class Equalizer extends Mutator config(Equalizer);
 
 
 		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
-		/*
+
 		if (MutateString ~= "dist")
 		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - 				EQFlags[1].HomeBase.Location));
-		*/
+
 	}
 
 	if (NextMutator != None)
 		NextMutator.Mutate(MutateString, Sender);
  }
+ */
 
  defaultproperties
  {
     Version="0.2.0"
-    BuildNumber=63
+    BuildNumber=156
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
     CoverReward=2
@@ -989,7 +990,7 @@ class Equalizer extends Mutator config(Equalizer);
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
-    QueryServerHost="192.168.1.2"
+    QueryServerHost="www.someexample.com"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10

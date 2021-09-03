@@ -138,7 +138,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		super.PostBeginPlay();
 		return;
 	}
-     EQIdentifier = "Pucchi";
+
 	if(PlayerReplicationInfo(Owner).bBot)
 	{
 		EQIdentifier = "BOT";
@@ -167,8 +167,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 
 	Score = PlayerReplicationInfo(Owner).Score;
-	//Log(PlayerReplicationInfo(Owner).PlayerName $ ": Score updated to " $ Score, 'Equalizer');
-	//PlayerController(Owner.Owner).ClientMessage("The score now is " $ Score);
  }
 
  /**
