@@ -330,6 +330,7 @@ class Equalizer extends Mutator config(Equalizer);
 			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
 	}
 
+    /*
 	if(AIController(Other.Controller) != none)
 	{
 		BotController = Other.Controller;
@@ -348,6 +349,7 @@ class Equalizer extends Mutator config(Equalizer);
 			PlayerJoin(BotController);
 		}
 	}
+    */
 
 	if(NextMutator != None)
 		NextMutator.ModifyPlayer(Other);
@@ -935,6 +937,27 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * Called when the Mutator is destroyed which generally would imply match end.
+ * This is a cue to send the Equalizer information to backend.
+ *
+ */
+
+ function EndGameEvent()
+ {
+
+	local int PlayerIndex;
+
+	Log("Match End!!!", 'Equalizer');
+	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
+	{
+		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');;
+		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
+	}
+
+	super.Destroyed();
+ }
+
+/**
  * For debugging purposes
  *
  * @param MutateString The string typed by the player
@@ -978,7 +1001,7 @@ class Equalizer extends Mutator config(Equalizer);
  defaultproperties
  {
     Version="0.2.0"
-    BuildNumber=156
+    BuildNumber=158
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
     CoverReward=2

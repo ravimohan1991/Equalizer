@@ -139,7 +139,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-	if(PlayerReplicationInfo(Owner).bBot)
+    //EQIdentifier =  PlayerReplicationInfo(Owner).PlayerName;
+
+    if(PlayerReplicationInfo(Owner).bBot)
 	{
 		EQIdentifier = "BOT";
 	}

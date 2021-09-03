@@ -55,7 +55,7 @@ class EQGameRules extends Gamerules;
  function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> damageType, vector HitLocation)
  {
 
-	if ( (NextGameRules != none) && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation) )
+	if ((NextGameRules != none) && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation))
 		return true; // No Killing! So return.
 
 	EQMut.EvaluateKillingEvent(Killed, Killer, damageType, HitLocation);
@@ -85,6 +85,21 @@ class EQGameRules extends Gamerules;
 		EQMut.UpdateEQKillerScore(Killed);
 	}
 
-	if ( NextGameRules != None )
-		NextGameRules.ScoreKill(Killer,Killed);
+	super.ScoreKill(Killer, Killed);
+ }
+
+/**
+ * For detecting EndGame (yeah the Avangers one!)
+ *
+ * @since 0.2.0
+ */
+
+ function bool CheckEndGame(PlayerReplicationInfo Winner, string Reason)
+ {
+	if (NextGameRules != none && !NextGameRules.CheckEndGame(Winner, Reason))
+		return false;
+
+	EQMut.EndGameEvent();
+
+	return true;
  }
