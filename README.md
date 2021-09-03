@@ -30,6 +30,7 @@ There is a long TODO list for balancing teams
 
 ## Configuration
 The configurable variables can be found in Equalizer.ini. If it is not provided in the package, it will be generated after the first run.
+
 INI setting | Default value | Description
 ------------|---------------|-------------
 `CoverReward` | 2 | Reward to be given on providing a successful cover.
@@ -40,6 +41,7 @@ INI setting | Default value | Description
 `bShowFCLocation` | true | If set to true, your FC location will be shown in your HUD.
 `bBroadcastMonsterKillsAndAbove` | true | If you want to have global broadcast for achieveing MonsterKill or above.
 `UniqueIdentifierClass` | UniqueIdentifier.UniqueIdentifier | The \<PackageName\>.\<ClassName\> for the serverside class. See [UniqueIdentifier](https://github.com/ravimohan1991/Equalizer/blob/main/UniqueIdentifier.md) for more details.
+
   ### Acronyms
   FC: Flag Carrier (The player who is carrying the flag)
 
