@@ -195,7 +195,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PlayerBecameSpectator()
  {
-	 PlayersLastPlayingMoment();
+	 // Maybe something will come up in future (as stated by Uncle Charlie)
  }
 
 /**
@@ -259,9 +259,37 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	ReturnString = EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
  		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills
  		$ ":" $ Score $ ":" $ TimePlayedMinutes $ ":"
- 		$ TimeplayedHours $ ":" $ PlayerName;
+ 		$ TimeplayedHours $ ":" $ Frags $ ":" $ Suicides $ ":" $ PlayerName;
 
  	return ReturnString;
+ }
+
+/**
+ * Here we clear all the Equalizer information and reset the data.
+ *
+ * @since 0.2.0
+ */
+
+ function ClearData()
+ {
+	Captures = 0;
+	Grabs = 0;
+	Covers = 0;
+	Seals = 0;
+	FlagKills = 0;
+	TeamKills = 0;
+	Score = 0;
+	PPH = 0;
+	Frags = 0;
+	HeadShots = 0;
+	ShieldBelts = 0;
+	Amps = 0;
+	Suicides = 0;
+	FragSpree = 0;
+	CoverSpree = 0;
+	SpawnKillSpree = 0;
+	TimePlayedHours = 0;
+	TimeplayedMinutes = 0;
  }
 
 

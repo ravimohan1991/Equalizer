@@ -267,12 +267,12 @@ class Equalizer extends Mutator config(Equalizer);
 		{
 			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
 			{
-            EQPlayers[PlayerIndex].UpdateScore();
-            EQPlayers[PlayerIndex].PlayersLastPlayingMoment();
-			EQPlayers[PlayerIndex].SetTimer(0.f, false);
-			EQPlayers[PlayerIndex].Destroy();
-            EQPlayers.Remove(PlayerIndex, 1);
-            }
+				Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer');
+                SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
+				EQPlayers[PlayerIndex].SetTimer(0.f, false);
+				EQPlayers[PlayerIndex].Destroy();
+				EQPlayers.Remove(PlayerIndex, 1);
+			}
 			break;
 		}
 	}
@@ -729,7 +729,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
  }
 
- /**
+/**
  * Here we do the necessary arrangements when a player becomes
  * a spectator
  *
@@ -739,11 +739,45 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PlayerBecameSpectator(EQPlayerInformation SpectatorJoinInfo)
  {
-	SpectatorJoinInfo.PlayerBecameSpectator();
-    // Maybe send the information to the backend
+	  Log("PlayerBecameSpectator", 'Equalizer');
+	  SpectatorJoinInfo.PlayerBecameSpectator();
+      SendEQDataToBackEnd(SpectatorJoinInfo);
  }
 
- /**
+/**
+ * Here we send the Equalizer player information to the backend
+ *
+ * @param EQPlayerInfo The EQPlayerInfo to be sent to backend
+ * @since 0.2.0
+ */
+
+ function SendEQDataToBackEnd(EQPlayerInformation EQPlayerInfo)
+ {
+    local PlayerController Sender;
+
+	EQPlayerInfo.UpdateScore();
+    EQPlayerInfo.PlayersLastPlayingMoment();
+
+    if(HttpClientInstance != none)
+	{
+		HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+		Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer');
+		Log(EQPlayerInfo.GenerateArpanString(), 'Equalizer');
+		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
+		if(Sender != none)
+		{
+			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+		}
+		EQPlayerInfo.ClearData();
+	}
+	else
+	{
+		Log("SendEQDataToBackEnd: Cant find the HttpClient instance", 'Equalizer');
+	}
+ }
+
+
+/**
  * Here we do the necessary arrangements when a spectator
  * becomes player
  *
@@ -936,7 +970,7 @@ class Equalizer extends Mutator config(Equalizer);
 		*/
 	}
 
-	if ( NextMutator != None )
+	if (NextMutator != None)
 		NextMutator.Mutate(MutateString, Sender);
  }
 

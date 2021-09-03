@@ -39,7 +39,9 @@ $columnArray[6] = "TeamKills";
 $columnArray[7] = "Points";
 $columnArray[8] = "TimePlayedMinutes";
 $columnArray[9] = "TimePlayedHours";
-$columnArray[10] = "EQName";
+$columnArray[10] = "Frags";
+$columnArray[11] = "Suicides";
+$columnArray[12] = "EQName";
 $columnArrayAttributes[0] = "CHAR(80) NULL DEFAULT NULL";
 $columnArrayAttributes[1] = "FLOAT NULL DEFAULT NULL";
 $columnArrayAttributes[2] = "FLOAT NULL DEFAULT NULL";
@@ -50,7 +52,9 @@ $columnArrayAttributes[6] = "FLOAT NULL DEFAULT NULL";
 $columnArrayAttributes[7] = "FLOAT NULL DEFAULT NULL";
 $columnArrayAttributes[8] = "FLOAT NULL DEFAULT NULL";
 $columnArrayAttributes[9] = "FLOAT NULL DEFAULT NULL";
-$columnArrayAttributes[10] = "CHAR(80) NULL DEFAULT NULL";
+$columnArrayAttributes[10] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[11] = "FLOAT NULL DEFAULT NULL";
+$columnArrayAttributes[12] = "CHAR(80) NULL DEFAULT NULL";
 
 /**
  * Here we connect to the relevant database
@@ -210,7 +214,6 @@ function addModifyRow($dataArray)
 
 /**
  * Modifies the row with updated information.
- * TODO: Sum the value with already existing value
  * 
  * @token $dataArray Array containing player specific data in some order (of collection?). $dataArray[0] is always EQIdentifier
  * @see $columnArray
