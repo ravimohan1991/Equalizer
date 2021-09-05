@@ -64,9 +64,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /** Total score of the player */
  var    float           Score;
 
- /** Points per hour */
- var    float           PPH;
-
  /** Number of frags */
  var    int             Frags;
 
@@ -115,8 +112,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  *  For Mutator's internal purposes only. Not to be sent to backend!
  */
 
- /** Player's replicationifo */
- //var    PlayerReplicationInfo             EQPRI;
+ /** Points per hour */
+ var    float           PPH;
 
  /** This player killed the enemy FC at this distance from enemy flag */
  var      vector                              KilledFCAtLocation;
@@ -124,7 +121,13 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /** UniqueIdentifer reference */
  var       UniqueIdentifier                   EQUID;
 
- /**
+ /*
+ *  Information obtained from backend. Used for equalizing (whatever that means :D)
+ */
+ var    int    BECaptures, BEGrabs, BECovers, BEFlagKills, BETeamKills, BEScore, BEFrags,
+ BEHeadShots, BEShieldBelts, BEAmps, BESuicides, BETimePlayedHours, BETimePlayedMinutes;
+
+/**
  * The function gets called just after ActorSpawns.
  * So we do the necessary preparations here
  *
@@ -233,7 +236,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 /**
  * Functionto generate the relevant string composed ofEQPlaerInformation
- * to "arpan" the webserver where the infrmaton is sored n MySQL database.
+ * to "arpan" the webserver where the information is sored in MySQL database.
  *
  * For string formatting see: https://github.com/ravimohan1991/Equalizer/blob/main/WebScripts/EqualizerBE/main.php#L32
  * The string shall be generated strictly in accordance with the $colunArray elements order (which itself is random)
@@ -246,7 +249,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	local string ReturnString;
  	local string PlayerName;
 
- 	if(PlayerReplicationInfo(Owner) != none)
+    if(PlayerReplicationInfo(Owner) != none)
  	{
  		PlayerName = PlayerReplicationInfo(Owner).PlayerName;
  	}
@@ -255,6 +258,12 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer');
  		PlayerName = "NONAME_StreetRat";
  	}
+
+	if(EQIdentifier ~= "")
+	{
+		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer');
+		return "";
+	}
 
  	ReturnString = EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
  		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills
@@ -313,7 +322,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  event Timer()
  {
-    if(EQIdentifier ~= "")
+	if(EQIdentifier ~= "")
 	{
 		EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
 	}

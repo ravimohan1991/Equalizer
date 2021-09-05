@@ -126,14 +126,24 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  function HTTPReceivedData(string Data)
  {
- 	local string result;
+ 	local string Result;
 
- 	result = ParseString(Data);
+ 	Result = ParseString(Data);
 
  	Super.SetTimer(0.0, false); // disable the timeout count
  	bReceivedData = true;
 
- 	Log("The data received is " $ Data, 'Equalizer');
+ 	if(Result != "")
+ 	{
+        if(EQMut != none)
+        {
+         EQMut.GatherAndProcessInformation(Result);
+        }
+        else
+        {
+         Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
+        }
+    }
 
  	bQueryInProgress = False;
 
@@ -278,23 +288,31 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	}
  }
 
- function string ParseString(String Input)
+ function string ParseString(String GString) // GString means Gyan(Knowledge) String
  {
- 	local int LCRLF;
+ 	local int PCRLF, PLF;
  	local string result;
 
- 	LCRLF = InStr(Input, CR$LF);
+ 	PCRLF = InStr(GString, CR$LF);
+    PLF = InStr(GString, LF);
 
- 	// No CR or LF in string
- 	if (LCRLF == -1)
- 		return Input;
- 	else
- 	{
- 		result = Right(Input, len(Input)-LCRLF-2);
- 		LCRLF = InStr(result ,CR$LF);
- 		result = Left(result, LCRLF);
+    if(PCRLF != -1)
+    {
+        Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
+        result = Right(GString, len(GString) - PCRLF - 2);
+ 		PCRLF =  InStr(result, CR$LF);
+ 		result = Left(result, PCRLF);
+ 		return "";
+    }
+    else if(PLF != -1)
+    {
+        result = Right(GString, len(GString) - PLF - 1);
  		return result;
- 	}
+    }
+    else
+    {
+ 		return GString;
+    }
  }
 
  defaultproperties

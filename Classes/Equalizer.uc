@@ -308,10 +308,11 @@ class Equalizer extends Mutator config(Equalizer);
 
  function ModifyPlayer(Pawn Other)
  {
+	/*
 	local Controller BotController;
 	local bool bMatchFound;
 	local int i;
-	local PlayerReplicationInfo EQPRI;
+	local PlayerReplicationInfo EQPRI;*/
 
 	if(!bEQFlagsSet)
 	{
@@ -756,15 +757,23 @@ class Equalizer extends Mutator config(Equalizer);
  function SendEQDataToBackEnd(EQPlayerInformation EQPlayerInfo)
  {
     local PlayerController Sender;
+    local string DataToSend;
 
 	EQPlayerInfo.UpdateScore();
     EQPlayerInfo.PlayersLastPlayingMoment();
 
     if(HttpClientInstance != none)
 	{
-		HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+	    DataToSend = EQPlayerInfo.GenerateArpanString();
+
+        if(DataToSend ~= "")
+        {
+         return;
+        }
+
+		HttpClientInstance.SendData(DataToSend, HttpClientInstance.SubmitEQInfo);
 		Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer');
-		Log(EQPlayerInfo.GenerateArpanString(), 'Equalizer');
+        Log(DataToSend, 'Equalizer');
 		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
 		if(Sender != none)
 		{
@@ -774,7 +783,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else
 	{
-		Log("SendEQDataToBackEnd: Cant find the HttpClient instance", 'Equalizer');
+		Log("SendEQDataToBackEnd: Can't find the HttpClient instance", 'Equalizer');
 	}
  }
 
@@ -958,7 +967,35 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * For debugging purposes
+ * Here we gather the data sent from MySQL database upon relevant query.
+ *
+ * @see #EQHTTPClient::HTTPReceivedData(string)
+ * @since 0.3.6
+ */
+
+ function GatherAndProcessInformation(string Epigraph)
+ {
+	local string GString;
+	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
+
+	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
+	{
+		NumOfChunks = GetTokenCount(Epigraph, ",") - 1;
+		for(ChunkIndex = 1; ChunkIndex <= NumOfChunks; ChunkIndex++)
+		{
+			GString = GetToken(Epigraph, ",", ChunkIndex);
+			Log(GString);
+			NumOfDenominations = GetTokenCount(GString, ":") - 1;
+			for(DenominationIndex = 0; DenominationIndex <= NumOfDenominations; DenominationIndex++)
+			{
+				Log(GetToken(GString, ":", DenominationIndex));
+			}
+		}
+	}
+ }
+
+/**
+ * For development and debugging purposes
  *
  * @param MutateString The string typed by the player
  * @param Sender Human how typed the command
@@ -966,7 +1003,7 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.1.0
  */
 
- /*
+
  function Mutate(string MutateString, PlayerController Sender)
  {
 	local EQPlayerInformation EQPlayerInfo ;
@@ -978,9 +1015,11 @@ class Equalizer extends Mutator config(Equalizer);
         EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
         if(EQPlayerInfo != none)
         {
-           EQPlayerInfo.PlayersLastPlayingMoment();
-           HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
-           Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+           //EQPlayerInfo.PlayersLastPlayingMoment();
+           //HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+           //Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+           Log("Querying for Little_Johnny", 'Equalizer');
+           HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
         }
 
 
@@ -996,11 +1035,67 @@ class Equalizer extends Mutator config(Equalizer);
 	if (NextMutator != None)
 		NextMutator.Mutate(MutateString, Sender);
  }
- */
+
+//////////////////////////////////////////////////////////////////////////////////// Helpers! ////////////////////////////////////////////////////////////////////////////////////
+
+
+// This section has been ripped directly from https://github.com/stijn-volckaert/IACE/blob/dcdce5e1d8a796e663f1de9960a7cb2a8030e397/Classes/IACECommon.uc#L276-L320
+// without Anth's permission. But yeah, it is GitHub baby!
+
+// =============================================================================
+// GetToken ~ Retrieve a token from a tokenstring
+//
+// @param GString    The String in which the token should be found
+// @param Delimiter The String that seperates the tokens
+// @param Token     The Token that should be retrieved (starting from 0)
+// =============================================================================
+function string GetToken(string GString, string Delimiter, int Token)
+{
+	local int I;
+
+	Gstring = GString $ Delimiter;
+
+	for (I = 0; I < Token; ++I)
+	{
+		if (InStr(GString, Delimiter) != -1)
+		GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
+	}
+
+	if (InStr(GString, Delimiter) != -1)
+	{
+		return Left(GString, InStr(GString, Delimiter));
+	}
+	else
+	{
+		return GString;
+	}
+}
+
+// =============================================================================
+// GetTokenCount ~ Calculates the number of tokens in a tokenstring
+//
+// @param GString    The String that contains the tokens
+// @param Delimiter The String that seperates the tokens
+// =============================================================================
+function int GetTokenCount(string GString, string Delimiter)
+{
+	local int I;
+
+	GString = GString $ Delimiter;
+
+	while (InStr(GString, Delimiter) != -1)
+	{
+ 		GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
+		I++;
+	}
+
+	return I;
+}
+
 
  defaultproperties
  {
-    Version="0.2.0"
+    Version="0.3.0"
     BuildNumber=158
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
@@ -1013,7 +1108,7 @@ class Equalizer extends Mutator config(Equalizer);
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
-    QueryServerHost="www.someexample.com"
+    QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10

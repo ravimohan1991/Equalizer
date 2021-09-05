@@ -60,6 +60,8 @@ else
  * 
  * The spit information cipher [EQUniqueIdentifer] : [Captures] : ... : [Name]
  * Note: multiple information can be stored with delimiter "," like information1,information2 ...
+ * Also Note: To make the uscript realize that this is the information regarding the query "arzi", 
+ * we will add relevant identifier in the beginning as OSTRACON,information1,information2 ... 
  * 
  * @token $infoArray The array of EQIdentifier built from the exploding (splooching?) arzi query string
  * @since 0.2.0
@@ -67,19 +69,11 @@ else
 
 function spitInformation($infoArray)
 {
-    $bFirstElement = true;
-    
+    echo "OSTRACON";
+      
     foreach ($infoArray as $info)
     {
-        if($bFirstElement)
-        {
-            $bFirstElement = false;
-            echo getEQInfo($info);
-        }
-        else
-        {
-            echo "," . getEQInfo($info);
-        }
+        echo "," . getEQInfo($info);   
     }
 }
 
