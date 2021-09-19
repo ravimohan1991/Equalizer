@@ -124,8 +124,14 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /*
  *  Information obtained from backend. Used for equalizing (whatever that means :D)
  */
- var    int    BECaptures, BEGrabs, BECovers, BEFlagKills, BETeamKills, BEScore, BEFrags,
+ var    int    BECaptures, BEGrabs, BECovers, BESeals, BEFlagKills, BETeamKills, BEScore, BEFrags,
  BEHeadShots, BEShieldBelts, BEAmps, BESuicides, BETimePlayedHours, BETimePlayedMinutes;
+
+ /*
+ *  Is the BE data updated and can we use it to equalize?
+ */
+ var   bool   bIsBEReady;
+
 
 /**
  * The function gets called just after ActorSpawns.
@@ -142,8 +148,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-    //EQIdentifier =  PlayerReplicationInfo(Owner).PlayerName;
-
+    EQIdentifier =  PlayerReplicationInfo(Owner).PlayerName;
+    /*
     if(PlayerReplicationInfo(Owner).bBot)
 	{
 		EQIdentifier = "BOT";
@@ -152,10 +158,79 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	{
 		SetTimer(1.f, true);
 	}
-
+    */
 	StartTime = Level.TimeSeconds;
 
+	bIsBEReady = false;
+
 	super.PostBeginPlay();
+ }
+
+/**
+ * Routine to make actor read/not ready for equalizer purpose
+ *
+ * @param Decision If this actor is ready for equalizer purpose
+ *
+ * @since 0.3.6
+ */
+
+ function MakeActorReadyForEqualizer(bool Decision)
+ {
+	bIsBEReady = Decision;
+ }
+
+/**
+ * Updating the relevant variables with backend data
+ *
+ * @since 0.3.6
+ */
+
+ function UpdateBackEndData(int Value, int Counter)
+ {
+	if(Counter == 1)
+	{
+		BECaptures = Value;
+	}
+	else if(Counter == 2)
+	{
+		BEGrabs = Value;
+	}
+	else if(Counter == 3)
+	{
+		BECovers = Value;
+	}
+	else if(Counter == 4)
+	{
+		BESeals = Value;
+	}
+	else if(Counter == 5)
+	{
+		BEFlagKills = Value;
+	}
+	else if(Counter == 6)
+	{
+		BETeamKills = Value;
+	}
+	else if(Counter == 7)
+	{
+		BEScore = Value;
+	}
+	else if(Counter == 8)
+	{
+		BETimePlayedMinutes = Value;
+	}
+	else if(Counter == 9)
+	{
+		BETimeplayedHours = Value;
+	}
+	else if(Counter == 10)
+	{
+		BEFrags = Value;
+	}
+	else if(Counter == 11)
+	{
+		BESuicides = Value;
+	}
  }
 
 /**

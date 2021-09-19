@@ -927,9 +927,36 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * Method to return the EQPlayerInformation object.
+ *
+ * @param IdentifierString The string for identifying the relevant EQPlayerInformation object.
+ * @return EQPlayers[i] The EQPlayerInformation oject associated to the string
+ *         None         If no EQPlayerInformation is associated.
+ *
+ * @since 0.3.6
+ */
+
+ function EQPlayerInformation GetInfoByEQIdentifier(string IdentifierString)
+ {
+
+    local int i;
+
+    for(i = 0; i < EQPlayers.Length; i++)
+    {
+       if(IdentifierString ~= EQPlayers[i].EQIdentifier)
+       {
+        return EQPlayers[i];
+       }
+    }
+
+    Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer');
+    return none;
+ }
+
+/**
  * Method to check if the Player is in Flag zone.
  *
- * @param PRI The PlayerReplicationInfo class of the Player.
+ * @param SubjectLocation The physical location of the relevant player
  * @param Team The team of Flag
  *
  * @see #EvaluateKillingEvent(Killed, Killer, DamageType, Location)
@@ -949,6 +976,7 @@ class Equalizer extends Mutator config(Equalizer);
  * Called when the Mutator is destroyed which generally would imply match end.
  * This is a cue to send the Equalizer information to backend.
  *
+ * @since 0.2.0
  */
 
  function EndGameEvent()
@@ -968,6 +996,9 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Here we gather the data sent from MySQL database upon relevant query.
+ * The Epigraph is of the form OSTRACON,PlayerInfo1,PlayerInfo2,...
+ * Finally the PlayerInfo has the following denomination
+ * [EQUniqueIdentifer] : [Captures] : ... : [Name]
  *
  * @see #EQHTTPClient::HTTPReceivedData(string)
  * @since 0.3.6
@@ -975,8 +1006,9 @@ class Equalizer extends Mutator config(Equalizer);
 
  function GatherAndProcessInformation(string Epigraph)
  {
-	local string GString;
+	local string GString, EQIdentifierString;
 	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
+	local EQPlayerInformation EQPlayerInfo;
 
 	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
 	{
@@ -984,12 +1016,27 @@ class Equalizer extends Mutator config(Equalizer);
 		for(ChunkIndex = 1; ChunkIndex <= NumOfChunks; ChunkIndex++)
 		{
 			GString = GetToken(Epigraph, ",", ChunkIndex);
-			Log(GString);
 			NumOfDenominations = GetTokenCount(GString, ":") - 1;
 			for(DenominationIndex = 0; DenominationIndex <= NumOfDenominations; DenominationIndex++)
 			{
-				Log(GetToken(GString, ":", DenominationIndex));
+				if(DenominationIndex == 0)
+				{
+					EQIdentifierString = GetToken(GString, ":", DenominationIndex);
+					EQPlayerInfo = GetInfoByEQIdentifier(EQIdentifierString);
+					if(EQPlayerInfo == none)
+					{
+						Log("EQPlayerInfo is none. Coming out of the loop.", 'Equalizer');
+						break;
+					}
+					continue;
+				}
+
+				EQPlayerInfo.UpdateBackEndData(int(GetToken(GString, ":", DenominationIndex)), DenominationIndex);
 			}
+			if(EQPlayerInfo != none)
+			{
+					EQPlayerInfo.MakeActorReadyForEqualizer(true);
+            }
 		}
 	}
  }
@@ -1002,7 +1049,6 @@ class Equalizer extends Mutator config(Equalizer);
  *
  * @since 0.1.0
  */
-
 
  function Mutate(string MutateString, PlayerController Sender)
  {
@@ -1021,9 +1067,6 @@ class Equalizer extends Mutator config(Equalizer);
            Log("Querying for Little_Johnny", 'Equalizer');
            HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
         }
-
-
-
 
 		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
 
