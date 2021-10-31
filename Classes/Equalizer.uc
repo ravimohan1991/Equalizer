@@ -47,8 +47,11 @@ class Equalizer extends Mutator config(Equalizer);
  /** For tracking the PlayerJoin.*/
  var   int                                        CurrID;
 
- /** Equalizer PlayerInformation structure array */
+ /** Equalizer PlayerInformation array */
  var   array<EQPlayerInformation>                 EQPlayers;
+
+ /** Controllers whose PRI hasn't been spawned at PlayerJoin */
+ var   array<Controller>                          ToBePRIs;
 
  /** Controller Array of CTF's Flag Carriers */
  var   Controller                                 FCs[2];
@@ -249,6 +252,17 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
+ * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize)
+ *
+ *
+ */
+
+ function BalanceCTFTeams()
+ {
+
+ }
+
+/**
  * The function clears the EQPlayers array          <br />
  * In future, we will hook algorithm to send        <br />
  * the data to backend, here.
@@ -371,10 +385,63 @@ class Equalizer extends Mutator config(Equalizer);
 	if(FreshMeat.PlayerReplicationInfo == none || (FreshMeat.PlayerReplicationInfo.bIsSpectator && !FreshMeat.PlayerReplicationInfo.bWaitingPlayer))
 		return;
 
-	EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
-	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
+	if(FreshMeat.PlayerReplicationInfo != none)
+	{
+		EQPI = Spawn(class'EQPlayerInformation', FreshMeat.PlayerReplicationInfo);
 
-	EQPlayers[EQPlayers.Length]	= EQPI;
+		EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
+
+		EQPlayers[EQPlayers.Length]	= EQPI;
+	}
+	else
+	{
+		WaitingForPRIToSpawn(FreshMeat);
+	}
+ }
+
+/**
+ * Here we augment all the Controllers whose PRIs haven't spawned at the time of
+ * PlayerJoin.
+ *
+ * @since 0.3.0
+ */
+
+ function WaitingForPRIToSpawn(Controller Cont)
+ {
+	ToBePRIs[ToBePRIs.Length] = Cont;
+
+	SetTimer(1.0f, true);
+ }
+
+/**
+ * The Timer function which checks if the PRIs of the relevant Controllers are
+ * existing and if yes then Spawns the corresponding EQPlayerInformation class.
+ *
+ * @since 0.3.0
+ */
+
+ event Timer()
+ {
+	local byte ContIndex;
+	local EQPlayerInformation EQPI;
+
+	for(ContIndex = 0; ContIndex < ToBePRIs.Length; ContIndex++)
+	{
+		if(ToBePRIs[ContIndex].PlayerReplicationInfo != none)
+		{
+			EQPI = Spawn(class'EQPlayerInformation', ToBePRIs[ContIndex].PlayerReplicationInfo);
+			EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
+
+			EQPlayers[EQPlayers.Length]	= EQPI;
+
+			ToBePRIs.Remove(ContIndex, 1);
+
+			if(ToBePRIs.Length == 0)
+			{
+				SetTimer(0.0f, false);
+			}
+		}
+	}
  }
 
 /**
@@ -768,7 +835,7 @@ class Equalizer extends Mutator config(Equalizer);
 
         if(DataToSend ~= "")
         {
-         return;
+			return;
         }
 
 		HttpClientInstance.SendData(DataToSend, HttpClientInstance.SubmitEQInfo);
