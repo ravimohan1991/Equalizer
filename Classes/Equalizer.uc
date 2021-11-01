@@ -282,7 +282,7 @@ class Equalizer extends Mutator config(Equalizer);
 			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
 			{
 				Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer');
-                SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
+				SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 				EQPlayers[PlayerIndex].SetTimer(0.f, false);
 				EQPlayers[PlayerIndex].Destroy();
 				EQPlayers.Remove(PlayerIndex, 1);
@@ -809,9 +809,9 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PlayerBecameSpectator(EQPlayerInformation SpectatorJoinInfo)
  {
-	  Log("PlayerBecameSpectator", 'Equalizer');
-	  SpectatorJoinInfo.PlayerBecameSpectator();
-      SendEQDataToBackEnd(SpectatorJoinInfo);
+	Log("PlayerBecameSpectator", 'Equalizer');
+	SpectatorJoinInfo.PlayerBecameSpectator();
+	SendEQDataToBackEnd(SpectatorJoinInfo);
  }
 
 /**
@@ -1103,7 +1103,7 @@ class Equalizer extends Mutator config(Equalizer);
 			if(EQPlayerInfo != none)
 			{
 					EQPlayerInfo.MakeActorReadyForEqualizer(true);
-            }
+			}
 		}
 	}
  }
