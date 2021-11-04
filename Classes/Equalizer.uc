@@ -265,7 +265,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * The function clears the EQPlayers array          <br />
  * In future, we will hook algorithm to send        <br />
- * the data to backend, here.
+ * the data to backend, here. And we did now!
  *
  * @since 0.1.0
  */
@@ -1041,7 +1041,10 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Called when the Mutator is destroyed which generally would imply match end.
- * This is a cue to send the Equalizer information to backend.
+ * This was a cue to send the Equalizer information to backend. Piglet(UK) checked
+ * this routine and reported that this leads to duplication of data sent given we
+ * are already sending the data when players logout, which itself is called after match
+ * ends!
  *
  * @since 0.2.0
  */
@@ -1052,11 +1055,14 @@ class Equalizer extends Mutator config(Equalizer);
 	local int PlayerIndex;
 
 	Log("Match End!!!", 'Equalizer');
-	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
+
+	/*
+    for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
 		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');;
 		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 	}
+    */
 
 	super.Destroyed();
  }

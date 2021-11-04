@@ -340,12 +340,40 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return "";
 	}
 
- 	ReturnString = EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
+ 	ReturnString = URLEncode(EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
  		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills
  		$ ":" $ Score $ ":" $ TimePlayedMinutes $ ":"
- 		$ TimeplayedHours $ ":" $ Frags $ ":" $ Suicides $ ":" $ PlayerName;
+ 		$ TimeplayedHours $ ":" $ Frags $ ":" $ Suicides $ ":" $ PlayerName);
 
  	return ReturnString;
+ }
+
+/**
+ * Encodes illegal characters in a string so it can be used in a HTTP request URL.
+ *
+ *
+ * Introduced by the courtsey of Piglet(UK)
+ *
+ * @since 0.3.0
+ */
+
+ static final function string URLEncode(coerce string InputString)
+ {
+	const VALID_URL_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.!~*'()";
+	const HEX_DIGITS = "0123456789ABCDEF";
+	local string OutputString, LeftChar;
+
+	while(InputString != "")
+	{
+		LeftChar = Left(InputString, 1);
+		if (InStr(VALID_URL_CHARS, LeftChar) != -1)
+			OutputString $= LeftChar;
+		else
+			OutputString $= "%" $ Mid(HEX_DIGITS, Asc(LeftChar) >>> 4, 1) $ Mid(HEX_DIGITS, Asc(LeftChar) & 0xF, 1);
+			InputString = Mid(InputString, 1);
+	}
+
+	return OutputString;
  }
 
 /**
