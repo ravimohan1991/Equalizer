@@ -39,8 +39,11 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  /** Query in progress logical switch.*/
  var bool bQueryInProgress;
 
- /** Queue Array of information. */
- var string QueryQueue[64];
+ /** Queue Array of arpan queries. */
+ var string ArpanQueryQueue[64];
+
+ /** Queue array of arzi queries. */
+ var string ArziQueryQueue[64];
 
  /** Should we continue to send data (one last time?) when the connection is closed or dropped. */
  var bool bContinueAtClose;
@@ -55,6 +58,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  const SubmitEQInfo      = 0;
  const QueryEQInfo       = 1;
 
+
+/**
+ * Checks if the QueryServer address has been resolved. Usually performed
+ * in SendQueues() routine.
+ *
+ * @since 0.2.0
+ */
+
  function CheckAddresses()
  {
  	if(!bResolutionRequest && EQMut.ResolvedAddress == "")
@@ -65,6 +76,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		Resolve(EQMut.QueryServerHost);
  	}
  }
+
+/**
+ * Event called once resolution happens.
+ *
+ * @param Addr The resolved address
+ *
+ * @since 0.2.0
+ */
 
  event Resolved(IpAddr Addr)
  {
@@ -80,14 +99,18 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  		bResolutionRequest = False;
  		bQueryInProgress = False;
-
- 		SendQueue();
  	}
  	else
  	{
  		Super.Resolved(Addr);
  	}
  }
+
+/**
+ * Log if not successful in resolving.
+ *
+ * @since 0.2.0
+ */
 
  event ResolveFailed()
  {
@@ -105,6 +128,23 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	}
  }
 
+/**
+ * Timer routine for sending arpan/arzi queues.
+ *
+ * @since 0.3.0
+ */
+
+ event Timer()
+ {
+	SendQueues();
+ }
+
+/**
+ * The callable function for Equalizer mutator class.
+ *
+ * @since 0.2.0
+ */
+
  function string SendData(string Information, int QueryType)
  {
  	local Equalizer Equality;
@@ -119,10 +159,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	}
 
  	AddToQueue(Information, QueryType);
- 	SendQueue(QueryType);
-
  	return "";
  }
+
+/**
+ * On receiving the data from database.
+ *
+ * @since 0.2.0
+ */
 
  function HTTPReceivedData(string Data)
  {
@@ -130,25 +174,30 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  	Result = ParseString(Data);
 
- 	Super.SetTimer(0.0, false); // disable the timeout count
  	bReceivedData = true;
 
  	if(Result != "")
  	{
-        if(EQMut != none)
-        {
-         EQMut.GatherAndProcessInformation(Result);
-        }
-        else
-        {
-         Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
-        }
-    }
+		if(EQMut != none)
+		{
+			EQMut.GatherAndProcessInformation(Result);
+		}
+		else
+		{
+			Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
+		}
+	}
 
  	bQueryInProgress = False;
-
- 	SendQueue();
  }
+
+/**
+ * When port is opened. Usually after Open() is called.
+ *
+ * @see TcpLink::Open
+ *
+ * @since 0.2.0
+ */
 
  event Opened()
  {
@@ -170,6 +219,12 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	CurrentState = WaitingForHeader;
  }
 
+/**
+ * Binding the port. That is, open connection to the resolved address of webserver.
+ *
+ * @since 0.2.0
+ */
+
  function DoBind()
  {
  	if(BindPort() == 0)
@@ -181,6 +236,12 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	Open(ServerIpAddr);
  	bClosed = False;
  }
+
+/**
+ * Setting error code for logs.
+ *
+ * @since 0.2.0
+ */
 
  function SetError(int Code)
  {
@@ -208,6 +269,12 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	EQMut.RestartHTTPClient();
  }
 
+/**
+ * Tearing off from webserver.
+ *
+ * @since 0.2.0
+ */
+
  event Closed()
  {
  	Super.Closed();
@@ -217,76 +284,138 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
  		bContinueAtClose = False;
  		bQueryInProgress = False;
- 		SendQueue();
+ 		SendQueues();
  	}
  }
 
- function SendQueue(optional int QueryType)
+/**
+ * Here we send the arpan/arzi query queues to webserver.
+ *
+ * @since 0.3.0
+ */
+
+ function SendQueues()
  {
  	local int i;
  	local string QueryString;
+
+	Log("SendQueue invoked!", 'Equalizer');
 
  	CheckAddresses();
 
  	if(IsConnected())
  	{
- 		bContinueAtClose = True;
+ 		//bContinueAtClose = True;
  	}
 
- 	if(bQueryInProgress || (QueryQueue[0] == ""))
+ 	if(bQueryInProgress)
  	{
  		return;
  	}
 
- 	for(i = 0; i< ArrayCount(QueryQueue); i++)
+ 	if(ArpanQueryQueue[0] != "")
  	{
- 		if(QueryQueue[i] == "")
- 			continue;
+ 		for(i = 0; i < ArrayCount(ArpanQueryQueue); i++)
+ 		{
+			if(ArpanQueryQueue[i] == "")
+ 				continue;
+
+			Log(ArpanQueryQueue[i]);
+
+ 			if(QueryString == "")
+ 				QueryString = ArpanQueryQueue[i];
+ 			else
+ 				QueryString = QueryString $ "," $ ArpanQueryQueue[i];
+
+			ArpanQueryQueue[i] = "";
+			Log(ArpanQueryQueue[i] $ "Rendering null ArpanQueryQueue " $ i);
+ 		}
 
  		if(QueryString == "")
- 			QueryString = QueryQueue[i];
- 		else
- 			QueryString = QueryString$","$QueryQueue[i];
+ 		{
+ 			return;
+ 		}
 
-		QueryQueue[i] = "";
- 	}
+ 		bQueryInProgress = True;
+ 		bReceivedData = False;
 
- 	if(QueryString == "")
- 	{
- 		return;
- 	}
+		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+		return;
+	}
+	else if(ArziQueryQueue[0] != "")
+	{
+		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
+ 		{
+			if(ArziQueryQueue[i] == "")
+ 				continue;
 
- 	bQueryInProgress = True;
- 	bReceivedData = False;
+			Log(ArziQueryQueue[i]);
 
- 	switch(QueryType)
- 	{
-     case SubmitEQInfo:
-      Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
-      break;
+ 			if(QueryString == "")
+ 				QueryString = ArziQueryQueue[i];
+ 			else
+ 				QueryString = QueryString $ "," $ ArziQueryQueue[i];
 
-     case QueryEQInfo:
-      Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
-      break;
-    }
+			ArziQueryQueue[i] = "";
+			Log(ArziQueryQueue[i] $ "Rendering null ArziQueryQueue " $ i);
+ 		}
+
+ 		if(QueryString == "")
+ 		{
+ 			return;
+ 		}
+
+ 		bQueryInProgress = True;
+ 		bReceivedData = False;
+
+		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+		return;
+	}
+
+	SetTimer(0.0f, false);
  }
+
+/**
+ * Building the relevant query queues
+ *
+ * @since 0.2.0
+ */
 
  function AddToQueue(string Data, int QueryType)
  {
  	local int i;
 
- 	for(i = 0; i < ArrayCount(QueryQueue); i++)
+ 	if(QueryType == SubmitEQInfo)
  	{
- 		if(QueryQueue[i] != "")
- 			continue;
+		for(i = 0; i < ArrayCount(ArpanQueryQueue); i++)
+		{
+ 			if(ArpanQueryQueue[i] != "")
+ 				continue;
 
-		QueryQueue[i] = Data;
-
-		if(!bQueryInProgress)
- 			SendQueue(QueryType);
- 		break;
+			ArpanQueryQueue[i] = Data;
+ 			break;
+ 		}
  	}
+ 	else if(QueryType == QueryEQInfo)
+ 	{
+		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
+ 		{
+ 			if(ArziQueryQueue[i] != "")
+ 				continue;
+
+			ArziQueryQueue[i] = Data;
+ 			break;
+ 		}
+	}
+
+ 	SetTimer(1.0f, true);
  }
+
+/**
+ * Parsing the GString!
+ *
+ * @since 0.2.0
+ */
 
  function string ParseString(String GString) // GString means Gyan(Knowledge) String
  {
@@ -294,25 +423,25 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	local string result;
 
  	PCRLF = InStr(GString, CR$LF);
-    PLF = InStr(GString, LF);
+	PLF = InStr(GString, LF);
 
-    if(PCRLF != -1)
-    {
-        Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
-        result = Right(GString, len(GString) - PCRLF - 2);
+	if(PCRLF != -1)
+	{
+		Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
+		result = Right(GString, len(GString) - PCRLF - 2);
  		PCRLF =  InStr(result, CR$LF);
  		result = Left(result, PCRLF);
  		return "";
-    }
-    else if(PLF != -1)
-    {
-        result = Right(GString, len(GString) - PLF - 1);
+	}
+	else if(PLF != -1)
+	{
+		result = Right(GString, len(GString) - PLF - 1);
  		return result;
-    }
-    else
-    {
+	}
+	else
+	{
  		return GString;
-    }
+	}
  }
 
  defaultproperties

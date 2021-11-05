@@ -1134,11 +1134,11 @@ class Equalizer extends Mutator config(Equalizer);
         EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
         if(EQPlayerInfo != none)
         {
-           //EQPlayerInfo.PlayersLastPlayingMoment();
-           //HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
-           //Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-           Log("Querying for Little_Johnny", 'Equalizer');
-           HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
+           EQPlayerInfo.PlayersLastPlayingMoment();
+           HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+           Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+           //Log("Querying for Little_Johnny", 'Equalizer');
+           //HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
         }
 
 		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
