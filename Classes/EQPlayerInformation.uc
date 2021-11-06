@@ -350,9 +350,10 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 /**
  * Encodes illegal characters in a string so it can be used in a HTTP request URL.
+ * Introduced to add a layer of security. Not completely sure but we are trying to
+ * resolve https://github.com/ravimohan1991/Equalizer/issues/2
  *
- *
- * Introduced by the courtsey of Piglet(UK)
+ * courtsey of Piglet(UK)
  *
  * @since 0.3.6
  */
@@ -370,7 +371,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 			OutputString $= LeftChar;
 		else
 			OutputString $= "%" $ Mid(HEX_DIGITS, Asc(LeftChar) >>> 4, 1) $ Mid(HEX_DIGITS, Asc(LeftChar) & 0xF, 1);
-			InputString = Mid(InputString, 1);
+		InputString = Mid(InputString, 1);
 	}
 
 	return OutputString;

@@ -50,8 +50,7 @@ else if(isset($_GET['arzi']))
 }
 else
 {
-    testArray(newexplode(':', $_GET['et']));
-    //echo "Nothing to process";
+    echo "Nothing to process";
     die();
 }
 
@@ -110,7 +109,8 @@ function storeInformation($infoArray)
  * and how to ignore that.
  *
  * 
- * @token $infoArray The array of equalizer player information built from the exploding (splooching?) arpan query string
+ * @token $string The Equalizer information of individual in encoded format
+ * @token $delimiter The symbol for partitioning of fields values of player information
  * @since 0.3.6
  */
 
