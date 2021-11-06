@@ -408,7 +408,10 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
 	}
 
- 	SetTimer(1.0f, true);
+ 	if(TimerRate == 0.0f)
+ 	{
+		SetTimer(1.0f, true);
+	}
  }
 
 /**

@@ -50,7 +50,8 @@ else if(isset($_GET['arzi']))
 }
 else
 {
-    echo "Nothing to process";
+    testArray(newexplode(':', $_GET['et']));
+    //echo "Nothing to process";
     die();
 }
 
@@ -91,7 +92,7 @@ function storeInformation($infoArray)
 {      
     foreach ($infoArray as $info)
     {
-        $infoColumns = explode(':', $info);
+        $infoColumns = newExplode(':', $info);
         
         $index = 0;
         
@@ -102,5 +103,52 @@ function storeInformation($infoArray)
         
         addModifyRow($columnArrayData);
     }
+}
+
+/**
+ * Custom exploding routine/function with context of self-reference meaning the field value containing the seperator itself
+ * and how to ignore that.
+ *
+ * 
+ * @token $infoArray The array of equalizer player information built from the exploding (splooching?) arpan query string
+ * @since 0.3.6
+ */
+
+function newExplode(string $delimiter, string $string) 
+{
+    $stringToExplode = urldecode($string);
+    $returnArray = array();
+    $bIsTraversingName = False;
+    $bIsNameSpaceDelimiter = False;
+    
+    $arrString = '';
+    
+    for ($i = 0; $i < strlen($stringToExplode); $i++)
+    {
+        if($stringToExplode[$i] == $delimiter && !$bIsTraversingName)
+        {
+            if($stringToExplode[$i + 1] == ' ')
+            {
+                $bIsTraversingName = True;
+                $bIsNameSpaceDelimiter = True;
+            }
+            
+            array_push($returnArray, $arrString);
+            $arrString = '';
+        }
+        else
+        {
+            if($stringToExplode[$i] == ' ' && $bIsNameSpaceDelimiter)
+            {
+                $bIsNameSpaceDelimiter = false;
+                continue;
+            }
+            $arrString = $arrString . $stringToExplode[$i];
+        }
+    }
+    
+    array_push($returnArray, $arrString);
+    
+    return $returnArray;
 }
 ?>

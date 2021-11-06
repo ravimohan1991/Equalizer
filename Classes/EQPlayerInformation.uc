@@ -148,7 +148,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-    EQIdentifier =  PlayerReplicationInfo(Owner).PlayerName;
+    EQIdentifier =  "Little_Johnny";//PlayerReplicationInfo(Owner).PlayerName;
     /*
     if(PlayerReplicationInfo(Owner).bBot)
 	{
@@ -343,7 +343,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	ReturnString = URLEncode(EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
  		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills
  		$ ":" $ Score $ ":" $ TimePlayedMinutes $ ":"
- 		$ TimeplayedHours $ ":" $ Frags $ ":" $ Suicides $ ":" $ PlayerName);
+ 		$ TimeplayedHours $ ":" $ Frags $ ":" $ Suicides $ ": " $ PlayerName); // Note the space given after the last delimiter (:) meaning Name space delimiter
 
  	return ReturnString;
  }
@@ -354,7 +354,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  *
  * Introduced by the courtsey of Piglet(UK)
  *
- * @since 0.3.0
+ * @since 0.3.6
  */
 
  static final function string URLEncode(coerce string InputString)
