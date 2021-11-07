@@ -410,7 +410,10 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	ToBePRIs[ToBePRIs.Length] = Cont;
 
-	SetTimer(1.0f, true);
+	if(TimerRate == 0.0f)
+	{
+        SetTimer(1.0f, true);
+    }
  }
 
 /**
