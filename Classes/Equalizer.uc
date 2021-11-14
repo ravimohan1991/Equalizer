@@ -1048,7 +1048,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Called when the Mutator is destroyed which generally would imply match end.
+ * Called when the match ends, keeping suddendeath in mind!
  * This was a cue to send the Equalizer information to backend. Piglet(UK) checked
  * this routine and reported that this leads to duplication of data sent given we
  * are already sending the data when players logout, which itself is called after match
