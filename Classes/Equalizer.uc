@@ -1075,9 +1075,6 @@ class Equalizer extends Mutator config(Equalizer);
 		EQPlayers[PlayerIndex].Destroy();
 		EQPlayers.Remove(PlayerIndex, 1);
 	}
-
-
-	super.Destroyed();
  }
 
 /**
