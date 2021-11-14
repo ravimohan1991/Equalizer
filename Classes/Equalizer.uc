@@ -130,7 +130,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
 	SaveConfig();
-	EQGRules = Level.Game.Spawn(class'EQGameRules'); // for accessing PreventDeath function
+	EQGRules = Level.Game.Spawn(class'EQGameRules', self, 'EndGame'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
@@ -275,6 +275,11 @@ class Equalizer extends Mutator config(Equalizer);
 
 	local int PlayerIndex;
 
+    if(EQPlayers.Length == 0)
+    {
+     return;
+    }
+
 	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
 		if(EQPlayers[PlayerIndex].Owner == Exiting.PlayerReplicationInfo)
@@ -283,7 +288,7 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 				Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer');
 				SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
-				EQPlayers[PlayerIndex].SetTimer(0.f, false);
+				EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 				EQPlayers[PlayerIndex].Destroy();
 				EQPlayers.Remove(PlayerIndex, 1);
 			}
@@ -412,8 +417,8 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(TimerRate == 0.0f)
 	{
-        SetTimer(1.0f, true);
-    }
+		SetTimer(1.0f, true);
+	}
  }
 
 /**
@@ -830,20 +835,20 @@ class Equalizer extends Mutator config(Equalizer);
     local string DataToSend;
 
 	EQPlayerInfo.UpdateScore();
-    EQPlayerInfo.PlayersLastPlayingMoment();
+	EQPlayerInfo.PlayersLastPlayingMoment();
 
-    if(HttpClientInstance != none)
+	if(HttpClientInstance != none)
 	{
-	    DataToSend = EQPlayerInfo.GenerateArpanString();
+		DataToSend = EQPlayerInfo.GenerateArpanString();
 
-        if(DataToSend ~= "")
-        {
+		if(DataToSend ~= "")
+		{
 			return;
-        }
+		}
 
 		HttpClientInstance.SendData(DataToSend, HttpClientInstance.SubmitEQInfo);
 		Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer');
-        Log(DataToSend, 'Equalizer');
+		Log(DataToSend, 'Equalizer');
 		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
 		if(Sender != none)
 		{
@@ -1048,6 +1053,8 @@ class Equalizer extends Mutator config(Equalizer);
  * this routine and reported that this leads to duplication of data sent given we
  * are already sending the data when players logout, which itself is called after match
  * ends!
+ * So now we destroy the EQPlayerInformation class once we serialize the relevant components of
+ * the class and send data to backend.
  *
  * @since 0.2.0
  */
@@ -1059,13 +1066,16 @@ class Equalizer extends Mutator config(Equalizer);
 
 	Log("Match End!!!", 'Equalizer');
 
-	/*
-    for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
+
+	for(PlayerIndex = EQPlayers.Length - 1; PlayerIndex >= 0; PlayerIndex--)
 	{
 		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');;
 		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
+		EQPlayers[PlayerIndex].SetTimer(0.0f, false);
+		EQPlayers[PlayerIndex].Destroy();
+		EQPlayers.Remove(PlayerIndex, 1);
 	}
-    */
+
 
 	super.Destroyed();
  }
@@ -1130,7 +1140,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation EQPlayerInfo ;
 
-    if(Sender != none)
+	if(Sender != none)
 	{
 
 		// allset in backend only for addition of new records. Was trying to test that!

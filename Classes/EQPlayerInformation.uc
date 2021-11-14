@@ -148,9 +148,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-    EQIdentifier =  "Little_Johnny";//PlayerReplicationInfo(Owner).PlayerName;
-    /*
-    if(PlayerReplicationInfo(Owner).bBot)
+	EQIdentifier = PlayerReplicationInfo(Owner).PlayerName;
+	/*
+	if(PlayerReplicationInfo(Owner).bBot)
 	{
 		EQIdentifier = "BOT";
 	}
@@ -158,7 +158,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	{
 		SetTimer(1.f, true);
 	}
-    */
+	*/
 	StartTime = Level.TimeSeconds;
 
 	bIsBEReady = false;
@@ -273,7 +273,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PlayerBecameSpectator()
  {
-	 // Maybe something will come up in future (as stated by Uncle Charlie)
+	// Maybe something will come up in future (as stated by Uncle Charlie)
  }
 
 /**
@@ -284,7 +284,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PlayersLastPlayingMoment()
  {
-    local int Seconds;
+	local int Seconds;
 
 	Seconds = Level.TimeSeconds - StartTime;
 	TimePlayedMinutes = Seconds / 60;
@@ -324,7 +324,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	local string ReturnString;
  	local string PlayerName;
 
-    if(PlayerReplicationInfo(Owner) != none)
+	if(PlayerReplicationInfo(Owner) != none)
  	{
  		PlayerName = PlayerReplicationInfo(Owner).PlayerName;
  	}
@@ -436,7 +436,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
  }
 
-DefaultProperties
+defaultproperties
 {
     bHidden=True
 }

@@ -91,15 +91,13 @@ class EQGameRules extends Gamerules;
 /**
  * For detecting EndGame (yeah the Avangers one!)
  *
- * @since 0.2.0
+ * @since 0.3.6
  */
 
- function bool CheckEndGame(PlayerReplicationInfo Winner, string Reason)
+ event Trigger(Actor Other, Pawn EventInstigator)
  {
-	if (NextGameRules != none && !NextGameRules.CheckEndGame(Winner, Reason))
-		return false;
-
-	EQMut.EndGameEvent();
-
-	return true;
+	if(Other.IsA('GameInfo'))
+	{
+		EQMut.EndGameEvent();
+	}
  }
