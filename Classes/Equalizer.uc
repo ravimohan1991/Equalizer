@@ -275,10 +275,10 @@ class Equalizer extends Mutator config(Equalizer);
 
 	local int PlayerIndex;
 
-    if(EQPlayers.Length == 0)
-    {
-     return;
-    }
+	if(EQPlayers.Length == 0)
+	{
+		return;
+	}
 
 	for(PlayerIndex = 0; PlayerIndex < EQPlayers.Length; PlayerIndex++)
 	{
