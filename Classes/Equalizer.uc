@@ -81,6 +81,13 @@ class Equalizer extends Mutator config(Equalizer);
  /** Number of restarts.*/
  var int NumHTTPRestarts;
 
+ /** The GameInfo reference.*/
+ var CTFGame CTFGameInfo;
+
+ /** The Scoreboard in the form of Sorter.*/
+ // This might affect the order of ServerActors loading.
+ var Scoreboard PlayerSorter;
+
 
  /*
   * Configurable Variables
@@ -133,6 +140,11 @@ class Equalizer extends Mutator config(Equalizer);
 	EQGRules = Level.Game.Spawn(class'EQGameRules', self, 'EndGame'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
+	CTFGameInfo = CTFGame(Level.Game);
+	if(CTFGameInfo != none)
+	{
+     Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
+    }
 	RegisterBroadcastHandler();
 	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none)
@@ -233,6 +245,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local Controller Cont;
+	local bool bWannaBalance;
 
 	while(Level.Game.CurrentID > CurrID)
 	{
@@ -243,24 +256,159 @@ class Equalizer extends Mutator config(Equalizer);
 				if(Cont != Witness)
 				{
 					PlayerJoin(Cont);
+					bWannaBalance = true;
 				}
 				break;
 			}
 		}
 		CurrID++;
 	}
+
+	if(Level.Game.CurrentID == CurrID && bWannaBalance)
+	{
+	  BalanceCTFTeams();
+	  bWannaBalance = false;
+    }
  }
 
 /**
  * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize)
  *
  *
+ * https://github.com/TheRealWormbo/EvenMatch/blob/bb811ce5107e9155bf646ba4a83d773ed7b38ab8/Classes/MutTeamBalance.uc
+ *
+ *  Things to note
+ * 1. Since UniqueID might delay in getting generated, we need to keep those players in seperate chache
+ * 2. Parametrize the basis of Player identification (name or UniqueID etc)
  */
 
  function BalanceCTFTeams()
  {
+     local EQPlayerInformation LEQPInfo;
+     local Controller Cont;
+
+     if(EQPlayers.Length > 0)
+     {
+      SendArziToBE();
+     }
+     else
+     {
+      Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer');
+      return;
+     }
+
+     // We want to seperate bots and Humans
+
+     // First kill all bots
+     if(CTFGameInfo.NumBots > 0)
+     {
+      Log("Removing " $ CTFGameInfo.NumBots $ " bots for rebalancing", 'Equalizer');
+      CTFGameInfo.KillBots(CTFGameInfo.NumBots);
+     }
+
+     SortEQPInfoArray();
+
+     // Piglet's algorithm ...
+
+
 
  }
+
+/**
+ * Ripped from default ScoreBoard.uc
+ *
+ * @since 0.3.6
+ */
+
+ function SortEQPInfoArray()
+ {
+	local int i, j;
+    local EQPlayerInformation tmp;
+
+    for (i = 0; i < EQPlayers.Length-1; i++)
+    {
+        for (j = i+1; j < EQPlayers.Length; j++)
+        {
+            if(!InOrder(EQPlayers[i], EQPlayers[j]))
+            {
+                tmp = EQPlayers[i];
+                EQPlayers[i] = EQPlayers[j];
+                EQPlayers[j] = tmp;
+            }
+        }
+    }
+ }
+
+/**
+ * Ripped from default ScoreBoard.uc
+ *
+ * @since 0.3.6
+ */
+
+ function bool InOrder(EQPlayerInformation EQP1, EQPlayerInformation EQP2)
+ {
+    local PlayerReplicationInfo P1, P2;
+
+    P1 = PlayerReplicationInfo(EQP1.Owner);
+    P2 = PlayerReplicationInfo(EQP2.Owner);
+
+    if(P1 == none)
+    {
+     Log("The Owner of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Order can't be determined.", 'Equalizer');
+       return false;
+     if(P2 == none)
+     {
+       Log("The Owner of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Order can't be determined.", 'Equalizer');
+       return false;
+     }
+    }
+
+    if(P1.bOnlySpectator)
+    {
+        if( P2.bOnlySpectator )
+            return true;
+        else
+            return false;
+    }
+    else if ( P2.bOnlySpectator )
+        return true;
+
+    if( P1.Score < P2.Score )
+        return false;
+    if( P1.Score == P2.Score )
+    {
+		if ( P1.Deaths > P2.Deaths )
+			return false;
+		if ( (P1.Deaths == P2.Deaths) && (PlayerController(P2.Owner) != None) && (Viewport(PlayerController(P2.Owner).Player) != None) )
+			return false;
+	}
+    return true;
+ }
+
+
+ function SendArziToBE()
+ {
+     local string ArziString;
+     local byte i;
+
+     ArziString = "arzi=";
+
+     for(i = 0; i < EQPlayers.Length; i++)
+     {
+       if(i == 0)
+       {
+         ArziString = ArziString $ EQPlayers[i].EQIdentifier;
+       }
+       else
+       {
+         ArziString = ArziString $ "," $ EQPlayers[i].EQIdentifier;
+       }
+     }
+
+     Log("Arzi string is: " $ ArziString, 'Equalizer');
+     HttpClientInstance.SendData(ArziString, HttpClientInstance.QueryEQInfo);
+ }
+
 
 /**
  * The function clears the EQPlayers array          <br />
@@ -1093,7 +1241,7 @@ class Equalizer extends Mutator config(Equalizer);
 	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
 	local EQPlayerInformation EQPlayerInfo;
 
-	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
+    if(GetToken(Epigraph, ",", 0) == "OSTRACON")
 	{
 		NumOfChunks = GetTokenCount(Epigraph, ",") - 1;
 		for(ChunkIndex = 1; ChunkIndex <= NumOfChunks; ChunkIndex++)

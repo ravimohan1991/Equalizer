@@ -148,7 +148,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-	EQIdentifier = PlayerReplicationInfo(Owner).PlayerName;
+	EQIdentifier = "Little_Johnny";//PlayerReplicationInfo(Owner).PlayerName;
 	/*
 	if(PlayerReplicationInfo(Owner).bBot)
 	{
@@ -187,7 +187,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function UpdateBackEndData(int Value, int Counter)
  {
-	if(Counter == 1)
+	Log("UpdatingBackEndData", 'Equalizer');
+
+    if(Counter == 1)
 	{
 		BECaptures = Value;
 	}
@@ -213,7 +215,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	}
 	else if(Counter == 7)
 	{
-		BEScore = Value;
+		Log("Updating Total Points: " $ Value, 'Equalizer');
+        BEScore = Value;
 	}
 	else if(Counter == 8)
 	{

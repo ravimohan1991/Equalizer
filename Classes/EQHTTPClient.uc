@@ -158,7 +158,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  	}
 
- 	AddToQueue(Information, QueryType);
+ 	 Log("Inside SendData", 'Equalizer');
+     AddToQueue(Information, QueryType);
  	return "";
  }
 
@@ -344,7 +345,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 	}
 	else if(ArziQueryQueue[0] != "")
 	{
-		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
+        for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
  		{
 			if(ArziQueryQueue[i] == "")
  				continue;
@@ -400,10 +401,10 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
 		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
  		{
- 			if(ArziQueryQueue[i] != "")
+             if(ArziQueryQueue[i] != "")
  				continue;
 
-			ArziQueryQueue[i] = Data;
+            ArziQueryQueue[i] = Data;
  			break;
  		}
 	}
