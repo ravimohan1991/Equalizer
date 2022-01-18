@@ -101,3 +101,22 @@ class EQGameRules extends Gamerules;
 		EQMut.EndGameEvent();
 	}
  }
+
+/**
+ * Gracefull changing of teams in accord with the Equalizer conditions
+ *
+ * @since 0.3.6
+ */
+
+ function ChangeTeam(PlayerController Player, int NewTeam)
+ {
+	Player.PlayerReplicationInfo.Team.RemoveFromTeam(Player);
+	if (Level.GRI.Teams[NewTeam].AddToTeam(Player))
+    {
+		//Player.ReceiveLocalizedMessage(class'TeamSwitchNotification', NewTeam);
+		CTFGame(Level.Game).GameEvent("TeamChange", string(NewTeam), Player.PlayerReplicationInfo);
+	}
+
+	// Necessary?
+    //EvenMatchMutator.PendingVoiceChatRoomChecks[EvenMatchMutator.PendingVoiceChatRoomChecks.Length] = Player;
+ }

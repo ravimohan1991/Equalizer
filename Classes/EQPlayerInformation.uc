@@ -132,6 +132,10 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  */
  var   bool   bIsBEReady;
 
+ /*
+ * The Equalizer mutator reference.
+ */
+ var Equalizer EQMut;
 
 /**
  * The function gets called just after ActorSpawns.
@@ -142,9 +146,12 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function PostBeginPlay()
  {
-	if(Owner == none || PlayerReplicationInfo(Owner) == none)
+	// Necessary?
+    if(Owner == none || PlayerReplicationInfo(Owner) == none)
 	{
-		super.PostBeginPlay();
+		Log("No legitimate Owner. Destroying self...", 'Equalizer');
+        super.PostBeginPlay();
+        Destroy(); // The dirty flag!
 		return;
 	}
 
@@ -162,6 +169,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	StartTime = Level.TimeSeconds;
 
 	bIsBEReady = false;
+	EQMut.SendArziToBE(self);
 
 	super.PostBeginPlay();
  }
@@ -189,52 +197,52 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  {
 	Log("UpdatingBackEndData", 'Equalizer');
 
-    if(Counter == 1)
-	{
-		BECaptures = Value;
-	}
-	else if(Counter == 2)
-	{
-		BEGrabs = Value;
-	}
-	else if(Counter == 3)
-	{
-		BECovers = Value;
-	}
-	else if(Counter == 4)
-	{
-		BESeals = Value;
-	}
-	else if(Counter == 5)
-	{
-		BEFlagKills = Value;
-	}
-	else if(Counter == 6)
-	{
-		BETeamKills = Value;
-	}
-	else if(Counter == 7)
-	{
-		Log("Updating Total Points: " $ Value, 'Equalizer');
-        BEScore = Value;
-	}
-	else if(Counter == 8)
-	{
-		BETimePlayedMinutes = Value;
-	}
-	else if(Counter == 9)
-	{
-		BETimeplayedHours = Value;
-	}
-	else if(Counter == 10)
-	{
-		BEFrags = Value;
-	}
-	else if(Counter == 11)
-	{
-		BESuicides = Value;
-	}
+    switch(Counter)
+    {
+    case 1: BECaptures = Value; break;
+    case 2: BEGrabs = Value; break;
+    case 3: BECovers = Value; break;
+    case 4: BESeals = Value; break;
+    case 5: BEFlagKills = Value; break;
+    case 6: BETeamKills = Value; break;
+    case 7: BEScore = Value; Log("Updating Total Points: " $ Value, 'Equalizer'); break;
+    case 8: BETimePlayedMinutes = Value; break;
+    case 9: BETimePlayedHours = Value; break;
+    case 10: BEFrags = Value; break;
+    case 11: BESuicides = Value; break;
+    default: Log("Can't apply the Value corresponding to the counter: " $ Counter, 'Equalizer'); break;
+    }
  }
+
+/**
+ * The function returns the Value corresponding to BasisParameter.
+ * A BP-Value dictionary so to speak!
+ * Also think about ELO rating and sorts!
+ *
+ * @since 0.3.6
+ */
+
+ function int BPValue(int BasisParameter)
+ {
+   switch(BasisParameter)
+   {
+    case 1: return BECaptures;
+    case 2: return BEGrabs;
+    case 3: return BECovers;
+    case 4: return BESeals;
+    case 5: return BEFlagKills;
+    case 6: return BETeamKills;
+    case 7: return BEScore;
+    case 8: return BETimePlayedMinutes;
+    case 9: return BETimePlayedHours;
+    case 10: return BEFrags;
+    case 11: return BESuicides;
+   }
+
+   Log("No BECategory corresponding to BasisParameter: " $ BasisParameter, 'Equalizer');
+   return -1;
+ }
+
 
 /**
  * Here we update the score and match with that of PlayerReplicationInfo
