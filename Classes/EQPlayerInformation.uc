@@ -132,10 +132,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  */
  var   bool   bIsBEReady;
 
- /*
- * The Equalizer mutator reference.
- */
- var Equalizer EQMut;
 
 /**
  * The function gets called just after ActorSpawns.
@@ -147,11 +143,11 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function PostBeginPlay()
  {
 	// Necessary?
-    if(Owner == none || PlayerReplicationInfo(Owner) == none)
+	if(Owner == none || PlayerReplicationInfo(Owner) == none)
 	{
 		Log("No legitimate Owner. Destroying self...", 'Equalizer');
-        super.PostBeginPlay();
-        Destroy(); // The dirty flag!
+		super.PostBeginPlay();
+		Destroy(); // The dirty flag!
 		return;
 	}
 
@@ -169,7 +165,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	StartTime = Level.TimeSeconds;
 
 	bIsBEReady = false;
-	EQMut.SendArziToBE(self);
 
 	super.PostBeginPlay();
  }
@@ -197,21 +192,21 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  {
 	Log("UpdatingBackEndData", 'Equalizer');
 
-    switch(Counter)
-    {
-    case 1: BECaptures = Value; break;
-    case 2: BEGrabs = Value; break;
-    case 3: BECovers = Value; break;
-    case 4: BESeals = Value; break;
-    case 5: BEFlagKills = Value; break;
-    case 6: BETeamKills = Value; break;
-    case 7: BEScore = Value; Log("Updating Total Points: " $ Value, 'Equalizer'); break;
-    case 8: BETimePlayedMinutes = Value; break;
-    case 9: BETimePlayedHours = Value; break;
-    case 10: BEFrags = Value; break;
-    case 11: BESuicides = Value; break;
-    default: Log("Can't apply the Value corresponding to the counter: " $ Counter, 'Equalizer'); break;
-    }
+	switch(Counter)
+	{
+		case 1: BECaptures = Value; break;
+ 		case 2: BEGrabs = Value; break;
+ 		case 3: BECovers = Value; break;
+ 		case 4: BESeals = Value; break;
+ 		case 5: BEFlagKills = Value; break;
+ 		case 6: BETeamKills = Value; break;
+ 		case 7: BEScore = Value; Log("Updating Total Points: " $ Value, 'Equalizer'); break;
+ 		case 8: BETimePlayedMinutes = Value; break;
+ 		case 9: BETimePlayedHours = Value; break;
+ 		case 10: BEFrags = Value; break;
+ 		case 11: BESuicides = Value; break;
+		default: Log("Can't apply the Value corresponding to the counter: " $ Counter, 'Equalizer'); break;
+	}
  }
 
 /**
@@ -224,23 +219,23 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function int BPValue(int BasisParameter)
  {
-   switch(BasisParameter)
-   {
-    case 1: return BECaptures;
-    case 2: return BEGrabs;
-    case 3: return BECovers;
-    case 4: return BESeals;
-    case 5: return BEFlagKills;
-    case 6: return BETeamKills;
-    case 7: return BEScore;
-    case 8: return BETimePlayedMinutes;
-    case 9: return BETimePlayedHours;
-    case 10: return BEFrags;
-    case 11: return BESuicides;
-   }
+	switch(BasisParameter)
+	{
+ 		case 1: return BECaptures;
+ 		case 2: return BEGrabs;
+ 		case 3: return BECovers;
+ 		case 4: return BESeals;
+ 		case 5: return BEFlagKills;
+ 		case 6: return BETeamKills;
+ 		case 7: return BEScore;
+ 		case 8: return BETimePlayedMinutes;
+ 		case 9: return BETimePlayedHours;
+ 		case 10: return BEFrags;
+ 		case 11: return BESuicides;
+	}
 
-   Log("No BECategory corresponding to BasisParameter: " $ BasisParameter, 'Equalizer');
-   return -1;
+	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter, 'Equalizer');
+	return -1;
  }
 
 

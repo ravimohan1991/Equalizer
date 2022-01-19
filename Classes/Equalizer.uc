@@ -146,8 +146,8 @@ class Equalizer extends Mutator config(Equalizer);
 	CTFGameInfo = CTFGame(Level.Game);
 	if(CTFGameInfo != none)
 	{
-     Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
-    }
+		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
+	}
 	RegisterBroadcastHandler();
 	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none)
@@ -287,29 +287,28 @@ class Equalizer extends Mutator config(Equalizer);
 
  function BalanceCTFTeams()
  {
-     local EQPlayerInformation LEQPInfo;
-     local Controller Cont;
+	local EQPlayerInformation LEQPInfo;
+	local Controller Cont;
 
-     if(EQPlayers.Length == 0)
-     {
-      Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer');
-      return;
-     }
+	if(EQPlayers.Length == 0)
+	{
+		Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer');
+		return;
+	}
 
-     // We want to seperate bots and Humans
+	// We want to seperate bots and Humans
 
-     // First kill all bots
-     if(CTFGameInfo.NumBots > 0)
-     {
-      Log("Removing " $ CTFGameInfo.NumBots $ " bots for rebalancing", 'Equalizer');
-      CTFGameInfo.KillBots(CTFGameInfo.NumBots);
-     }
+	// First kill all bots
+	if(CTFGameInfo.NumBots > 0)
+	{
+		Log("Removing " $ CTFGameInfo.NumBots $ " bots for rebalancing", 'Equalizer');
+		CTFGameInfo.KillBots(CTFGameInfo.NumBots);
+	}
 
-     SortEQPInfoArray(0);
+	SortEQPInfoArray(0);
 
-     // Piglet's algorithm ...
-     NuclearShellFillAlgorithm();
-
+	// Piglet's algorithm ...
+	NuclearShellFillAlgorithm();
  }
 
 /**
@@ -320,25 +319,25 @@ class Equalizer extends Mutator config(Equalizer);
 
  function NuclearShellFillAlgorithm()
  {
-  local int index;
-  local PlayerReplicationInfo LambPRI;
-  local byte TeamToSwitchTo;
+	local int index;
+	local PlayerReplicationInfo LambPRI;
+	local byte TeamToSwitchTo;
 
-  TeamToSwitchTo = 0;// We start with Red team as per suggestion
+	TeamToSwitchTo = 0;// We start with Red team as per suggestion
 
-  // Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
-  for(index = 0; index < EQPlayers.Length; index++)
-  {
-    LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
+	// Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
+	for(index = 0; index < EQPlayers.Length; index++)
+	{
+		LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
 
-    if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
-    {
-       EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
-    }
+		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
+		{
+			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
+		}
 
-    // Alternating team population procedure
-    TeamToSwitchTo = 1 - TeamToSwitchTo;
-  }
+		// Alternating team population procedure
+		TeamToSwitchTo = 1 - TeamToSwitchTo;
+	}
  }
 
 /**
@@ -350,20 +349,20 @@ class Equalizer extends Mutator config(Equalizer);
  function SortEQPInfoArray(int BasisParameter)
  {
 	local int i, j;
-    local EQPlayerInformation tmp;
+	local EQPlayerInformation tmp;
 
-    for (i = 0; i < EQPlayers.Length-1; i++)
-    {
-        for (j = i+1; j < EQPlayers.Length; j++)
-        {
-            if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
-            {
-                tmp = EQPlayers[i];
-                EQPlayers[i] = EQPlayers[j];
-                EQPlayers[j] = tmp;
-            }
-        }
-    }
+	for (i = 0; i < EQPlayers.Length-1; i++)
+	{
+		for (j = i+1; j < EQPlayers.Length; j++)
+		{
+			if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
+			{
+				tmp = EQPlayers[i];
+				EQPlayers[i] = EQPlayers[j];
+				EQPlayers[j] = tmp;
+			}
+		}
+	}
  }
 
 /**
@@ -375,69 +374,69 @@ class Equalizer extends Mutator config(Equalizer);
 
  function bool InOrder(EQPlayerInformation EQP1, EQPlayerInformation EQP2, int BasisParameter)
  {
-    local PlayerReplicationInfo P1, P2;
+	local PlayerReplicationInfo P1, P2;
 
-    P1 = PlayerReplicationInfo(EQP1.Owner);
-    P2 = PlayerReplicationInfo(EQP2.Owner);
+	P1 = PlayerReplicationInfo(EQP1.Owner);
+	P2 = PlayerReplicationInfo(EQP2.Owner);
 
-    // Safety check!
-    if(P1 == none)
-    {
-     Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
-       if(P2 == none)
-       {
-        Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer');
-        return true;// Note this "true" is not the same "true" we gauge then we are satisfied with the order.  This true means order can't be determined and we are dealing with degeneracy.
-                    // Seems computationally it is no different from order satisfaction?
-       }
-       else
-       {
-        return false;
-       }
-    }
-    else if(P2 == none)
-    {
-       Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
-       return true;
-    }
+	// Safety check!
+	if(P1 == none)
+	{
+		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
+		if(P2 == none)
+		{
+			Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer');
+			return true;// Note this "true" is not the same "true" we gauge then we are satisfied with the order.  This true means order can't be determined and we are dealing with degeneracy.
+				// Seems computationally it is no different from order satisfaction?
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if(P2 == none)
+	{
+		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
+		return true;
+	}
 
-    if(P1.bOnlySpectator)
-    {
-        if(P2.bOnlySpectator)
-            return true;
-        else
-            return false;
-    }
-    else if (P2.bOnlySpectator)
-        return true;
+	if(P1.bOnlySpectator)
+	{
+		if(P2.bOnlySpectator)
+			return true;
+		else
+			return false;
+	}
+	else if (P2.bOnlySpectator)
+		return true;
 
-    if(EQP1.bIsBEReady)
-    {
-      if(!EQP2.bIsBEReady)
-      {
-       return true;
-      }
-    }
-    else if(EQP2.bIsBEReady)
-    {
-     return false;
-    }
+	if(EQP1.bIsBEReady)
+	{
+		if(!EQP2.bIsBEReady)
+		{
+			return true;
+		}
+	}
+	else if(EQP2.bIsBEReady)
+	{
+		return false;
+	}
 
-    if(EQP1.BPValue(BasisParameter) <  EQP2.BPValue(BasisParameter))
-        return false;
+	if(EQP1.BPValue(BasisParameter) <  EQP2.BPValue(BasisParameter))
+		return false;
 
-    return true;
+	return true;
  }
 
 
  function SendArziToBE(EQPlayerInformation EQPlayerInfo)
  {
-     local string ArziString;
+	local string ArziString;
 
-     ArziString = "arzi=" $ EQPlayerInfo.EQIdentifier;//Clustering required?
+	ArziString = "arzi=" $ EQPlayerInfo.EQIdentifier;//Clustering required?
 
-     Log("Arzi string is: " $ ArziString, 'Equalizer');
-     HttpClientInstance.SendData(ArziString, HttpClientInstance.QueryEQInfo);
+	Log("Arzi string is: " $ ArziString, 'Equalizer');
+ 	HttpClientInstance.SendData(ArziString, HttpClientInstance.QueryEQInfo);
  }
 
 
@@ -602,13 +601,14 @@ class Equalizer extends Mutator config(Equalizer);
 
  function EQPlayerInformation SpawnEQPlayerInfo(Actor TheOwner)
  {
-  local EQPlayerInformation EQPI;
+	local EQPlayerInformation EQPI;
 
-  EQPI = Spawn(class'EQPlayerInformation', TheOwner);
-  EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
-  EQPI.EQMut = self;
+	EQPI = Spawn(class'EQPlayerInformation', TheOwner);
+	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
-  return EQPI;
+	SendArziToBE(EQPI);
+
+	return EQPI;
  }
 
 /**
@@ -1055,19 +1055,19 @@ class Equalizer extends Mutator config(Equalizer);
 
  function SpectatorBecamePlayer(PlayerReplicationInfo SpectatorJoinPRI)
  {
-    local EQPlayerInformation EQPI;
+	local EQPlayerInformation EQPI;
 
-    EQPI = GetInfoByID(SpectatorJoinPRI.PlayerID);
+	EQPI = GetInfoByID(SpectatorJoinPRI.PlayerID);
 
-    if(EQPI != none)
-    {
-      EQPI.SpectatorBecamePlayer();
-    }
-    else
-    {
-      EQPI = SpawnEQPlayerInfo(SpectatorJoinPRI);
-      EQPlayers[EQPlayers.Length] = EQPI;
-    }
+	if(EQPI != none)
+	{
+		EQPI.SpectatorBecamePlayer();
+	}
+	else
+	{
+		EQPI = SpawnEQPlayerInfo(SpectatorJoinPRI);
+		EQPlayers[EQPlayers.Length] = EQPI;
+	}
  }
 
 /**
@@ -1208,18 +1208,18 @@ class Equalizer extends Mutator config(Equalizer);
  function EQPlayerInformation GetInfoByEQIdentifier(string IdentifierString)
  {
 
-    local int i;
+	local int i;
 
-    for(i = 0; i < EQPlayers.Length; i++)
-    {
-       if(IdentifierString ~= EQPlayers[i].EQIdentifier)
-       {
-        return EQPlayers[i];
-       }
-    }
+	for(i = 0; i < EQPlayers.Length; i++)
+	{
+		if(IdentifierString ~= EQPlayers[i].EQIdentifier)
+		{
+			return EQPlayers[i];
+		}
+	}
 
-    Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer');
-    return none;
+	Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer');
+	return none;
  }
 
 /**
@@ -1331,25 +1331,30 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation EQPlayerInfo ;
 
-	if(Sender != none)
+	if(false)
 	{
 
 		// allset in backend only for addition of new records. Was trying to test that!
-        EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
-        if(EQPlayerInfo != none)
-        {
-           EQPlayerInfo.PlayersLastPlayingMoment();
-           HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
-           Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-           //Log("Querying for Little_Johnny", 'Equalizer');
-           //HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
-        }
+		EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
+		if(EQPlayerInfo != none)
+		{
+			EQPlayerInfo.PlayersLastPlayingMoment();
+			HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
+			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+			//Log("Querying for Little_Johnny", 'Equalizer');
+			//HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
+		}
 
 		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
 
 		if (MutateString ~= "dist")
 		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - 				EQFlags[1].HomeBase.Location));
 
+	}
+
+	if(Sender != none)
+	{
+	 EQGRules.ChangeTeam(Sender, 1 - Sender.PlayerReplicationInfo.Team.TeamIndex);
 	}
 
 	if (NextMutator != None)

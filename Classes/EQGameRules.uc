@@ -103,7 +103,7 @@ class EQGameRules extends Gamerules;
  }
 
 /**
- * Gracefull changing of teams in accord with the Equalizer conditions
+ * Graceful changing of teams in accord with the Equalizer conditions
  *
  * @since 0.3.6
  */
@@ -112,11 +112,8 @@ class EQGameRules extends Gamerules;
  {
 	Player.PlayerReplicationInfo.Team.RemoveFromTeam(Player);
 	if (Level.GRI.Teams[NewTeam].AddToTeam(Player))
-    {
-		//Player.ReceiveLocalizedMessage(class'TeamSwitchNotification', NewTeam);
+	{
+		Level.Game.BroadcastHandler.BroadcastLocalized(none, Player, class'EQTeamSwitchMessage', NewTeam, Player.PlayerReplicationInfo);
 		CTFGame(Level.Game).GameEvent("TeamChange", string(NewTeam), Player.PlayerReplicationInfo);
 	}
-
-	// Necessary?
-    //EvenMatchMutator.PendingVoiceChatRoomChecks[EvenMatchMutator.PendingVoiceChatRoomChecks.Length] = Player;
  }

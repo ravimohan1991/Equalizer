@@ -158,8 +158,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  	}
 
- 	 Log("Inside SendData", 'Equalizer');
-     AddToQueue(Information, QueryType);
+ 	Log("Inside SendData", 'Equalizer');
+	AddToQueue(Information, QueryType);
  	return "";
  }
 
@@ -179,15 +179,15 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  	if(Result != "")
  	{
-		if(EQMut != none)
-		{
-			EQMut.GatherAndProcessInformation(Result);
-		}
-		else
-		{
-			Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
-		}
-	}
+ 		if(EQMut != none)
+ 		{
+ 			EQMut.GatherAndProcessInformation(Result);
+ 		}
+ 		else
+ 		{
+ 			Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
+ 		}
+ 	}
 
  	bQueryInProgress = False;
  }
@@ -401,10 +401,10 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
 		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
  		{
-             if(ArziQueryQueue[i] != "")
+ 			if(ArziQueryQueue[i] != "")
  				continue;
 
-            ArziQueryQueue[i] = Data;
+ 			ArziQueryQueue[i] = Data;
  			break;
  		}
 	}
@@ -429,23 +429,23 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	PCRLF = InStr(GString, CR$LF);
 	PLF = InStr(GString, LF);
 
-	if(PCRLF != -1)
-	{
-		Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
+ 	if(PCRLF != -1)
+ 	{
+ 		Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
 		result = Right(GString, len(GString) - PCRLF - 2);
  		PCRLF =  InStr(result, CR$LF);
  		result = Left(result, PCRLF);
  		return "";
-	}
-	else if(PLF != -1)
-	{
-		result = Right(GString, len(GString) - PLF - 1);
+ 	}
+ 	else if(PLF != -1)
+ 	{
+ 		result = Right(GString, len(GString) - PLF - 1);
  		return result;
-	}
-	else
-	{
+ 	}
+ 	else
+ 	{
  		return GString;
-	}
+ 	}
  }
 
  defaultproperties
