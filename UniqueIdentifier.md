@@ -19,7 +19,17 @@ function string GetIdentifierString(int PlayerID)
 }
 ```
 
-Compile this script in a seperate package and suitably name it (for example ```UniqueIdentifier```). Once that is done, configure the Equalizer.ini
+Compile this script in a seperate package and suitably name it (for example ```UniqueIdentifier```). If you are using a dedicated configuration file (UKPG for instance), you may want to set the flags as follows
+```
+[Flags]
+AllowDownload=False
+ClientOptional=True
+ServerSideOnly=False
+```
+This would allow the UniqueIdentifier logic run on server without forcing any kind of download on clients.
+
+
+Once that is done, configure the Equalizer.ini
 
 INI setting | Default value | Description
 ------------|---------------|-------------
