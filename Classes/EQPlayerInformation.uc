@@ -328,7 +328,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	local string ReturnString;
  	local string PlayerName;
 
-	if(PlayerReplicationInfo(Owner) != none)
+ 	if(PlayerReplicationInfo(Owner) != none)
  	{
  		PlayerName = PlayerReplicationInfo(Owner).PlayerName;
  	}
@@ -338,11 +338,12 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		PlayerName = "NONAME_StreetRat";
  	}
 
-	if(EQIdentifier ~= "")
-	{
-		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer');
-		return "";
-	}
+ 	if(EQIdentifier ~= "")
+ 	{
+ 		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer');
+ 		return "";
+ 	}
+
 
  	ReturnString = URLEncode(EQIdentifier $ ":" $ Captures $ ":" $ Grabs $ ":"
  		$ Covers $ ":" $ Seals $ ":" $ FlagKills $ ":" $ TeamKills

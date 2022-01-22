@@ -91,6 +91,12 @@ class Equalizer extends Mutator config(Equalizer);
  /** The global reference to */
  var EQGameRules EQGRules;
 
+ /** global Arzi string (for clustering scheme!).*/
+ var string GArziString;
+
+ /** Balancing switch.*/
+ var bool bWannaBalance;
+
 
  /*
   * Configurable Variables
@@ -137,8 +143,8 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local class<Actor> UniqueID;
 
-    CTFGameInfo = CTFGame(Level.Game);
-    if(CTFGameInfo == none)
+	CTFGameInfo = CTFGame(Level.Game);
+	if(CTFGameInfo == none)
 	{
 		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
 		Destroyed();
@@ -159,6 +165,10 @@ class Equalizer extends Mutator config(Equalizer);
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
 	InitHTTPFunctions();
+
+	// Fore safety!
+	GArziString = "";
+	bWannaBalance = false;
 
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
  }
@@ -247,7 +257,6 @@ class Equalizer extends Mutator config(Equalizer);
  {
 
 	local Controller Cont;
-	local bool bWannaBalance;
 
 	while(Level.Game.CurrentID > CurrID)
 	{
@@ -266,11 +275,9 @@ class Equalizer extends Mutator config(Equalizer);
 		CurrID++;
 	}
 
-	if(Level.Game.CurrentID == CurrID && bWannaBalance)
+	if(GArziString != "")
 	{
-		Log("Trying to Balance teams.", 'Equalizer');
-		BalanceCTFTeams();
-		bWannaBalance = false;
+		SendArziToBE();
 	}
  }
 
@@ -429,16 +436,24 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 
- function SendArziToBE(EQPlayerInformation EQPlayerInfo)
+ function GenerateGAString(EQPlayerInformation EQPlayerInfo)
  {
-	local string ArziString;
-
-	ArziString = EQPlayerInfo.EQIdentifier;//Clustering required?
-
-	Log("Arzi string is: " $ ArziString, 'Equalizer');
- 	HttpClientInstance.SendData(ArziString, HttpClientInstance.QueryEQInfo);
+ 	if(GArziString != "")
+ 	{
+ 		GArziString = GArziString $ "," $ EQPlayerInfo.EQIdentifier;
+ 	}
+ 	else
+ 	{
+ 		GArziString = EQPlayerInfo.EQIdentifier;
+ 	}
  }
 
+ function SendArziToBE()
+ {
+	Log("Global Arzi string is: " $ GArziString, 'Equalizer');
+ 	HttpClientInstance.SendData(GArziString, HttpClientInstance.QueryEQInfo);
+ 	GArziString = "";
+ }
 
 /**
  * The function clears the EQPlayers array          <br />
@@ -505,12 +520,6 @@ class Equalizer extends Mutator config(Equalizer);
 
  function ModifyPlayer(Pawn Other)
  {
-	/*
-	local Controller BotController;
-	local bool bMatchFound;
-	local int i;
-	local PlayerReplicationInfo EQPRI;*/
-
 	if(!bEQFlagsSet)
 	{
 		SetEQFlags();
@@ -527,27 +536,6 @@ class Equalizer extends Mutator config(Equalizer);
 		else
 			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
 	}
-
-    /*
-	if(AIController(Other.Controller) != none)
-	{
-		BotController = Other.Controller;
-		for(i = 0; i < EQPlayers.Length; i++)
-		{
-			EQPRI = PlayerReplicationInfo(EQPlayers[i].Owner);
-			if(EQPRI != none && EQPRI.PlayerID == BotController.PlayerReplicationInfo.PlayerID)
-			{
-				bMatchFound = true;
-				break;
-			}
-		}
-
-		if(!bMatchFound)
-		{
-			PlayerJoin(BotController);
-		}
-	}
-    */
 
 	if(NextMutator != None)
 		NextMutator.ModifyPlayer(Other);
@@ -568,7 +556,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(FreshMeat.PlayerReplicationInfo != none)
 	{
-		EQPlayers[EQPlayers.Length]	= SpawnEQPlayerInfo(FreshMeat.PlayerReplicationInfo);
+		EQPlayers[EQPlayers.Length] = SpawnEQPlayerInfo(FreshMeat.PlayerReplicationInfo);
 	}
 	else
 	{
@@ -603,11 +591,11 @@ class Equalizer extends Mutator config(Equalizer);
  function EQPlayerInformation SpawnEQPlayerInfo(Actor TheOwner)
  {
 	local EQPlayerInformation EQPI;
-    if(PlayerReplicationInfo(TheOwner).bBot) return none;
+
 	EQPI = Spawn(class'EQPlayerInformation', TheOwner);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
-	SendArziToBE(EQPI);
+	GenerateGAString(EQPI);
 
 	return EQPI;
  }
@@ -1069,6 +1057,8 @@ class Equalizer extends Mutator config(Equalizer);
 		EQPI = SpawnEQPlayerInfo(SpectatorJoinPRI);
 		EQPlayers[EQPlayers.Length] = EQPI;
 	}
+
+	// We need an improvising balancing algorithm here. Can't shake entire balance for single player! Or can we?!
  }
 
 /**
@@ -1294,7 +1284,6 @@ class Equalizer extends Mutator config(Equalizer);
 		for(ChunkIndex = 1; ChunkIndex <= NumOfChunks; ChunkIndex++)
 		{
 			GString = GetToken(Epigraph, ",", ChunkIndex);
-			Log("The parsed " $ GString);
 			NumOfDenominations = GetTokenCount(GString, ":") - 1;
 			for(DenominationIndex = 0; DenominationIndex <= NumOfDenominations; DenominationIndex++)
 			{
@@ -1316,6 +1305,13 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 					EQPlayerInfo.MakeActorReadyForEqualizer(true);
 			}
+		}
+
+		if(bWannaBalance)
+		{
+			Log("Trying to Balance teams.", 'Equalizer');
+			BalanceCTFTeams();
+			bWannaBalance = false;
 		}
 	}
  }
@@ -1402,7 +1398,8 @@ function string GetToken(string GString, string Delimiter, int Token)
 
 // =============================================================================
 // GetTokenCount ~ Calculates the number of tokens in a tokenstring
-// Specifically tailored to take care of Name space delimiter.
+// Specifically tailored to take care of NameSpace delimiter.
+// (check NameSpace definition at https://github.com/ravimohan1991/Equalizer/blob/main/WebScripts/EqualizerBE/Developing.md)
 //
 // @param GString    The String that contains the tokens
 // @param Delimiter The String that seperates the tokens
