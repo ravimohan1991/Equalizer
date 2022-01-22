@@ -135,19 +135,19 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PostBeginPlay()
  {
-	//local EQGameRules EQGRules;
 	local class<Actor> UniqueID;
 
-	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
+    CTFGameInfo = CTFGame(Level.Game);
+    if(CTFGameInfo == none)
+	{
+		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
+		Destroyed();
+		return;
+	}
 	SaveConfig();
 	EQGRules = Level.Game.Spawn(class'EQGameRules', self, 'EndGame'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
-	CTFGameInfo = CTFGame(Level.Game);
-	if(CTFGameInfo != none)
-	{
-		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
-	}
 	RegisterBroadcastHandler();
 	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none)
@@ -160,7 +160,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 	InitHTTPFunctions();
 
-	super.PostBeginPlay();
+	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
  }
 
 /**
@@ -238,7 +238,6 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Method to register PlayerJoin event.
- * Warning: Only Humans are detected this way
  *
  * @since 0.1.0
  * @see GameInfo.Login
@@ -269,9 +268,10 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(Level.Game.CurrentID == CurrID && bWannaBalance)
 	{
-	  BalanceCTFTeams();
-	  bWannaBalance = false;
-    }
+		Log("Trying to Balance teams.", 'Equalizer');
+		BalanceCTFTeams();
+		bWannaBalance = false;
+	}
  }
 
 /**
@@ -330,7 +330,7 @@ class Equalizer extends Mutator config(Equalizer);
 	{
 		LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
 
-		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
+		if(LambPRI != none && LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
 			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
 		}
@@ -433,7 +433,7 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local string ArziString;
 
-	ArziString = "arzi=" $ EQPlayerInfo.EQIdentifier;//Clustering required?
+	ArziString = EQPlayerInfo.EQIdentifier;//Clustering required?
 
 	Log("Arzi string is: " $ ArziString, 'Equalizer');
  	HttpClientInstance.SendData(ArziString, HttpClientInstance.QueryEQInfo);
@@ -563,7 +563,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PlayerJoin(Controller FreshMeat)
  {
-	if(FreshMeat.PlayerReplicationInfo == none || (FreshMeat.PlayerReplicationInfo.bIsSpectator && !FreshMeat.PlayerReplicationInfo.bWaitingPlayer))
+	if((FreshMeat.PlayerReplicationInfo.bIsSpectator && !FreshMeat.PlayerReplicationInfo.bWaitingPlayer))
 		return;
 
 	if(FreshMeat.PlayerReplicationInfo != none)
@@ -572,6 +572,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else
 	{
+		Log("PlayerReplicationInfo is none and now waiting for the spawn.", 'Equalizer');
 		WaitingForPRIToSpawn(FreshMeat);
 	}
  }
@@ -602,7 +603,7 @@ class Equalizer extends Mutator config(Equalizer);
  function EQPlayerInformation SpawnEQPlayerInfo(Actor TheOwner)
  {
 	local EQPlayerInformation EQPI;
-
+    if(PlayerReplicationInfo(TheOwner).bBot) return none;
 	EQPI = Spawn(class'EQPlayerInformation', TheOwner);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
@@ -1287,12 +1288,13 @@ class Equalizer extends Mutator config(Equalizer);
 	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
 	local EQPlayerInformation EQPlayerInfo;
 
-    if(GetToken(Epigraph, ",", 0) == "OSTRACON")
+	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
 	{
 		NumOfChunks = GetTokenCount(Epigraph, ",") - 1;
 		for(ChunkIndex = 1; ChunkIndex <= NumOfChunks; ChunkIndex++)
 		{
 			GString = GetToken(Epigraph, ",", ChunkIndex);
+			Log("The parsed " $ GString);
 			NumOfDenominations = GetTokenCount(GString, ":") - 1;
 			for(DenominationIndex = 0; DenominationIndex <= NumOfDenominations; DenominationIndex++)
 			{
@@ -1383,7 +1385,9 @@ function string GetToken(string GString, string Delimiter, int Token)
 	for (I = 0; I < Token; ++I)
 	{
 		if (InStr(GString, Delimiter) != -1)
-		GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
+		{
+			GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
+		}
 	}
 
 	if (InStr(GString, Delimiter) != -1)
@@ -1398,6 +1402,7 @@ function string GetToken(string GString, string Delimiter, int Token)
 
 // =============================================================================
 // GetTokenCount ~ Calculates the number of tokens in a tokenstring
+// Specifically tailored to take care of Name space delimiter.
 //
 // @param GString    The String that contains the tokens
 // @param Delimiter The String that seperates the tokens
@@ -1410,7 +1415,13 @@ function int GetTokenCount(string GString, string Delimiter)
 
 	while (InStr(GString, Delimiter) != -1)
 	{
- 		GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
+		if(Mid(GString, InStr(GString, Delimiter) + Len(Delimiter), 1) == " ")
+		{
+		 	// We are in the name field now
+			return I + 1;
+		}
+
+		GString = Mid(GString, InStr(GString, Delimiter) + Len(Delimiter));
 		I++;
 	}
 

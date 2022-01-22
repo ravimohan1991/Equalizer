@@ -190,23 +190,21 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function UpdateBackEndData(int Value, int Counter)
  {
-	Log("UpdatingBackEndData", 'Equalizer');
-
-	switch(Counter)
-	{
-		case 1: BECaptures = Value; break;
+ 	switch(Counter)
+ 	{
+ 		case 1: BECaptures = Value; break;
  		case 2: BEGrabs = Value; break;
  		case 3: BECovers = Value; break;
  		case 4: BESeals = Value; break;
  		case 5: BEFlagKills = Value; break;
  		case 6: BETeamKills = Value; break;
- 		case 7: BEScore = Value; Log("Updating Total Points: " $ Value, 'Equalizer'); break;
+ 		case 7: BEScore = Value; break;
  		case 8: BETimePlayedMinutes = Value; break;
  		case 9: BETimePlayedHours = Value; break;
  		case 10: BEFrags = Value; break;
  		case 11: BESuicides = Value; break;
-		default: Log("Can't apply the Value corresponding to the counter: " $ Counter, 'Equalizer'); break;
-	}
+ 		default: Log("Can't apply the Value corresponding to the counter: " $ Counter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName , 'Equalizer'); break;
+ 	}
  }
 
 /**
@@ -219,8 +217,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
  function int BPValue(int BasisParameter)
  {
-	switch(BasisParameter)
-	{
+ 	switch(BasisParameter)
+ 	{
  		case 1: return BECaptures;
  		case 2: return BEGrabs;
  		case 3: return BECovers;
@@ -232,10 +230,10 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 9: return BETimePlayedHours;
  		case 10: return BEFrags;
  		case 11: return BESuicides;
-	}
+ 	}
 
-	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter, 'Equalizer');
-	return -1;
+ 	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer');
+ 	return -1;
  }
 
 

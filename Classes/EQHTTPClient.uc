@@ -370,6 +370,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bReceivedData = False;
 
 		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+
 		return;
 	}
 

@@ -54,7 +54,7 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
  * @param OptionalObject Nothing
  *
  * @see EQGameRules.ChangeTeam
- * @since 0.1.0
+ * @since 0.3.6
  */
 
   static function string GetString(
@@ -82,7 +82,7 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 				default.DrawColor.G = 0;
 				default.DrawColor.B = 100;
 				return RelatedPRI_1.PlayerName @ default.SwitchToBlue;
-				}
+			}
 			break;
 	}
  }
@@ -96,8 +96,8 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
  * @param RelatedPRI_2 PlayerReplicationInfo of another involved player.
  * @param OptionalObject Nothing
  *
- * @see Equalizer.EvaluateKillingEvent
- * @since version 0.1.0
+ * @see EQGameRules.ChangeTeam
+ * @since version 0.3.6
  */
 
  static function ClientReceive(

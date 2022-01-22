@@ -139,8 +139,9 @@ function getEQInfo($info)
     $returnString;
     if($result->num_rows == 1) 
     {
+        $arrayIndex = 0;
         $infoArray = $result->fetch_row();
-        
+        $infoArrayLength = count($infoArray);
         $bFirstElement = true;
         foreach ($infoArray as $information)
         {
@@ -149,10 +150,15 @@ function getEQInfo($info)
                 $bFirstElement = false;
                 $returnString = $information;
             }
+            else if($arrayIndex == $infoArrayLength - 1)
+            {
+                $returnString = $returnString . ": " . $information;
+            }
             else
             {
                 $returnString = $returnString . ":" . $information;
             }
+            $arrayIndex++;
         }
     }
     else 
