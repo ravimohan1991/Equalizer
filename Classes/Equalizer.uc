@@ -284,18 +284,11 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize)
  *
- *
- * https://github.com/TheRealWormbo/EvenMatch/blob/bb811ce5107e9155bf646ba4a83d773ed7b38ab8/Classes/MutTeamBalance.uc
- *
- *  Things to note
- * 1. Since UniqueID might delay in getting generated, we need to keep those players in seperate chache
- * 2. Parametrize the basis of Player identification (name or UniqueID etc)
  */
 
  function BalanceCTFTeams()
  {
-	local EQPlayerInformation LEQPInfo;
-	local Controller Cont;
+	local int CacheMinPlayers;
 
 	if(EQPlayers.Length == 0)
 	{
@@ -304,18 +297,23 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 
 	// We want to seperate bots and Humans
+	// which is crucial for balancing during gameplay.
+	// Before the match starts, there are no bots.
 
-	// First kill all bots
-	if(CTFGameInfo.NumBots > 0)
-	{
-		Log("Removing " $ CTFGameInfo.NumBots $ " bots for rebalancing", 'Equalizer');
-		CTFGameInfo.KillBots(CTFGameInfo.NumBots);
-	}
+	// For bot-crowd seperation from Humans and filtering
+	CacheMinPlayers = CTFGameInfo.MinPlayers;
 
-	SortEQPInfoArray(0);
+    // Bots... don't interfare in Balancing!
+	CTFGameInfo.MinPlayers = 0;
+	CTFGameInfo.KillBots(0);
+
+    SortEQPInfoArray(0);
 
 	// Piglet's algorithm ...
 	NuclearShellFillAlgorithm();
+
+	// Restore the bot-crowd
+	CTFGameInfo.MinPlayers = CacheMinPlayers;
  }
 
 /**
@@ -335,7 +333,12 @@ class Equalizer extends Mutator config(Equalizer);
 	// Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
 	for(index = 0; index < EQPlayers.Length; index++)
 	{
-		LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
+		if(!EQPlayers[index].bDisturbInLineUp)
+		{
+         continue;
+        }
+
+        LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
 
 		if(LambPRI != none && LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
@@ -343,7 +346,11 @@ class Equalizer extends Mutator config(Equalizer);
 		}
 
 		// Alternating team population procedure
+		// Need to find more appropriate logic for deciding team especially when
+		// new player with High PPH joins. The team decision logic should comply to scheme
+		// and blind alternating shouldn't be sole criteria.
 		TeamToSwitchTo = 1 - TeamToSwitchTo;
+		EQPlayers[index].bDisturbInLineUp = false;
 	}
  }
 
@@ -595,7 +602,8 @@ class Equalizer extends Mutator config(Equalizer);
 	EQPI = Spawn(class'EQPlayerInformation', TheOwner);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
-	GenerateGAString(EQPI);
+	bWannaBalance = true;
+    GenerateGAString(EQPI);
 
 	return EQPI;
  }
@@ -603,6 +611,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * The Timer function which checks if the PRIs of the relevant Controllers are
  * existing and if yes then Spawns the corresponding EQPlayerInformation class.
+ *
  *
  * @since 0.3.0
  */
@@ -1038,6 +1047,8 @@ class Equalizer extends Mutator config(Equalizer);
  * Here we do the necessary arrangements when a spectator
  * becomes player
  *
+ * May wanna call Balancing here!
+ *
  * @param SpectatorJoinInfo The EQPlayerInfo of the spectator who became player
  * @since 0.2.0
  */
@@ -1352,7 +1363,12 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(Sender != none)
 	{
-	 EQGRules.ChangeTeam(Sender, 1 - Sender.PlayerReplicationInfo.Team.TeamIndex);
+	 Log("Mutate Stuff");
+     //EQGRules.ChangeTeam(Sender, 1 - Sender.PlayerReplicationInfo.Team.TeamIndex);
+	 if(MutateString ~= "balance")
+     BalanceCTFTeams();
+     else
+     Sender.ClientMessage("InitialBots: " $ CTFGameInfo.InitialBots $ "Numbots: " $ CTFGameInfo.NumBots $ " RemainingBots: " $ CTFGameInfo.NumBots $ " MinPlayers: " $ CTFGameInfo.MinPlayers);
 	}
 
 	if (NextMutator != None)

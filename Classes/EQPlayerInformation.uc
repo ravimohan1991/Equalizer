@@ -132,6 +132,11 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  */
  var   bool   bIsBEReady;
 
+ /**
+ * Whethere to or not to disturb or perturb the Player's lineup
+ */
+ var   bool   bDisturbInLineUp;
+
 
 /**
  * The function gets called just after ActorSpawns.
@@ -165,6 +170,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	StartTime = Level.TimeSeconds;
 
 	bIsBEReady = false;
+	bDisturbInLineUp = true;
 
 	super.PostBeginPlay();
  }
