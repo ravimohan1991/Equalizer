@@ -266,7 +266,8 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 				if(Cont != Witness)
 				{
-					PlayerJoin(Cont);
+					Log("Calling PlayerJoin");
+                    PlayerJoin(Cont);
 					bWannaBalance = true;
 				}
 				break;
@@ -284,6 +285,8 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize)
  *
+ * @since 0.3.6
+ * @see GatherAndProcessInformation
  */
 
  function BalanceCTFTeams()
@@ -303,11 +306,11 @@ class Equalizer extends Mutator config(Equalizer);
 	// For bot-crowd seperation from Humans and filtering
 	CacheMinPlayers = CTFGameInfo.MinPlayers;
 
-    // Bots... don't interfare in Balancing!
-	CTFGameInfo.MinPlayers = 0;
-	CTFGameInfo.KillBots(0);
+	// Bots... don't interfare in Balancing!
+	//CTFGameInfo.MinPlayers = 0;
+	//CTFGameInfo.KillBots(0);
 
-    SortEQPInfoArray(0);
+	SortEQPInfoArray(7);   // BEScore
 
 	// Piglet's algorithm ...
 	NuclearShellFillAlgorithm();
@@ -333,7 +336,8 @@ class Equalizer extends Mutator config(Equalizer);
 	// Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
 	for(index = 0; index < EQPlayers.Length; index++)
 	{
-		if(!EQPlayers[index].bDisturbInLineUp)
+		Log("Inside NulearShellFillAlgorithm and tending to " $PlayerReplicationInfo(EQPlayers[index].Owner).PlayerName, 'Equalizer');
+        if(!EQPlayers[index].bDisturbInLineUp)
 		{
          continue;
         }
@@ -377,6 +381,12 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 		}
 	}
+
+	Log("Sorting Result is: ", 'Equalizer');
+	for(i = 0; i < EQPlayers.Length; i++)
+	{
+      Log(EQPlayers[i].BEScore);
+    }
  }
 
 /**
@@ -466,6 +476,8 @@ class Equalizer extends Mutator config(Equalizer);
  * The function clears the EQPlayers array          <br />
  * In future, we will hook algorithm to send        <br />
  * the data to backend, here. And we did now!
+ *
+ * Clustering scheme for arpan too?!
  *
  * @since 0.1.0
  */
@@ -603,7 +615,7 @@ class Equalizer extends Mutator config(Equalizer);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
 
 	bWannaBalance = true;
-    GenerateGAString(EQPI);
+	GenerateGAString(EQPI);
 
 	return EQPI;
  }
@@ -1289,6 +1301,8 @@ class Equalizer extends Mutator config(Equalizer);
 	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
 	local EQPlayerInformation EQPlayerInfo;
 
+	LogEpigraphWithStyle(Epigraph);
+
 	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
 	{
 		NumOfChunks = GetTokenCount(Epigraph, ",") - 1;
@@ -1318,13 +1332,44 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 		}
 
-		if(bWannaBalance)
+		if(false)//bWannaBalance)
 		{
 			Log("Trying to Balance teams.", 'Equalizer');
 			BalanceCTFTeams();
 			bWannaBalance = false;
 		}
 	}
+ }
+
+ function LogEpigraphWithStyle(string Epigraph)
+ {
+	local int EpigraphBoxWidth, SplitStringLength;
+	local string LambString;
+
+	EpigraphBoxWidth = 80;
+	SplitStringLength = 70;
+	LambString = Epigraph;
+
+	ACEPadLog("", "-", "+", EpigraphBoxWidth);
+	ACEPadLog("Receieved an Epigraph", " ", "|", EpigraphBoxWidth, true);
+	ACEPadLog("[" $ GetDate() $ " | " $ GetTime() $ "]", " ", "|", EpigraphBoxWidth, true);
+	ACEPadLog("", "-", "+", EpigraphBoxWidth);
+
+	while(LambString != "")
+	{
+		if(Len(LambString) >= SplitStringLength)
+		{
+			ACEPadLog(Mid(LambString, 0, SplitStringLength - 1) $" (=)", " ", "|", EpigraphBoxWidth, true);
+			LambString = Mid(LambString, SplitStringLength - 1);
+		}
+		else
+		{
+			ACEPadLog(LambString, " ", "|", EpigraphBoxWidth, true);
+			LambString = "";
+		}
+	}
+
+	ACEPadLog("", "-", "+", EpigraphBoxWidth);
  }
 
 /**
@@ -1338,7 +1383,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function Mutate(string MutateString, PlayerController Sender)
  {
-	local EQPlayerInformation EQPlayerInfo ;
+	local EQPlayerInformation EQPlayerInfo;
+	local byte i;
 
 	if(false)
 	{
@@ -1364,11 +1410,12 @@ class Equalizer extends Mutator config(Equalizer);
 	if(Sender != none)
 	{
 	 Log("Mutate Stuff");
-     //EQGRules.ChangeTeam(Sender, 1 - Sender.PlayerReplicationInfo.Team.TeamIndex);
-	 if(MutateString ~= "balance")
-     BalanceCTFTeams();
-     else
-     Sender.ClientMessage("InitialBots: " $ CTFGameInfo.InitialBots $ "Numbots: " $ CTFGameInfo.NumBots $ " RemainingBots: " $ CTFGameInfo.NumBots $ " MinPlayers: " $ CTFGameInfo.MinPlayers);
+     Sender.ClientMessage("Displaying Player BEScores");
+     for(i = 0; i < EQPlayers.Length; i++)
+     {
+      Sender.ClientMessage("Player " $ PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " has the BEScore of: " $EQPlayers[i].BEScore);
+      Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore, 'Equalizer');
+     }
 	}
 
 	if (NextMutator != None)
@@ -1380,6 +1427,58 @@ class Equalizer extends Mutator config(Equalizer);
 
 // This section has been ripped directly from https://github.com/stijn-volckaert/IACE/blob/dcdce5e1d8a796e663f1de9960a7cb2a8030e397/Classes/IACECommon.uc#L276-L320
 // without Anth's permission. But yeah, it is GitHub baby!
+
+// =============================================================================
+// ACEPadLog ~ Log with padding (yeah we don't mangle the names!)
+//
+// @param LogString    string to be logged
+// @param PaddingChar  character to fill up the line with (default " ")
+// @param FinalChar    character to be placed at the beginning and end of the line (default "|")
+// @param StringLength length of the resulting string (default 75)
+// @param bCenter      Center the logstring inside the resulting string?
+//
+// example:
+// ACEPadLog("TestString",".","*",30,true)
+// => "*.........TestString.........*"
+// =============================================================================
+function ACEPadLog(string LogString, optional string PaddingChar, optional string FinalChar,
+    optional int StringLength, optional bool bCenter)
+{
+	local string Result;
+	local int Pos;
+
+	// Init default properties
+	if (PaddingChar == "") PaddingChar  = " ";
+	if (FinalChar == "")   FinalChar    = "|";
+	if (StringLength == 0) StringLength = 75;
+
+	Result = LogString;
+
+	// Truncate string if needed
+	if (Len(Result) + 4 > StringLength)
+	{
+		Result = FinalChar $ PaddingChar
+		$ Left(Result, Len(Result) - 6) $ "..."
+		$ PaddingChar $ FinalChar;
+	}
+	else
+	{
+		// Insert padding characters
+		Result = PaddingChar $ Result;
+		while (Len(Result) + 2 < StringLength)
+		{
+			// Only insert padding at the left side if the original string
+			// should be centered in the resulting string
+			if (bCenter && (Pos++) % 2 == 1)
+				Result = PaddingChar $ Result;
+			else
+				Result = Result $ PaddingChar;
+		}
+		Result = FinalChar $ Result $ FinalChar;
+	}
+
+	Log(Result, 'Equalizer');
+}
 
 // =============================================================================
 // GetToken ~ Retrieve a token from a tokenstring
@@ -1439,6 +1538,38 @@ function int GetTokenCount(string GString, string Delimiter)
 	}
 
 	return I;
+}
+
+// =============================================================================
+// GetDate ~ Get the current date in dd-MM-yyyy format
+// =============================================================================
+function string GetDate()
+{
+	return "" $ IntToStr(Level.Day, 2) $ "-" $ IntToStr(Level.Month, 2) $ "-" $ IntToStr(Level.Year, 2);
+}
+
+// =============================================================================
+// GetTime ~ Get the current time in hh:mm:ss format
+// =============================================================================
+function string GetTime()
+{
+	return "" $ IntToStr(Level.Hour, 2) $ ":" $ IntToStr(Level.Minute, 2) $ ":" $ IntToStr(Level.Second, 2);
+}
+
+// =============================================================================
+// IntToStr ~ Converts an integer to a string of the specified length
+//
+// @param i            The integer to be converted
+// @param StringLength The desired length of the string.
+//                     "0" characters are prepadded to the int if needed
+// =============================================================================
+function string IntToStr(int i, int StringLength)
+{
+	local string Result;
+	Result = string(i);
+	while (Len(Result) < StringLength)
+		Result = "0"$Result;
+	return Result;
 }
 
 

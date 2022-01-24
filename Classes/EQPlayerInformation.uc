@@ -156,7 +156,14 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 		return;
 	}
 
-	EQIdentifier = "Little_Johnny";//PlayerReplicationInfo(Owner).PlayerName;
+	if(!PlayerReplicationInfo(Owner).bBot)
+	{
+		EQIdentifier = "Little_Johnny";
+	}
+	else
+	{
+		EQIdentifier = PlayerReplicationInfo(Owner).PlayerName;
+	}
 	/*
 	if(PlayerReplicationInfo(Owner).bBot)
 	{
@@ -204,7 +211,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 4: BESeals = Value; break;
  		case 5: BEFlagKills = Value; break;
  		case 6: BETeamKills = Value; break;
- 		case 7: BEScore = Value; break;
+ 		case 7: BEScore = Value; log("BEScore: " $BEScore); BEScore = Rand(10); log("Now setting it to " $BEScore); break;
  		case 8: BETimePlayedMinutes = Value; break;
  		case 9: BETimePlayedHours = Value; break;
  		case 10: BEFrags = Value; break;
@@ -231,7 +238,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 4: return BESeals;
  		case 5: return BEFlagKills;
  		case 6: return BETeamKills;
- 		case 7: return BEScore;
+ 		case 7: log("Order decision on BEScore basis! which is: " $BEScore, 'Equalizer'); return BEScore;
  		case 8: return BETimePlayedMinutes;
  		case 9: return BETimePlayedHours;
  		case 10: return BEFrags;

@@ -158,7 +158,6 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  	}
 
- 	Log("Inside SendData", 'Equalizer');
 	AddToQueue(Information, QueryType);
  	return "";
  }
@@ -321,15 +320,12 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 			if(ArpanQueryQueue[i] == "")
  				continue;
 
-			Log(ArpanQueryQueue[i]);
-
  			if(QueryString == "")
  				QueryString = ArpanQueryQueue[i];
  			else
  				QueryString = QueryString $ "," $ ArpanQueryQueue[i];
 
 			ArpanQueryQueue[i] = "";
-			Log(ArpanQueryQueue[i] $ "Rendering null ArpanQueryQueue " $ i);
  		}
 
  		if(QueryString == "")
@@ -340,17 +336,16 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
-		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
+		Log("QueryString is: ?arpan=" $QueryString, 'Equalizer');
+ 		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
 		return;
 	}
 	else if(ArziQueryQueue[0] != "")
 	{
-        for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
+ 		for(i = 0; i < ArrayCount(ArziQueryQueue); i++)
  		{
 			if(ArziQueryQueue[i] == "")
  				continue;
-
-			Log(ArziQueryQueue[i]);
 
  			if(QueryString == "")
  				QueryString = ArziQueryQueue[i];
@@ -358,7 +353,6 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  				QueryString = QueryString $ "," $ ArziQueryQueue[i];
 
 			ArziQueryQueue[i] = "";
-			Log(ArziQueryQueue[i] $ "Rendering null ArziQueryQueue " $ i);
  		}
 
  		if(QueryString == "")
@@ -369,8 +363,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
+        Log("QueryString is: ?arzi=" $QueryString, 'Equalizer');
 		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
-
 		return;
 	}
 
