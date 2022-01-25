@@ -38,63 +38,64 @@ class Equalizer extends Mutator config(Equalizer);
  * Global Variables
  */
 
- /** String with Version of the Mutator */
+ /** String with Version of the Mutator. */
  var   string                                     Version;
 
- /** Number of times Equalizer has been built */
+ /** Number of times Equalizer has been built. */
  var   float                                      BuildNumber;
 
- /** For tracking the PlayerJoin.*/
+ /** For tracking the PlayerJoin. */
  var   int                                        CurrID;
 
- /** Equalizer PlayerInformation array */
+ /** Equalizer PlayerInformation array. */
  var   array<EQPlayerInformation>                 EQPlayers;
 
- /** Controllers whose PRI hasn't been spawned at PlayerJoin */
+ /** Controllers whose PRI hasn't been spawned at PlayerJoin. */
  var   array<Controller>                          ToBePRIs;
 
- /** Controller Array of CTF's Flag Carriers */
+ /** Controller Array of CTF's Flag Carriers. */
  var   Controller                                 FCs[2];
 
- /** Controller Array of FC killers (may do with single array, categorized for readability) */
+ /** Controller Array of FC killers (may do with single array, categorized for readability). */
  var   array<EQPlayerInformation>                 RedFCKillers; // Killers in Red who killed Blue FC
  var   array<EQPlayerInformation>                 BlueFCKillers;
 
- /** Flags instances */
+ /** Flags instances. Helpful for identifying zones and other useful properties. */
  var   CTFFlag                                  EQFlags[2];
 
  /** Are flaglocations set? */
  var     bool                                     bEQFlagsSet;
 
- /** Equalizer's silent spectator */
+ /** Equalizer's silent spectator! */
  var   MessagingSpectator                         Witness;
 
- /** Equalizer's UniqueIdentifier reference */
+ /** Equalizer's UniqueIdentifier reference. */
  var   Actor                                      EQUniqueIdentifier;
 
- /** if HTTP actor is active. */
+ /** Is HTTP actor active? */
  var bool HttpClientInstanceStarted;
 
  /** The HTTP client instance. */
  var EQHTTPClient HttpClientInstance;
 
- /** Number of restarts.*/
+ /** Number of restarts. Should leave after how many attempts? */
  var int NumHTTPRestarts;
 
- /** The GameInfo reference.*/
+ /** The GameInfo reference. */
  var CTFGame CTFGameInfo;
 
- /** The Scoreboard in the form of Sorter.*/
+ /** The Scoreboard in the form of Sorter. */
  // This might affect the order of ServerActors loading.
+ // Not being used currently though. For legacy purposes I think!
  var Scoreboard PlayerSorter;
 
- /** The global reference to */
+ /** The global reference to Game rules. */
  var EQGameRules EQGRules;
 
- /** global Arzi string (for clustering scheme!).*/
+ /** Global Arzi string (for clustering scheme!). */
  var string GArziString;
 
- /** Balancing switch.*/
+ /** Balancing switch. */
  var bool bWannaBalance;
 
 
@@ -111,25 +112,25 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           float        FCProgressKillBonus;
  var()   config           string       UniqueIdentifierClass;
 
- /** The radius of the bubble around the flag for tracking seals */
+ /** The radius of the bubble around the flag for tracking seals. */
  var()   config           float        SealDistance;
 
- /** Switch for broadcasting Monsterkill and above.*/
+ /** Switch for broadcasting Monsterkill and above. */
  var()   config           bool         bBroadcastMonsterKillsAndAbove;
 
- /** Hosts with the capability of resovling Nations.*/
+ /** Host with the capability of resovling Nations. */
  var()   config           string        QueryServerHost;
 
- /** File path on Hosts.*/
+ /** File path on Host. */
  var()   config           string        QueryServerFilePath;
 
- /** Port for query.*/
+ /** Port for query. */
  var()   config           int           QueryServerPort;
 
- /** Limit for the timeout.*/
+ /** Limit for the timeout. */
  var()   config           int           MaxTimeout;
 
- /** Query server resolved address.*/
+ /** Query server resolved address. */
  var()   config           string        ResolvedAddress;
 
 /**
@@ -174,7 +175,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * HTTP setup to communicate with the webserver
+ * HTTP setup to communicate with the webserver.
  *
  * @since 0.2.0
  */
@@ -190,7 +191,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Function to restart the HTTPClient instance upon faliure
+ * Function to restart the HTTPClient instance upon faliure.
  *
  * @since 0.2.0
  */
@@ -214,9 +215,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Experimental function to send data to webserver
+ * Experimental function to send data to webserver.
  *
- * @param Something The string of information to be sent
+ * @param Something     The string of information to be sent
  * @since 0.2.0
  */
 
@@ -249,13 +250,13 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to register PlayerJoin event.
  *
+ * @param DeltaTime     Amount of time elapsed between two consecutive ticks    
  * @since 0.1.0
  * @see GameInfo.Login
  */
 
  event Tick(float DeltaTime)
  {
-
 	local Controller Cont;
 
 	while(Level.Game.CurrentID > CurrID)
@@ -283,7 +284,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize)
+ * Here we write our special sauce, the function(s) that do(es) it all (I mean Equalize).
  *
  * @since 0.3.6
  * @see GatherAndProcessInformation
@@ -320,7 +321,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- *
+ * Piglet(UK) and my personal take on balancing CTF teams based on alternating
+ * distribution of sorted list of players (see function SortEQPInfoArray) in 
+ * Red and Blue categories.
  *
  * @since 0.3.6
  */
@@ -359,8 +362,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Ripped from default ScoreBoard.uc
+ * Simple selection sort based on desired parameter.
  *
+ * @param BasisParameter     An Integer based on the declaration done in EQPlayerInformation::BPValue
  * @since 0.3.6
  */
 
@@ -395,9 +399,12 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Ripped from default ScoreBoard.uc
- * Descending order
+ * A check with enough complexity to gauge the order of EQPlayerInformation instances
+ * and facilitate the array sorting based on some parameter.
+ * Once the metric is defined this way, sorting is done in descending order.
  *
+ * @param EQP1, EQP2     The EQPlayerInformation instances of the Humans (and Bots?) which need comparison
+ * @param BasisParameter An Integer based on the declaration done in EQPlayerInformation::BPValue
  * @since 0.3.6
  */
 
@@ -411,12 +418,12 @@ class Equalizer extends Mutator config(Equalizer);
 	// Safety check!
 	if(P1 == none)
 	{
-		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
+		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer');
 		if(P2 == none)
 		{
 			Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer');
 			return true;// Note this "true" is not the same "true" we gauge then we are satisfied with the order.  This true means order can't be determined and we are dealing with degeneracy.
-				// Seems computationally it is no different from order satisfaction?
+				    // Seems computationally it is no different from order satisfaction?
 		}
 		else
 		{
@@ -425,7 +432,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else if(P2 == none)
 	{
-		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined.  Trying Contextual Ordering.", 'Equalizer');
+		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer');
 		return true;
 	}
 
@@ -457,6 +464,12 @@ class Equalizer extends Mutator config(Equalizer);
 	return true;
  }
 
+/**
+ * Here we generate an "arzi" string with relevant clustering scheme (need to define it, although clear from code!).
+ *
+ * @param EQPlayerInfo    The EQPlayerInformation of the player whose backed data needs updating
+ * @since 0.3.6
+ */
 
  function GenerateGAString(EQPlayerInformation EQPlayerInfo)
  {
@@ -470,6 +483,12 @@ class Equalizer extends Mutator config(Equalizer);
  	}
  }
 
+/**
+ * Send the arzi to backend. 
+ *
+ * @since 0.3.6
+ */
+
  function SendArziToBE()
  {
 	Log("Global Arzi string is: " $ GArziString, 'Equalizer');
@@ -478,18 +497,18 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * The function clears the EQPlayers array          <br />
- * In future, we will hook algorithm to send        <br />
+ * The function clears the EQPlayers array         
+ * In future, we will hook algorithm to send     
  * the data to backend, here. And we did now!
  *
  * Clustering scheme for arpan too?!
  *
+ * @param Exiting     The Controller instance of player exiting the Game
  * @since 0.1.0
  */
 
  function NotifyLogout(Controller Exiting)
  {
-
 	local int PlayerIndex;
 
 	if(EQPlayers.Length == 0)
@@ -526,7 +545,6 @@ class Equalizer extends Mutator config(Equalizer);
 
  function RegisterBroadcastHandler()
  {
-
 	local EQBroadcastHandler EQBH;
 
 	EQBH = Level.Game.Spawn(class'EQBroadcastHandler');
@@ -536,9 +554,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * The function to check track the bot join.
+ * The function to spawn the Witness and check if Flag Actors are set.
  *
- * @param Other The Pawn instance of humanplayer or bot
+ * @param Other     The Pawn instance of humanplayer or bot
  * @since 0.1.0
  */
 
@@ -570,6 +588,7 @@ class Equalizer extends Mutator config(Equalizer);
  * It will facilitate the tracking of player stats.
  * Furthermore, it allows us to associate the uniqueidentifier with the player.
  *
+ * @param FreshMeat     The Controller instance of new joinings
  * @since 0.1.0
  */
 
@@ -593,6 +612,7 @@ class Equalizer extends Mutator config(Equalizer);
  * Here we augment all the Controllers whose PRIs haven't spawned at the time of
  * PlayerJoin.
  *
+ * @param Cont     The Controller instance of player for whom we wait to get the PRI instance spawned
  * @since 0.3.0
  */
 
@@ -607,8 +627,10 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
  /**
- * Spawn EQPlayerInformation routine.
+ * Spawn EQPlayerInformation routine and associate the PlayerReplicaitonInfo
+ * as the Owner.
  *
+ * @param TheOwner     The Actor assigned as owner of the EQPlayerInformation instance    
  * @since 0.3.6
  */
 
@@ -628,7 +650,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * The Timer function which checks if the PRIs of the relevant Controllers are
  * existing and if yes then Spawns the corresponding EQPlayerInformation class.
- *
+ * Useful for Controllers with late spawning PRIs.
  *
  * @since 0.3.0
  */
@@ -656,10 +678,10 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to evaluate Covers, Seals and all that.
  *
- * @param Killed The Pawn class getting screwed.
- * @param Killer The Controller class screwing around.
- * @param damageType The nature of damage.
- * @param HitLocation The place of crime.
+ * @param Killed      The Pawn class getting screwed.
+ * @param Killer      The Controller class screwing around.
+ * @param damageType    The nature of damage.
+ * @param HitLocation    The place of crime.
  *
  * @see #EQGameRules.PreventDeath(Killed, Killer, damageType, HitLocation)
  * @since 0.1.0
@@ -805,9 +827,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Here we update the player scores in EQPlayerInformation
+ * Here we update the player scores in EQPlayerInformation.
  *
- * @param Killer The controller class who is to be rewarded
+ * @param Killer     The controller class who is to be rewarded
  * @since 0.2.0
  */
 
@@ -826,10 +848,10 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Adds the item in array if it does not exist
+ * Adds the item in array if it does not exist.
  *
- * @param TeamIndex The team of FCKillers
- * @param Info    The new information
+ * @param TeamIndex     The team of FCKillers
+ * @param Info     The new information
  * @since 0.2.0
  */
 
@@ -862,14 +884,13 @@ class Equalizer extends Mutator config(Equalizer);
  * about the Flag and FlagCarriers and Ingame events. We spawned the
  * UTServerAdminSpectator class instance as the Witness to interpret message only Once.
  *
- * @param Sender The Actor class sending the message.
- * @param Receiver The Controller class receiving the message.
- * @param Message The real message.
- * @param switch Category of Message.
- * @param Related_PRI1 Involved PlayerReplicationInfo 1
- * @param Related_PRI2 Involved PlayerReplicationInfo 2
- * @param OptionalObject Involved Object (Could be a Flag)
- *
+ * @param Sender     The Actor class sending the message.
+ * @param Receiver   The Controller class receiving the message.
+ * @param Message    The real message.
+ * @param switch     Category of Message.
+ * @param Related_PRI1     Involved PlayerReplicationInfo 1
+ * @param Related_PRI2     Involved PlayerReplicationInfo 2
+ * @param OptionalObject     Involved Object (Could be a Flag)
  * @see #UnrealGame.CTFMessage
  * @since 0.1.0
  * authors of this routine can be found at http://wiki.unrealadmin.org/SmartCTF
@@ -1007,9 +1028,9 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Here we do the necessary arrangements when a player becomes
- * a spectator
+ * a spectator.
  *
- * @param SpectatorJoinInfo The EQPlayerInfo of the player who became spectator
+ * @param SpectatorJoinInfo     The EQPlayerInfo of the player who became spectator
  * @since 0.2.0
  */
 
@@ -1021,9 +1042,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Here we send the Equalizer player information to the backend
+ * Here we send the Equalizer player information to the backend.
  *
- * @param EQPlayerInfo The EQPlayerInfo to be sent to backend
+ * @param EQPlayerInfo     The EQPlayerInfo to be sent to backend
  * @since 0.2.0
  */
 
@@ -1063,11 +1084,11 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Here we do the necessary arrangements when a spectator
- * becomes player
+ * becomes player.
  *
  * May wanna call Balancing here!
  *
- * @param SpectatorJoinInfo The EQPlayerInfo of the spectator who became player
+ * @param SpectatorJoinInfo     The EQPlayerInfo of the spectator who became player
  * @since 0.2.0
  */
 
@@ -1091,9 +1112,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Method to reset sprees
+ * Method to reset sprees.
  *
- * @param TeamIndex The team of player's whose sprees are to be reset
+ * @param TeamIndex    The team of player's whose sprees are to be reset
  * @since 0.1.0
  */
 
@@ -1113,9 +1134,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Method to reward FCKillers
+ * Method to reward FCKillers.
  *
- * @param TeamIndex The team index of Flag, which has FCKillers
+ * @param TeamIndex     The team index of Flag, which has FCKillers
  * @since 0.2.0
  */
 
@@ -1169,9 +1190,9 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Method to reset FCKillers
+ * Method to reset FCKillers.
  *
- * @param TeamIndex The team index of Flag, which has FCKillers
+ * @param TeamIndex     The team index of Flag, which has FCKillers
  * @since 0.2.0
  */
 
@@ -1190,16 +1211,14 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to return the EQPlayerInformation object.
  *
- * @param ID The ID of the player.
- * @return EQPlayers[i] The EQPlayerInformation oject associated to the ID
- *         None         If no EQPlayerInformation is associated.
- *
+ * @param ID     The match ID of the player.
+ * @return EQPlayers[i]     The EQPlayerInformation oject associated to the ID
+ *         None    If no EQPlayerInformation is associated.
  * @since 0.1.0
  */
 
  function EQPlayerInformation GetInfoByID(int ID)
  {
-
 	local int i;
 	local PlayerReplicationInfo EQPRI;
 
@@ -1218,16 +1237,14 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to return the EQPlayerInformation object.
  *
- * @param IdentifierString The string for identifying the relevant EQPlayerInformation object.
- * @return EQPlayers[i] The EQPlayerInformation oject associated to the string
- *         None         If no EQPlayerInformation is associated.
- *
+ * @param IdentifierString     The string for identifying the relevant EQPlayerInformation object.
+ * @return EQPlayers[i]     The EQPlayerInformation oject associated to the string
+ *         None     If no EQPlayerInformation is associated.
  * @since 0.3.6
  */
 
  function EQPlayerInformation GetInfoByEQIdentifier(string IdentifierString)
  {
-
 	local int i;
 
 	for(i = 0; i < EQPlayers.Length; i++)
@@ -1245,16 +1262,14 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to check if the Player is in Flag zone.
  *
- * @param SubjectLocation The physical location of the relevant player
- * @param Team The team of Flag
- *
+ * @param SubjectLocation     The physical location of the relevant player
+ * @param Team     The team of Flag
  * @see #EvaluateKillingEvent(Killed, Killer, DamageType, Location)
  * @since 0.1.0
  */
 
  function bool IsInZone(vector SubjectLocation, byte Team)
  {
-
 	if(VSize(SubjectLocation - EQFlags[Team].HomeBase.Location) < SealDistance)
 		return true;
 
@@ -1270,20 +1285,19 @@ class Equalizer extends Mutator config(Equalizer);
  * So now we destroy the EQPlayerInformation class once we serialize the relevant components of
  * the class and send data to backend.
  *
+ * @see #EQGameRules::Trigger
  * @since 0.2.0
  */
 
  function EndGameEvent()
  {
-
 	local int PlayerIndex;
 
 	Log("Match End!!!", 'Equalizer');
 
-
 	for(PlayerIndex = EQPlayers.Length - 1; PlayerIndex >= 0; PlayerIndex--)
 	{
-		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');;
+		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');
 		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 		EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 		EQPlayers[PlayerIndex].Destroy();
@@ -1297,6 +1311,7 @@ class Equalizer extends Mutator config(Equalizer);
  * Finally the PlayerInfo has the following denomination
  * [EQUniqueIdentifer] : [Captures] : ... : [Name]
  *
+ * @param Epigraph    The string (as defined above) reveieved from the backend    
  * @see #EQHTTPClient::HTTPReceivedData(string)
  * @since 0.3.6
  */
@@ -1347,6 +1362,15 @@ class Equalizer extends Mutator config(Equalizer);
 	}
  }
 
+/**
+ * We Log the Epigraph string for distinct visibility.
+ * Could be optional for ServerAdmin.?
+ *
+ * @param Epigraph    The Epigraph
+ * @see #GatherAndProcessInformation
+ * @since 0.3.6
+ */
+
  function LogEpigraphWithStyle(string Epigraph)
  {
 	local int EpigraphBoxWidth, SplitStringLength;
@@ -1381,9 +1405,8 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * For development and debugging purposes
  *
- * @param MutateString The string typed by the player
- * @param Sender Human how typed the command
- *
+ * @param MutateString     The string typed by the player
+ * @param Sender     Human how typed the command
  * @since 0.1.0
  */
 
