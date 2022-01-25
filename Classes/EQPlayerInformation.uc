@@ -211,7 +211,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 4: BESeals = Value; break;
  		case 5: BEFlagKills = Value; break;
  		case 6: BETeamKills = Value; break;
- 		case 7: BEScore = Value; log("BEScore: " $BEScore); BEScore = Rand(10); log("Now setting it to " $BEScore); break;
+ 		case 7: BEScore = Value; log("BEScore: " $BEScore); BEScore = RandRange(6, 128); log("Now setting it to " $BEScore); break;
  		case 8: BETimePlayedMinutes = Value; break;
  		case 9: BETimePlayedHours = Value; break;
  		case 10: BEFrags = Value; break;

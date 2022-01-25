@@ -369,13 +369,17 @@ class Equalizer extends Mutator config(Equalizer);
 	local int i, j;
 	local EQPlayerInformation tmp;
 
-	for (i = 0; i < EQPlayers.Length-1; i++)
+    for (i = 0; i < EQPlayers.Length-1; i++)
 	{
-		for (j = i+1; j < EQPlayers.Length; j++)
+		//Log("i value: " $ i, 'Equalizer');
+        for (j = i+1; j < EQPlayers.Length; j++)
 		{
-			if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
+			//Log("j value: " $ j, 'Equalizer');
+			//Log("checking order", 'Equalizer');
+            if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
 			{
-				tmp = EQPlayers[i];
+				//Log("Out of Order", 'Equalizer');
+                tmp = EQPlayers[i];
 				EQPlayers[i] = EQPlayers[j];
 				EQPlayers[j] = tmp;
 			}
@@ -387,6 +391,7 @@ class Equalizer extends Mutator config(Equalizer);
 	{
       Log(EQPlayers[i].BEScore);
     }
+
  }
 
 /**
@@ -434,7 +439,7 @@ class Equalizer extends Mutator config(Equalizer);
 	else if (P2.bOnlySpectator)
 		return true;
 
-	if(EQP1.bIsBEReady)
+    if(EQP1.bIsBEReady)
 	{
 		if(!EQP2.bIsBEReady)
 		{
@@ -739,7 +744,7 @@ class Equalizer extends Mutator config(Equalizer);
 		if(!bKilledTeamHasFlag)
 		{
 			// If Killed and Killer's FC are in Killer's Flag Zone
-			if(IsInZone(Killed.Location, KillerPRI.Team.TeamIndex) && IsInzone(FCs[KillerPRI.Team.TeamIndex].Pawn.Location, KillerPRI.Team.TeamIndex))
+			if(IsInZone(Killed.Location, KillerPRI.Team.TeamIndex) && FCs[KillerPRI.Team.TeamIndex].Pawn != none && IsInzone(FCs[KillerPRI.Team.TeamIndex].Pawn.Location, KillerPRI.Team.TeamIndex))
 			{
 				// Killer SEALED THE BASE
 				if(KillerInfo != none)
@@ -768,7 +773,8 @@ class Equalizer extends Mutator config(Equalizer);
 		// Note:      The new measures probably appeared in version 4, but don't quote me on that.
 		// Also Note: Different Unreal Engines have different scales. Source: https://wiki.beyondunreal.com/Unreal_Unit
 		//            It roughly translates to 1 uu(UT) = 1.125 uu(UT2k4) ~(The_Cowboy)
-		if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
+		if(Killer.Pawn == none || FCs[KillerPRI.Team.TeamIndex].Pawn == none) return;
+        if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killer.Pawn.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1536*1.125 && Killed.Controller.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1024*1.125 && Killer.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
@@ -1410,12 +1416,22 @@ class Equalizer extends Mutator config(Equalizer);
 	if(Sender != none)
 	{
 	 Log("Mutate Stuff");
-     Sender.ClientMessage("Displaying Player BEScores");
+     Sender.ClientMessage("Displaying Player BEScores before sorting");
      for(i = 0; i < EQPlayers.Length; i++)
      {
       Sender.ClientMessage("Player " $ PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " has the BEScore of: " $EQPlayers[i].BEScore);
       Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore, 'Equalizer');
      }
+
+     BalanceCTFTeams();
+
+     Sender.ClientMessage("Displaying Player BEScores after sorting");
+     for(i = 0; i < EQPlayers.Length; i++)
+     {
+      Sender.ClientMessage("Player " $ PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " has the BEScore of: " $EQPlayers[i].BEScore);
+      Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore, 'Equalizer');
+     }
+
 	}
 
 	if (NextMutator != None)
