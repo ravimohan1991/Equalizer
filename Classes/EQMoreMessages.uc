@@ -45,14 +45,14 @@ class EQMoreMessages extends CriticalEventPlus;
 
 /**
  * The function gets called by the Level.Game.BroadcastLocalized through
- * the BroadcastHandler
+ * the BroadcastHandler.
  *
- * @param Switch Identification number of multiple messages.
- * @param RelatedPRI_1 PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy is sealing off the base!"
- * @param RelatedPRI_2 PlayerReplicationInfo of another involved player.
- * @param OptionalObject Nothing
+ * @param Switch     Identification number of multiple messages.
+ * @param RelatedPRI_1     PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy is sealing off the base!"
+ * @param RelatedPRI_2     PlayerReplicationInfo of another involved player.
+ * @param OptionalObject     Nothing
  *
- * @see Equalizer.EvaluateKillingEvent
+ * @see #Equalizer.EvaluateKillingEvent
  * @since 0.1.0
  */
 
@@ -85,14 +85,13 @@ class EQMoreMessages extends CriticalEventPlus;
 
 /**
  * The function also gets called by the Level.Game.BroadcastLocalized through
- * the BroadcastHandler
+ * the BroadcastHandler.
  *
- * @param Switch Identification number of multiple messages.
- * @param RelatedPRI_1 PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy is sealing off the base!"
- * @param RelatedPRI_2 PlayerReplicationInfo of another involved player.
- * @param OptionalObject Nothing
- *
- * @see Equalizer.EvaluateKillingEvent
+ * @param Switch     Identification number of multiple messages.
+ * @param RelatedPRI_1     PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy is sealing off the base!"
+ * @param RelatedPRI_2     PlayerReplicationInfo of another involved player.
+ * @param OptionalObject     Nothing
+ * @see #Equalizer.EvaluateKillingEvent
  * @since version 0.1.0
  */
 

@@ -80,8 +80,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * Event called once resolution happens.
  *
- * @param Addr The resolved address
- *
+ * @param Addr     The resolved address of Query host
  * @since 0.2.0
  */
 
@@ -142,6 +141,9 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * The callable function for Equalizer mutator class.
  *
+ * @param Information     The arpan/arzi string
+ * @param QueryType     The Query category
+ * @see #Equalzer::SendData, #Equalizer::SendArziToBE
  * @since 0.2.0
  */
 
@@ -165,6 +167,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * On receiving the data from database.
  *
+ * @param Data     The information resulting from relevant query
  * @since 0.2.0
  */
 
@@ -195,7 +198,6 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  * When port is opened. Usually after Open() is called.
  *
  * @see TcpLink::Open
- *
  * @since 0.2.0
  */
 
@@ -372,8 +374,10 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  }
 
 /**
- * Building the relevant query queues
+ * Building the relevant query queues.
  *
+ * @param Data     The arpan/arzi string
+ * @param QueryType     The Query category
  * @since 0.2.0
  */
 
@@ -413,10 +417,11 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * Parsing the GString!
  *
+ * @param GString     The backed information with all the bells and whistles 
  * @since 0.2.0
  */
 
- function string ParseString(String GString) // GString means Gyan(Knowledge) String
+ function string ParseString(string GString) // GString means Gyan(Knowledge) String
  {
  	local int PCRLF, PLF;
  	local string result;

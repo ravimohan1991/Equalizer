@@ -43,12 +43,11 @@ class EQGameRules extends Gamerules;
 /**
  * Method to notify Equalizer about the killings.
  *
- * @param Killed The Pawn class getting screwed.
- * @param Killer The Controller class screwing around.
- * @param damageType The nature of damage.
- * @param HitLocation The place of crime.
- *
- * @see #Engine.GameInfo.PreventDeath(Killed, Killer, damageType, HitLocation)
+ * @param Killed     The Pawn class getting screwed
+ * @param Killer     The Controller class screwing around
+ * @param damageType     The nature of damage
+ * @param HitLocation     The place of crime
+ * @see #Engine.GameInfo.PreventDeath
  * @since 0.1.0
  */
 
@@ -64,12 +63,11 @@ class EQGameRules extends Gamerules;
  }
 
 /**
- * For updating the scores of EQPlayerInformation
+ * For updating the scores of EQPlayerInformation.
  *
- * @param Killer The Controller class screwing around.
- * @param Other The Controller class getting screwed.
- *
- * @see #Engine.GameInfo.ScoreKill(Killer, Other)
+ * @param Killer     The Controller class screwing around
+ * @param Other     The Controller class getting screwed
+ * @see #Engine.GameInfo.ScoreKill
  * @since 0.2.0
  */
 
@@ -91,6 +89,8 @@ class EQGameRules extends Gamerules;
 /**
  * For detecting EndGame (yeah the Avangers one!)
  *
+ * @param Other     The Actor triggering an event
+ * @param EventInstigator     The Pawn responsible of the event
  * @since 0.3.6
  */
 
@@ -103,8 +103,10 @@ class EQGameRules extends Gamerules;
  }
 
 /**
- * Graceful changing of teams in accord with the Equalizer conditions
+ * Graceful changing of teams in accord with the Equalizer conditions.
  *
+ * @param Player     The Controller instance of the Human player undergoing a team change
+ * @param NewTeam     The team to switch to
  * @since 0.3.6
  */
 

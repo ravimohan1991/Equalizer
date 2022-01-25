@@ -250,7 +250,7 @@ class Equalizer extends Mutator config(Equalizer);
 /**
  * Method to register PlayerJoin event.
  *
- * @param DeltaTime     Amount of time elapsed between two consecutive ticks    
+ * @param DeltaTime     Amount of time elapsed between two consecutive ticks
  * @since 0.1.0
  * @see GameInfo.Login
  */
@@ -322,7 +322,7 @@ class Equalizer extends Mutator config(Equalizer);
 
 /**
  * Piglet(UK) and my personal take on balancing CTF teams based on alternating
- * distribution of sorted list of players (see function SortEQPInfoArray) in 
+ * distribution of sorted list of players (see function SortEQPInfoArray) in
  * Red and Blue categories.
  *
  * @since 0.3.6
@@ -340,12 +340,12 @@ class Equalizer extends Mutator config(Equalizer);
 	for(index = 0; index < EQPlayers.Length; index++)
 	{
 		Log("Inside NulearShellFillAlgorithm and tending to " $PlayerReplicationInfo(EQPlayers[index].Owner).PlayerName, 'Equalizer');
-        if(!EQPlayers[index].bDisturbInLineUp)
+		if(!EQPlayers[index].bDisturbInLineUp)
 		{
-         continue;
-        }
+			continue;
+		}
 
-        LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
+		LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
 
 		if(LambPRI != none && LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
@@ -373,17 +373,17 @@ class Equalizer extends Mutator config(Equalizer);
 	local int i, j;
 	local EQPlayerInformation tmp;
 
-    for (i = 0; i < EQPlayers.Length-1; i++)
+	for (i = 0; i < EQPlayers.Length-1; i++)
 	{
 		//Log("i value: " $ i, 'Equalizer');
-        for (j = i+1; j < EQPlayers.Length; j++)
+		for (j = i+1; j < EQPlayers.Length; j++)
 		{
 			//Log("j value: " $ j, 'Equalizer');
 			//Log("checking order", 'Equalizer');
-            if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
+			if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
 			{
 				//Log("Out of Order", 'Equalizer');
-                tmp = EQPlayers[i];
+				tmp = EQPlayers[i];
 				EQPlayers[i] = EQPlayers[j];
 				EQPlayers[j] = tmp;
 			}
@@ -393,8 +393,8 @@ class Equalizer extends Mutator config(Equalizer);
 	Log("Sorting Result is: ", 'Equalizer');
 	for(i = 0; i < EQPlayers.Length; i++)
 	{
-      Log(EQPlayers[i].BEScore);
-    }
+		Log(EQPlayers[i].BEScore);
+	}
 
  }
 
@@ -446,7 +446,7 @@ class Equalizer extends Mutator config(Equalizer);
 	else if (P2.bOnlySpectator)
 		return true;
 
-    if(EQP1.bIsBEReady)
+	if(EQP1.bIsBEReady)
 	{
 		if(!EQP2.bIsBEReady)
 		{
@@ -484,7 +484,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Send the arzi to backend. 
+ * Send the arzi to backend.
  *
  * @since 0.3.6
  */
@@ -497,8 +497,8 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * The function clears the EQPlayers array         
- * In future, we will hook algorithm to send     
+ * The function clears the EQPlayers array
+ * In future, we will hook algorithm to send
  * the data to backend, here. And we did now!
  *
  * Clustering scheme for arpan too?!
@@ -630,7 +630,7 @@ class Equalizer extends Mutator config(Equalizer);
  * Spawn EQPlayerInformation routine and associate the PlayerReplicaitonInfo
  * as the Owner.
  *
- * @param TheOwner     The Actor assigned as owner of the EQPlayerInformation instance    
+ * @param TheOwner     The Actor assigned as owner of the EQPlayerInformation instance
  * @since 0.3.6
  */
 
@@ -796,7 +796,7 @@ class Equalizer extends Mutator config(Equalizer);
 		// Also Note: Different Unreal Engines have different scales. Source: https://wiki.beyondunreal.com/Unreal_Unit
 		//            It roughly translates to 1 uu(UT) = 1.125 uu(UT2k4) ~(The_Cowboy)
 		if(Killer.Pawn == none || FCs[KillerPRI.Team.TeamIndex].Pawn == none) return;
-        if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
+		if((VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killer.Pawn.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 512*1.125)
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1536*1.125 && Killed.Controller.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
 		|| (VSize(Killed.Location - FCs[KillerPRI.Team.TeamIndex].Pawn.Location) < 1024*1.125 && Killer.CanSee(FCs[KillerPRI.Team.TeamIndex].Pawn))
@@ -1311,8 +1311,8 @@ class Equalizer extends Mutator config(Equalizer);
  * Finally the PlayerInfo has the following denomination
  * [EQUniqueIdentifer] : [Captures] : ... : [Name]
  *
- * @param Epigraph    The string (as defined above) reveieved from the backend    
- * @see #EQHTTPClient::HTTPReceivedData(string)
+ * @param Epigraph    The string (as defined above) reveieved from the backend
+ * @see #EQHTTPClient::HTTPReceivedData
  * @since 0.3.6
  */
 

@@ -33,7 +33,7 @@ class EQHUDFCLocation extends HudCCaptureTheFlag;
 /**
  * The function gets called just at the Client while drawing the CTF HUD.
  *
- * @param Canvas The Canvas on which HUD is drawn
+ * @param Canvas     The Canvas on which HUD is drawn
  * @since 0.1.0
  */
 

@@ -46,14 +46,14 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 
 /**
  * The function gets called by the Level.Game.BroadcastLocalized through
- * the BroadcastHandler
+ * the BroadcastHandler.
  *
- * @param Switch Identification number of multiple messages.
- * @param RelatedPRI_1 PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy has been switched!"
- * @param RelatedPRI_2 PlayerReplicationInfo of another involved player.
- * @param OptionalObject Nothing
+ * @param Switch     Identification number of multiple messages.
+ * @param RelatedPRI_1     PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy Team Switch!"
+ * @param RelatedPRI_2     PlayerReplicationInfo of another involved player.
+ * @param OptionalObject     Nothing
  *
- * @see EQGameRules.ChangeTeam
+ * @see #EQGameRules.ChangeTeam
  * @since 0.3.6
  */
 
@@ -89,14 +89,14 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 
 /**
  * The function also gets called by the Level.Game.BroadcastLocalized through
- * the BroadcastHandler
+ * the BroadcastHandler.
  *
- * @param Switch Identification number of multiple messages.
- * @param RelatedPRI_1 PlayerReplicationInfo of the involved player. Eg The_Cowboy in "The_Cowboy is sealing off the base!"
- * @param RelatedPRI_2 PlayerReplicationInfo of another involved player.
- * @param OptionalObject Nothing
+ * @param P     The PlayerController instance of the player on whom the the message is endowed
+ * @param Switch     Identification number of multiple messages
+ * @param RelatedPRI_1     The PlayerReplicationInfo instance of the involved actor
+ * @param RelatedPRI_2     Another PRI, not important in this context
  *
- * @see EQGameRules.ChangeTeam
+ * @see #EQGameRules.ChangeTeam
  * @since version 0.3.6
  */
 

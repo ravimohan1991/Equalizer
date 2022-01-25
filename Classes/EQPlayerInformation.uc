@@ -140,7 +140,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 /**
  * The function gets called just after ActorSpawns.
- * So we do the necessary preparations here
+ * And we do the necessary preparations here.
  *
  * @since 0.2.0
  */
@@ -183,10 +183,10 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  }
 
 /**
- * Routine to make actor read/not ready for equalizer purpose
+ * Routine to make actor read/not ready for equalizer purpose.
  *
- * @param Decision If this actor is ready for equalizer purpose
- *
+ * @param Decision     If this actor is ready for equalizing purposes
+ * @see #Equalizer::GatherAndProcessInformation
  * @since 0.3.6
  */
 
@@ -198,6 +198,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 /**
  * Updating the relevant variables with backend data
  *
+ * @param Value     The number corresponding to particular BE field
+ * @param Counter     The sequence number of the BE field
+ * @see #Equalizer::GatherAndProcessInformation
  * @since 0.3.6
  */
 
@@ -225,6 +228,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  * A BP-Value dictionary so to speak!
  * Also think about ELO rating and sorts!
  *
+ * @param BasisParameter     The sequence number to be based as metric for determining Natural order
+ * @see #Equalizer::InOrder
  * @since 0.3.6
  */
 
@@ -251,7 +256,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 
 /**
- * Here we update the score and match with that of PlayerReplicationInfo
+ * Here we update the score and match with that of PlayerReplicationInfo.
  *
  * @since 0.2.0
  */
@@ -267,7 +272,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  }
 
  /**
- * Method to associate UniqueIdentifier reference
+ * Method to associate UniqueIdentifier reference.
  *
  * @since 0.2.0
  */
@@ -282,8 +287,8 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  }
 
 /**
- * Here we do the necessary computations when a player
- * chooses to become spectator
+ * Here we do the necessary computations when a player.
+ * chooses to become spectator.
  *
  * @since 0.2.0
  */
@@ -294,7 +299,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  }
 
 /**
- * The last playing moment related computations
+ * The last playing moment related computations.
  *
  * @since 0.2.0
  */
@@ -313,7 +318,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  }
 
 /**
- * Computes the points per hour for this player
+ * Computes the points per hour for this player.
  *
  * @since 0.2.0
  */
@@ -369,10 +374,11 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 /**
  * Encodes illegal characters in a string so it can be used in a HTTP request URL.
  * Introduced to add a layer of security. Not completely sure but we are trying to
- * resolve https://github.com/ravimohan1991/Equalizer/issues/2
+ * resolve https://github.com/ravimohan1991/Equalizer/issues/2.
  *
  * courtsey of Piglet(UK)
  *
+ * @param InputString     The string upon which the cipher is to be applied
  * @since 0.3.6
  */
 
@@ -426,7 +432,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 /**
  * Here we do the necessary chores when spectator
- * chooses to become a player
+ * chooses to become a player.
  *
  * @since 0.2.0
  */
