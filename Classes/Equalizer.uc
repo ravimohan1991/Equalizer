@@ -276,9 +276,7 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 				if(Cont != Witness)
 				{
-					Log("Calling PlayerJoin");
                     PlayerJoin(Cont);
-					bWannaBalance = true;
 				}
 				break;
 			}
@@ -1058,7 +1056,12 @@ class Equalizer extends Mutator config(Equalizer);
 	EQPlayerInfo.UpdateScore();
 	EQPlayerInfo.PlayersLastPlayingMoment();
 
-	if(HttpClientInstance != none)
+	if(EQPlayerInfo.bIsBot)
+	{
+		return;
+    }
+
+    if(HttpClientInstance != none)
 	{
 		DataToSend = EQPlayerInfo.GenerateArpanString();
 
@@ -1414,9 +1417,7 @@ class Equalizer extends Mutator config(Equalizer);
 
  function Mutate(string MutateString, PlayerController Sender)
  {
-	local EQPlayerInformation EQPlayerInfo;
 	local byte i;
-	local string StringToPrint;
 	local int ConsoleStringPrintBoxWidth;
 
 	ConsoleStringPrintBoxWidth = 120;

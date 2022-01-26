@@ -163,7 +163,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 
 	bIsBot = PlayerReplicationInfo(Owner).bBot;
 	/*
-	if(PlayerReplicationInfo(Owner).bBot)
+	if(bIsBot)
 	{
 		EQIdentifier = "BOT";
 	}
@@ -282,11 +282,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	{
 		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
 	}
-
-	if(bIsbot)
-    EQIdentifier = PlayerReplicationInfo(Owner).PlayerName;//EQUID.GetIdentifierString(0);
-    else
-    EQIdentifier = "Little_Johnny";
  }
 
 /**
