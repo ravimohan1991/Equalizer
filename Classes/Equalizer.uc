@@ -133,6 +133,14 @@ class Equalizer extends Mutator config(Equalizer);
  /** Query server resolved address. */
  var()   config           string        ResolvedAddress;
 
+ /** Following variables are for MegaTesting scenarios. Only for Admin. */
+
+ /** Should we display the teams before and after sorting, in the console? */
+ var()   config            bool         bShowTeamsRollCall;
+
+ /** Log the teams before and after sorting? */
+ var()   config            bool         bLogTeamsRollCall;
+
 /**
  * The function gets called just after game begins. So we set up the
  * environmnet for Equalizer to operate.
@@ -151,7 +159,7 @@ class Equalizer extends Mutator config(Equalizer);
 		Destroyed();
 		return;
 	}
-	SaveConfig();
+
 	EQGRules = Level.Game.Spawn(class'EQGameRules', self, 'EndGame'); // for accessing PreventDeath function
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
@@ -171,6 +179,7 @@ class Equalizer extends Mutator config(Equalizer);
 	GArziString = "";
 	bWannaBalance = false;
 
+	SaveConfig();
 	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
  }
 
@@ -321,7 +330,7 @@ class Equalizer extends Mutator config(Equalizer);
  }
 
 /**
- * Piglet(UK) and my personal take on balancing CTF teams based on alternating
+ * Piglet(UK) and my personal take on balancing CTF teams using alternating
  * distribution of sorted list of players (see function SortEQPInfoArray) in
  * Red and Blue categories.
  *
@@ -339,15 +348,19 @@ class Equalizer extends Mutator config(Equalizer);
 	// Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
 	for(index = 0; index < EQPlayers.Length; index++)
 	{
-		Log("Inside NulearShellFillAlgorithm and tending to " $PlayerReplicationInfo(EQPlayers[index].Owner).PlayerName, 'Equalizer');
-		if(!EQPlayers[index].bDisturbInLineUp)
+		if(!EQPlayers[index].bDisturbInLineUp || EQPlayers[index].bIsBot)
 		{
 			continue;
 		}
 
 		LambPRI = PlayerReplicationInfo(EQPlayers[index].Owner);
 
-		if(LambPRI != none && LambPRI.Team.TeamIndex != TeamToSwitchTo)
+		if(LambPRI == none)
+		{
+			continue;
+		}
+
+		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
 			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
 		}
@@ -375,27 +388,16 @@ class Equalizer extends Mutator config(Equalizer);
 
 	for (i = 0; i < EQPlayers.Length-1; i++)
 	{
-		//Log("i value: " $ i, 'Equalizer');
 		for (j = i+1; j < EQPlayers.Length; j++)
 		{
-			//Log("j value: " $ j, 'Equalizer');
-			//Log("checking order", 'Equalizer');
 			if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
 			{
-				//Log("Out of Order", 'Equalizer');
 				tmp = EQPlayers[i];
 				EQPlayers[i] = EQPlayers[j];
 				EQPlayers[j] = tmp;
 			}
 		}
 	}
-
-	Log("Sorting Result is: ", 'Equalizer');
-	for(i = 0; i < EQPlayers.Length; i++)
-	{
-		Log(EQPlayers[i].BEScore);
-	}
-
  }
 
 /**
@@ -1050,8 +1052,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function SendEQDataToBackEnd(EQPlayerInformation EQPlayerInfo)
  {
-    local PlayerController Sender;
-    local string DataToSend;
+	local PlayerController Sender;
+	local string DataToSend;
 
 	EQPlayerInfo.UpdateScore();
 	EQPlayerInfo.PlayersLastPlayingMoment();
@@ -1353,7 +1355,7 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 		}
 
-		if(false)//bWannaBalance)
+		if(false)//bWannaBalance
 		{
 			Log("Trying to Balance teams.", 'Equalizer');
 			BalanceCTFTeams();
@@ -1414,47 +1416,70 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local EQPlayerInformation EQPlayerInfo;
 	local byte i;
+	local string StringToPrint;
+	local int ConsoleStringPrintBoxWidth;
 
-	if(false)
+	ConsoleStringPrintBoxWidth = 120;
+
+	if(Sender != none && Sender.PlayerReplicationInfo.bAdmin)
 	{
+		Log("Mutate Stuff", 'Equalizer');
 
-		// allset in backend only for addition of new records. Was trying to test that!
-		EQPlayerInfo = GetInfoByID(Sender.PlayerReplicationInfo.PlayerID);
-		if(EQPlayerInfo != none)
+		if(MutateString ~= "balanceteams")
 		{
-			EQPlayerInfo.PlayersLastPlayingMoment();
-			HttpClientInstance.SendData(EQPlayerInfo.GenerateArpanString(), HttpClientInstance.SubmitEQInfo);
-			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-			//Log("Querying for Little_Johnny", 'Equalizer');
-			//HttpClientInstance.SendData("Little_Johnny,Pucchi,Othello", HttpClientInstance.QueryEQInfo);
+			if(bShowTeamsRollCall)
+			{
+				Sender.ClientMessage("Displaying Player BEScores before sorting");
+				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
+				Sender.ClientMessage("Player name                  BEScore");
+			}
+			if(bLogTeamsRollCall)
+			{
+				Log("Displaying Player BEScores before sorting");
+				Log("------------------------------------------------------------------------------------------------------------------------------------");
+			}
+
+			for(i = 0; i < EQPlayers.Length; i++)
+			{
+				if(bShowTeamsRollCall)
+					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
+				if(bLogTeamsRollCall)
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer');
+			}
+
+			if(bLogTeamsRollCall)
+				Log("------------------------------------------------------------------------------------------------------------------------------------");
+			if(bShowTeamsRollCall)
+				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
+
+			BalanceCTFTeams();
+
+			if(bShowTeamsRollCall)
+			{
+				Sender.ClientMessage("Displaying Player BEScores after sorting");
+				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
+			}
+
+			if(bLogTeamsRollCall)
+			{
+				Log("Displaying Player BEScores after sorting");
+				Log("------------------------------------------------------------------------------------------------------------------------------------");
+			}
+
+			if(bShowTeamsRollCall)
+				Sender.ClientMessage("Player name                  BEScore");
+			for(i = 0; i < EQPlayers.Length; i++)
+			{
+				if(bShowTeamsRollCall)
+					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
+				if(bLogTeamsRollCall)
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer');
+			}
+			if(bShowTeamsRollCall)
+				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
+			if(bLogTeamsRollCall)
+				Log("------------------------------------------------------------------------------------------------------------------------------------");
 		}
-
-		//HttpClientInstance.SendData(MutateString, HttpClientInstance.SubmitEQInfo);
-
-		if (MutateString ~= "dist")
-		Sender.ClientMessage("Distance from red flag: "$VSize(Sender.Pawn.Location - EQFlags[0].HomeBase.Location)$" distance from blue flag: "$VSize(Sender.Pawn.Location - 				EQFlags[1].HomeBase.Location));
-
-	}
-
-	if(Sender != none)
-	{
-	 Log("Mutate Stuff");
-     Sender.ClientMessage("Displaying Player BEScores before sorting");
-     for(i = 0; i < EQPlayers.Length; i++)
-     {
-      Sender.ClientMessage("Player " $ PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " has the BEScore of: " $EQPlayers[i].BEScore);
-      Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore, 'Equalizer');
-     }
-
-     BalanceCTFTeams();
-
-     Sender.ClientMessage("Displaying Player BEScores after sorting");
-     for(i = 0; i < EQPlayers.Length; i++)
-     {
-      Sender.ClientMessage("Player " $ PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " has the BEScore of: " $EQPlayers[i].BEScore);
-      Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore, 'Equalizer');
-     }
-
 	}
 
 	if (NextMutator != None)
@@ -1517,6 +1542,45 @@ function ACEPadLog(string LogString, optional string PaddingChar, optional strin
 	}
 
 	Log(Result, 'Equalizer');
+}
+
+function string ACEPadString(string RString, optional string PaddingChar, optional string FinalChar,
+    optional int StringLength, optional bool bCenter)
+{
+	local string Result;
+	local int Pos;
+
+	// Init default properties
+	if (PaddingChar == "") PaddingChar  = " ";
+	if (FinalChar == "")   FinalChar    = "|";
+	if (StringLength == 0) StringLength = 75;
+
+	Result = RString;
+
+	// Truncate string if needed
+	if (Len(Result) + 4 > StringLength)
+	{
+		Result = FinalChar $ PaddingChar
+		$ Left(Result, Len(Result) - 6) $ "..."
+		$ PaddingChar $ FinalChar;
+	}
+	else
+	{
+		// Insert padding characters
+		Result = PaddingChar $ Result;
+		while (Len(Result) + 2 < StringLength)
+		{
+			// Only insert padding at the left side if the original string
+			// should be centered in the resulting string
+			if (bCenter && (Pos++) % 2 == 1)
+				Result = PaddingChar $ Result;
+			else
+				Result = Result $ PaddingChar;
+		}
+		Result = FinalChar $ Result $ FinalChar;
+	}
+
+    return Result;
 }
 
 // =============================================================================
@@ -1631,4 +1695,6 @@ function string IntToStr(int i, int StringLength)
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10
+    bLogTeamsRollCall=true
+    bShowTeamsRollCall=true
  }
