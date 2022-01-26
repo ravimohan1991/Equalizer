@@ -48,4 +48,12 @@ INI setting | Default value | Description
 ## Installation
 
 ## Caveats
-- The if player starts spectating after returning the flag then the additional score (3, 5 or 7) will not be taken into account for PPH computations. It is due to the [Epic's code](http://wormbo.de/uncodex/ut2004/Source_unrealgame/ctfgame.html#192) hooking appropriately is not possible. 
+- The if player starts spectating after returning the flag then the additional score (3, 5 or 7) will not be taken into account for PPH computations. It is due to the [Epic's code](http://wormbo.de/uncodex/ut2004/Source_unrealgame/ctfgame.html#192) hooking appropriately is not possible.
+
+## Credits and Thanks
+In alphabetical order
+- [Miasma Forums](https://miasma.rocks)
+- People of India
+- Piglet
+- SmartCTF [creators](http://wiki.unrealadmin.org/SmartCTF)
+- Wormbo 
