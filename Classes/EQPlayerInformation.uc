@@ -118,14 +118,17 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /** This player killed the enemy FC at this distance from enemy flag */
  var      vector                              KilledFCAtLocation;
 
- /** UniqueIdentifer reference */
+ /** UniqueIdentifer and mutator reference */
  var       UniqueIdentifier                   EQUID;
-
+ var       Equalizer                          MYMUT;
  /*
  *  Information obtained from backend. Used for equalizing (whatever that means :D)
  */
  var    int    BECaptures, BEGrabs, BECovers, BESeals, BEFlagKills, BETeamKills, BEScore, BEFrags,
  BEHeadShots, BEShieldBelts, BEAmps, BESuicides, BETimePlayedHours, BETimePlayedMinutes;
+ 
+ //Back End Points Per Hour
+ var float BEPPH;
 
  /*
  *  Is the BE data updated and can we use it to equalize?
@@ -155,14 +158,14 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	// Necessary?
 	if(Owner == none || PlayerReplicationInfo(Owner) == none)
 	{
-		Log("No legitimate Owner. Destroying self...", 'Equalizer');
+		Log("No legitimate Owner. Destroying self...", 'Equalizer_TC_alpha');
 		super.PostBeginPlay();
 		Destroy(); // The dirty flag!
 		return;
 	}
 
 	bIsBot = PlayerReplicationInfo(Owner).bBot;
-	/*
+	
 	if(bIsBot)
 	{
 		EQIdentifier = "BOT";
@@ -171,7 +174,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	{
 		SetTimer(1.f, true);
 	}
-	*/
+	
 	StartTime = Level.TimeSeconds;
 
 	bIsBEReady = false;
@@ -191,6 +194,11 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function MakeActorReadyForEqualizer(bool Decision)
  {
 	bIsBEReady = Decision;
+	
+	if (BETimePlayedMinutes > 0 || BETimePlayedHours > 0)
+		BEPPH = BEScore / (BETimePlayedMinutes/60 + BETimePlayedHours) ;
+	else
+		BEPPH = 0.0f;
  }
 
 /**
@@ -217,7 +225,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 9: BETimePlayedHours = Value; break;
  		case 10: BEFrags = Value; break;
  		case 11: BESuicides = Value; break;
- 		default: Log("Can't apply the Value corresponding to the counter: " $ Counter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName , 'Equalizer'); break;
+ 		default: Log("Can't apply the Value corresponding to the counter: " $ Counter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName , 'Equalizer_TC_alpha'); break;
  	}
  }
 
@@ -231,7 +239,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  * @since 0.3.6
  */
 
- function int BPValue(int BasisParameter)
+  function int BPValue(int BasisParameter)
  {
  	switch(BasisParameter)
  	{
@@ -241,14 +249,15 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 4: return BESeals;
  		case 5: return BEFlagKills;
  		case 6: return BETeamKills;
- 		case 7: log("Order decision on BEScore basis! which is: " $BEScore, 'Equalizer'); return BEScore;
+ 		case 7: log("Order decision on BEScore basis! which is: " $BEScore, 'Equalizer_TC_alpha'); return BEScore;
  		case 8: return BETimePlayedMinutes;
  		case 9: return BETimePlayedHours;
  		case 10: return BEFrags;
  		case 11: return BESuicides;
+	
  	}
 
- 	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer');
+ 	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer_TC_alpha');
  	return -1;
  }
 
@@ -280,7 +289,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	EQUID = UniqueIdentifier(UID);
 	if(EQUID == none)
 	{
-		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer');
+		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer_TC_alpha');
 	}
  }
 
@@ -350,13 +359,13 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	}
  	else
  	{
- 		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer');
+ 		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer_TC_alpha');
  		PlayerName = "NONAME_StreetRat";
  	}
 
  	if(EQIdentifier ~= "")
  	{
- 		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer');
+ 		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer_TC_alpha');
  		return "";
  	}
 
@@ -451,6 +460,10 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	if(EQIdentifier ~= "")
 	{
 		EQIdentifier = EQUID.GetIdentifierString(PlayerReplicationInfo(Owner).PlayerID);
+		if(EQIdentifier ~= ""){}
+		else{
+			MYMUT.GenerateGAString(self);
+		}
 	}
 	else
 	{

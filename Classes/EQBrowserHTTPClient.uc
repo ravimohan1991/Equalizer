@@ -95,7 +95,7 @@ const HadError          = 4;
 	
 	if(ServerIpAddr.Addr == 0)
 	{
-		Log("UBrowserHTTPClient: Invalid server address", 'Equalizer');
+		Log("UBrowserHTTPClient: Invalid server address", 'Equalizer_TC_alpha');
 		SetError(-1);
 		return;
 	}
@@ -107,7 +107,7 @@ const HadError          = 4;
  {
 	if(BindPort() == 0)
 	{
-		Log("UBrowserHTTPLink: Error binding local port.", 'Equalizer');
+		Log("UBrowserHTTPLink: Error binding local port.", 'Equalizer_TC_alpha');
 		SetError(-2);
 		return;
 	}

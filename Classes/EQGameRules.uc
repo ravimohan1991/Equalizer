@@ -119,3 +119,5 @@ class EQGameRules extends Gamerules;
 		CTFGame(Level.Game).GameEvent("TeamChange", string(NewTeam), Player.PlayerReplicationInfo);
 	}
  }
+
+

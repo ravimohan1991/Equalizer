@@ -118,7 +118,7 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 					P.ViewTarget.PlaySound(default.SwitchToRedSound, SLOT_Talk, 4, , , , false);
 			}
 				else
-					Log("Can't load SwitchToRedSound sound.", 'Equalizer');
+					Log("Can't load SwitchToRedSound sound.", 'Equalizer_TC_alpha');
 			break;
 		case 1:
 			if(default.SwitchToBlueSound != none)
@@ -127,7 +127,7 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 					P.ViewTarget.PlaySound(default.SwitchToBlueSound, SLOT_Talk, 4, , , , false);
 			}
 				else
-					Log("Can't load SwitchToBlueSound sound.", 'Equalizer');
+					Log("Can't load SwitchToBlueSound sound.", 'Equalizer_TC_alpha');
 			break;
 	}
  }

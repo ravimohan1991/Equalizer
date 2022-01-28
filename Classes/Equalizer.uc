@@ -32,7 +32,7 @@
  * @since 0.1.0
  */
 
-class Equalizer extends Mutator config(Equalizer);
+class Equalizer extends Mutator config(Equalizer_TC_alpha);
 
 /*
  * Global Variables
@@ -99,6 +99,9 @@ class Equalizer extends Mutator config(Equalizer);
  var bool bWannaBalance;
 
 
+var FileLog MyLogfile;
+
+
  /*
   * Configurable Variables
   */
@@ -111,6 +114,10 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           bool         bShowFCLocation;
  var()   config           float        FCProgressKillBonus;
  var()   config           string       UniqueIdentifierClass;
+ 
+ var()   config           bool         bBalanceAtMapStart;
+ var()   config           bool         bDebugIt;
+ var()   config           bool         bSimulateBalance;
 
  /** The radius of the bubble around the flag for tracking seals. */
  var()   config           float        SealDistance;
@@ -155,7 +162,7 @@ class Equalizer extends Mutator config(Equalizer);
 	CTFGameInfo = CTFGame(Level.Game);
 	if(CTFGameInfo == none)
 	{
-		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer');
+		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer_TC_alpha');
 		Destroyed();
 		return;
 	}
@@ -165,11 +172,11 @@ class Equalizer extends Mutator config(Equalizer);
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
 	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
-	if(UniqueID != none)
-		Log("Successfully loaded UniqueIdentifier class", 'Equalizer');
+	if(UniqueID != none && bDebugIt)
+		Log("Successfully loaded UniqueIdentifier class", 'Equalizer_TC_alpha');
 	EQUniqueIdentifier = Spawn(UniqueID, self);
-	if(EQUniqueIdentifier != none)
-		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer');
+	if(EQUniqueIdentifier != none && bDebugIt)
+		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer_TC_alpha');
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
@@ -180,7 +187,7 @@ class Equalizer extends Mutator config(Equalizer);
 	bWannaBalance = false;
 
 	SaveConfig();
-	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer');
+	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer_TC_alpha');
  }
 
 /**
@@ -212,14 +219,14 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(NumHTTPRestarts < 4)
 	{
-		Log("Too many HTTP errors in one session, HTTP client restarting.", 'Equalizer');
+		Log("Too many HTTP errors in one session, HTTP client restarting.", 'Equalizer_TC_alpha');
 
 		InitHTTPFunctions();
 		NumHTTPRestarts++;
 	}
 	else
 	{
-		Log("Too many HTTP client restarts in one session, HTTP functions disabled.", 'Equalizer');
+		Log("Too many HTTP client restarts in one session, HTTP functions disabled.", 'Equalizer_TC_alpha');
 	}
  }
 
@@ -297,34 +304,37 @@ class Equalizer extends Mutator config(Equalizer);
  * @see GatherAndProcessInformation
  */
 
- function BalanceCTFTeams()
+ function BalanceCTFTeams(bool actuallybalance)
  {
 	local int CacheMinPlayers;
 
 	if(EQPlayers.Length == 0)
 	{
-		Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer');
+		Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer_TC_alpha');
 		return;
 	}
 
 	// We want to seperate bots and Humans
 	// which is crucial for balancing during gameplay.
 	// Before the match starts, there are no bots.
+	
+	if (actuallybalance){
+		// For bot-crowd seperation from Humans and filtering
+		CacheMinPlayers = CTFGameInfo.MinPlayers;
+	
+		// Bots... don't interfare in Balancing!
+		CTFGameInfo.MinPlayers = 0;
+		CTFGameInfo.KillBots(Level.Game.NumBots);
+	}
 
-	// For bot-crowd seperation from Humans and filtering
-	CacheMinPlayers = CTFGameInfo.MinPlayers;
-
-	// Bots... don't interfare in Balancing!
-	//CTFGameInfo.MinPlayers = 0;
-	//CTFGameInfo.KillBots(0);
-
-	SortEQPInfoArray(7);   // BEScore
+	SortEQPInfoArray(7);   // BEScore **pigklet but currently hard coded to use PPH!
 
 	// Piglet's algorithm ...
-	NuclearShellFillAlgorithm();
+	NuclearShellFillAlgorithm(actuallybalance);
 
 	// Restore the bot-crowd
-	CTFGameInfo.MinPlayers = CacheMinPlayers;
+	if (actuallybalance)
+		CTFGameInfo.MinPlayers = CacheMinPlayers;
  }
 
 /**
@@ -335,13 +345,14 @@ class Equalizer extends Mutator config(Equalizer);
  * @since 0.3.6
  */
 
- function NuclearShellFillAlgorithm()
+ function NuclearShellFillAlgorithm(bool actuallybalance)
  {
-	local int index;
+	local int index, playercount;
 	local PlayerReplicationInfo LambPRI;
 	local byte TeamToSwitchTo;
 
 	TeamToSwitchTo = 0;// We start with Red team as per suggestion
+	playercount = 0;// We start with Red team as per suggestion
 
 	// Assuming EQPlayers array is "contiguous", meaning, no reference is null and order is descending
 	for(index = 0; index < EQPlayers.Length; index++)
@@ -358,6 +369,10 @@ class Equalizer extends Mutator config(Equalizer);
 			continue;
 		}
 
+		if (!actuallybalance){
+			piglogwrite(index@"I would have balanced to team"@TeamToSwitchTo@LambPRI.PlayerName $ " : " $ EQPlayers[index].BEPPH);
+		}
+
 		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
 			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
@@ -367,8 +382,13 @@ class Equalizer extends Mutator config(Equalizer);
 		// Need to find more appropriate logic for deciding team especially when
 		// new player with High PPH joins. The team decision logic should comply to scheme
 		// and blind alternating shouldn't be sole criteria.
-		TeamToSwitchTo = 1 - TeamToSwitchTo;
-		EQPlayers[index].bDisturbInLineUp = false;
+		
+		//First player to red, next two to blue, then alternate
+		if (++playercount != 2)
+			TeamToSwitchTo = 1 - TeamToSwitchTo;
+		
+		//piglet lets leave everyone available for now.  
+		//EQPlayers[index].bDisturbInLineUp = false;
 	}
  }
 
@@ -418,10 +438,12 @@ class Equalizer extends Mutator config(Equalizer);
 	// Safety check!
 	if(P1 == none)
 	{
-		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer');
+		if (bDebugIt)
+			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha');
 		if(P2 == none)
 		{
-			Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer');
+			if (bDebugIt)
+				Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer_TC_alpha');
 			return true;// Note this "true" is not the same "true" we gauge then we are satisfied with the order.  This true means order can't be determined and we are dealing with degeneracy.
 				    // Seems computationally it is no different from order satisfaction?
 		}
@@ -432,7 +454,8 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else if(P2 == none)
 	{
-		Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer');
+		if (bDebugIt)
+			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha');
 		return true;
 	}
 
@@ -458,7 +481,13 @@ class Equalizer extends Mutator config(Equalizer);
 		return false;
 	}
 
+	/*
 	if(EQP1.BPValue(BasisParameter) <  EQP2.BPValue(BasisParameter))
+		return false;
+	
+	*/
+	//Piglet - for now, use pph
+	if(EQP1.BEPPH <  EQP2.BEPPH)
 		return false;
 
 	return true;
@@ -473,6 +502,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function GenerateGAString(EQPlayerInformation EQPlayerInfo)
  {
+	Log("GenerateGAString: " $ EQPlayerInfo.EQIdentifier , 'Equalizer_TC_alpha');
+ 
  	if(GArziString != "")
  	{
  		GArziString = GArziString $ "," $ EQPlayerInfo.EQIdentifier;
@@ -491,7 +522,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function SendArziToBE()
  {
-	Log("Global Arzi string is: " $ GArziString, 'Equalizer');
+	if (bDebugIt)
+		Log("Global Arzi string is: " $ GArziString, 'Equalizer_TC_alpha');
  	HttpClientInstance.SendData(GArziString, HttpClientInstance.QueryEQInfo);
  	GArziString = "";
  }
@@ -522,7 +554,8 @@ class Equalizer extends Mutator config(Equalizer);
 		{
 			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
 			{
-				Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer');
+				if (bDebugIt)
+					Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer_TC_alpha');
 				SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 				EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 				EQPlayers[PlayerIndex].Destroy();
@@ -572,11 +605,12 @@ class Equalizer extends Mutator config(Equalizer);
 		Witness = Level.Game.Spawn(class'UTServerAdminSpectator');
 		if(Witness != none)
 		{
-			Log("Successfully Spawned the Witness"@Witness, 'Equalizer');
+			if (bDebugIt)
+				Log("Successfully Spawned the Witness"@Witness, 'Equalizer_TC_alpha');
 			Witness.PlayerReplicationInfo.PlayerName = "Witness";
 		}
 		else
-			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer');
+			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer_TC_alpha');
 	}
 
 	if(NextMutator != None)
@@ -603,7 +637,8 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else
 	{
-		Log("PlayerReplicationInfo is none and now waiting for the spawn.", 'Equalizer');
+		if (bDebugIt)
+			Log("PlayerReplicationInfo is none and now waiting for the spawn.", 'Equalizer_TC_alpha');
 		WaitingForPRIToSpawn(FreshMeat);
 	}
  }
@@ -640,9 +675,9 @@ class Equalizer extends Mutator config(Equalizer);
 
 	EQPI = Spawn(class'EQPlayerInformation', TheOwner);
 	EQPI.SetUniqueIdentifierReference(EQUniqueIdentifier);
+	EQPI.MYMUT = self;
 
 	bWannaBalance = true;
-	GenerateGAString(EQPI);
 
 	return EQPI;
  }
@@ -1036,7 +1071,8 @@ class Equalizer extends Mutator config(Equalizer);
 
  function PlayerBecameSpectator(EQPlayerInformation SpectatorJoinInfo)
  {
-	Log("PlayerBecameSpectator", 'Equalizer');
+	if (bDebugIt)
+		Log("PlayerBecameSpectator", 'Equalizer_TC_alpha');
 	SpectatorJoinInfo.PlayerBecameSpectator();
 	SendEQDataToBackEnd(SpectatorJoinInfo);
  }
@@ -1071,8 +1107,10 @@ class Equalizer extends Mutator config(Equalizer);
 		}
 
 		HttpClientInstance.SendData(DataToSend, HttpClientInstance.SubmitEQInfo);
-		Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer');
-		Log(DataToSend, 'Equalizer');
+		if (bDebugIt){
+			Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer_TC_alpha');
+			Log(DataToSend, 'Equalizer_TC_alpha');
+		}
 		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
 		if(Sender != none)
 		{
@@ -1082,7 +1120,7 @@ class Equalizer extends Mutator config(Equalizer);
 	}
 	else
 	{
-		Log("SendEQDataToBackEnd: Can't find the HttpClient instance", 'Equalizer');
+		Log("SendEQDataToBackEnd: Can't find the HttpClient instance", 'Equalizer_TC_alpha');
 	}
  }
 
@@ -1260,7 +1298,7 @@ class Equalizer extends Mutator config(Equalizer);
 		}
 	}
 
-	Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer');
+	Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer_TC_alpha');
 	return none;
  }
 
@@ -1298,11 +1336,13 @@ class Equalizer extends Mutator config(Equalizer);
  {
 	local int PlayerIndex;
 
-	Log("Match End!!!", 'Equalizer');
+	if (bDebugIt)
+		Log("Match End!!!", 'Equalizer_TC_alpha');
 
 	for(PlayerIndex = EQPlayers.Length - 1; PlayerIndex >= 0; PlayerIndex--)
 	{
-		Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer');
+		if (bDebugIt)
+			Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer_TC_alpha');
 		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 		EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 		EQPlayers[PlayerIndex].Destroy();
@@ -1327,7 +1367,7 @@ class Equalizer extends Mutator config(Equalizer);
 	local int NumOfChunks, ChunkIndex, NumOfDenominations, DenominationIndex;
 	local EQPlayerInformation EQPlayerInfo;
 
-	LogEpigraphWithStyle(Epigraph);
+	//LogEpigraphWithStyle(Epigraph);
 
 	if(GetToken(Epigraph, ",", 0) == "OSTRACON")
 	{
@@ -1344,7 +1384,7 @@ class Equalizer extends Mutator config(Equalizer);
 					EQPlayerInfo = GetInfoByEQIdentifier(EQIdentifierString);
 					if(EQPlayerInfo == none)
 					{
-						Log("EQPlayerInfo is none. Coming out of the loop.", 'Equalizer');
+						Log("EQPlayerInfo is none. Coming out of the loop.", 'Equalizer_TC_alpha');
 						break;
 					}
 					continue;
@@ -1360,8 +1400,8 @@ class Equalizer extends Mutator config(Equalizer);
 
 		if(false)//bWannaBalance
 		{
-			Log("Trying to Balance teams.", 'Equalizer');
-			BalanceCTFTeams();
+			Log("Trying to Balance teams.", 'Equalizer_TC_alpha');
+			BalanceCTFTeams(true);
 			bWannaBalance = false;
 		}
 	}
@@ -1407,6 +1447,66 @@ class Equalizer extends Mutator config(Equalizer);
 	ACEPadLog("", "-", "+", EpigraphBoxWidth);
  }
 
+
+
+
+function bool piglogopen(){
+	MyLogfile = Spawn(class'FileLog');
+	if (MyLogfile != None) {
+		MyLogfile.OpenLog("Debug");
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+function bool piglogclose(){
+		MyLogfile.CloseLog();
+		MyLogfile.Destroy();
+}
+
+function piglogwrite(string what){
+		MyLogfile.Logf(Level.Year $ "-" $ Right("0" $ Level.Month, 2) $ "-" $ Right("0" $ Level.Day, 2) @ Right("0" $ Level.Hour, 2) $ ":" $ Right("0" $ Level.Minute, 2) $ ":" $ Right("0" $ Level.Second, 2)
+		@ what);
+}
+
+function piglog(string what){
+	if (piglogopen()) {
+		piglogwrite(what);
+		piglogclose();
+    }
+}
+
+function MatchStarting(){
+
+local byte i;
+
+	if (bDebugIt)
+		Log("**** Match Starting trigger Point", 'Equalizer_TC_alpha');
+	
+	if (bBalanceAtMapStart){
+		if (bSimulateBalance){
+			if (bDebugIt)
+				Log("Match Starting Simulate Balance", 'Equalizer_TC_alpha');
+			piglogopen();
+			piglogwrite("Before Balance");
+			for(i = 0; i < EQPlayers.Length; i++){
+				piglogwrite(i@PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore);
+			}
+			BalanceCTFTeams(False);
+			piglogclose();
+		}
+		else{
+			if (bDebugIt)
+				Log("Match Starting Balance", 'Equalizer_TC_alpha');
+			BalanceCTFTeams(true);
+		}
+	}
+}
+
+
+
 /**
  * For development and debugging purposes
  *
@@ -1424,10 +1524,68 @@ class Equalizer extends Mutator config(Equalizer);
 
 	if(Sender != none && Sender.PlayerReplicationInfo.bAdmin)
 	{
-		Log("Mutate Stuff", 'Equalizer');
+		if(MutateString ~= "bSimOn"){
+			bSimulateBalance = true;
+			Sender.ClientMessage("Simulate Balance on");
+			saveconfig();
+		}
 
+		if(MutateString ~= "bsimoff"){
+			bSimulateBalance = false;
+			Sender.ClientMessage("Simulate Balance off");
+			saveconfig();
+		}
+
+		if(MutateString ~= "debugon"){
+			bDebugIt = true;
+			Sender.ClientMessage("Debug on");
+			saveconfig();
+		}
+		
+		if(MutateString ~= "debugoff"){
+			Sender.ClientMessage("Debug off");
+			saveconfig();
+		}
+		
+		if(MutateString ~= "bmson"){
+			bBalanceAtMapStart = true;
+			Sender.ClientMessage("Balance Map Start on");
+			saveconfig();
+		}
+		
+		if(MutateString ~= "bmsoff"){
+			bBalanceAtMapStart = false;
+			Sender.ClientMessage("Balance Map Start off");
+			saveconfig();
+		}
+		
+		if (MutateString ~= "balshow"){
+			Sender.ClientMessage("Balance Map Start"@bBalanceAtMapStart);
+			Sender.ClientMessage("Simulate Balance"@bSimulateBalance);
+			Sender.ClientMessage("Debug"@bDebugIt);
+		}
+		
+		if(MutateString ~= "balancedebug"){
+			
+			if (piglogopen()){
+				piglogwrite("Before Balance");
+				for(i = 0; i < EQPlayers.Length; i++){
+					piglogwrite(i@PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEPPH);
+				}
+				BalanceCTFTeams(False);
+				piglogclose();
+			}
+			else{
+				Log("Error: Could not open debug log", 'Equalizer_TC_alpha');
+			}
+			
+		
+		}
+	
 		if(MutateString ~= "balanceteams")
 		{
+			Log("Mutate Stuff", 'Equalizer_TC_alpha');
+			
 			if(bShowTeamsRollCall)
 			{
 				Sender.ClientMessage("Displaying Player BEScores before sorting");
@@ -1445,7 +1603,7 @@ class Equalizer extends Mutator config(Equalizer);
 				if(bShowTeamsRollCall)
 					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
 				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer');
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer_TC_alpha');
 			}
 
 			if(bLogTeamsRollCall)
@@ -1453,7 +1611,7 @@ class Equalizer extends Mutator config(Equalizer);
 			if(bShowTeamsRollCall)
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
 
-			BalanceCTFTeams();
+			BalanceCTFTeams(True);
 
 			if(bShowTeamsRollCall)
 			{
@@ -1469,12 +1627,13 @@ class Equalizer extends Mutator config(Equalizer);
 
 			if(bShowTeamsRollCall)
 				Sender.ClientMessage("Player name                  BEScore");
+				
 			for(i = 0; i < EQPlayers.Length; i++)
 			{
 				if(bShowTeamsRollCall)
 					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
 				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer');
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer_TC_alpha');
 			}
 			if(bShowTeamsRollCall)
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
@@ -1542,7 +1701,7 @@ function ACEPadLog(string LogString, optional string PaddingChar, optional strin
 		Result = FinalChar $ Result $ FinalChar;
 	}
 
-	Log(Result, 'Equalizer');
+	Log(Result, 'Equalizer_TC_alpha');
 }
 
 function string ACEPadString(string RString, optional string PaddingChar, optional string FinalChar,
@@ -1697,5 +1856,9 @@ function string IntToStr(int i, int StringLength)
     QueryServerPort=80
     MaxTimeout=10
     bLogTeamsRollCall=true
-    bShowTeamsRollCall=true
+    bShowTeamsRollCall=false
+	
+	bBalanceAtMapStart=true
+	bSimulateBalance=true
+	bDebugIt=true
  }
