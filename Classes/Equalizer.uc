@@ -32,7 +32,7 @@
  * @since 0.1.0
  */
 
-class Equalizer extends Mutator config(Equalizer_TC_alpha);
+class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 
 /*
  * Global Variables
@@ -70,7 +70,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha);
  var   MessagingSpectator                         Witness;
 
  /** Equalizer's UniqueIdentifier reference. */
- var   Actor                                      EQUniqueIdentifier;
+ var   UniqueIdentifier                           EQUniqueIdentifier;
 
  /** Is HTTP actor active? */
  var bool HttpClientInstanceStarted;
@@ -99,6 +99,11 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha);
  var bool bWannaBalance;
 
 
+//piglet : GLobal things related to balancing
+var bool BMatchAboutToStartDone;
+var byte myStartupStage;
+var TeamSizeBalancer MyTeamSizeBalancer;
+
 var FileLog MyLogfile;
 
 
@@ -114,11 +119,18 @@ var FileLog MyLogfile;
  var()   config           bool         bShowFCLocation;
  var()   config           float        FCProgressKillBonus;
  var()   config           string       UniqueIdentifierClass;
+ var()   config           string       TeamSizeBalancerClass;
  
- var()   config           bool         bBalanceAtMapStart;
- var()   config           bool         bDebugIt;
- var()   config           bool         bSimulateBalance;
-
+ 
+ //Balancing options
+ var     config           bool         bBalanceAtMapStart;
+ var     config           bool         bMidGameMonitoring;
+ var     config           byte         BalanceMethod; 
+ var     config           int          MinimumTimePlayed;   ///ignore players with this amount of minutes or fewer
+ 
+ //Debug options
+ var     config           bool         bDebugIt;
+ 
  /** The radius of the bubble around the flag for tracking seals. */
  var()   config           float        SealDistance;
 
@@ -155,15 +167,27 @@ var FileLog MyLogfile;
  * @since 0.1.0
  */
 
+ // Set up timer to watch for ganme start countdown. Yes...there may be a better way, but this works for now.
+ function PreBeginPlay(){
+
+	if (bBalanceAtMapStart){
+		setTimer(0.1f, True);
+		myStartupStage = -1;
+	}
+	else{
+		BMatchAboutToStartDone = true;
+	}
+ }
+
  function PostBeginPlay()
  {
-	local class<Actor> UniqueID;
+	local class<UniqueIdentifier> UniqueID;
 
 	CTFGameInfo = CTFGame(Level.Game);
 	if(CTFGameInfo == none)
 	{
-		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer_TC_alpha');
-		Destroyed();
+		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer_TC_alpha1');
+		Destroyed();  //why not Destroy()?
 		return;
 	}
 
@@ -171,12 +195,12 @@ var FileLog MyLogfile;
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
-	UniqueID = class<Actor>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
+	UniqueID = class<UniqueIdentifier>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none && bDebugIt)
-		Log("Successfully loaded UniqueIdentifier class", 'Equalizer_TC_alpha');
+		Log("Successfully loaded UniqueIdentifier class", 'Equalizer_TC_alpha1');
 	EQUniqueIdentifier = Spawn(UniqueID, self);
 	if(EQUniqueIdentifier != none && bDebugIt)
-		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer_TC_alpha');
+		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer_TC_alpha1');
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
@@ -186,8 +210,7 @@ var FileLog MyLogfile;
 	GArziString = "";
 	bWannaBalance = false;
 
-	SaveConfig();
-	Log("Equalizer (v"$Version$") Initialized!", 'Equalizer_TC_alpha');
+	Log("Equalizer_TC_alpha1 (v"$Version$") Initialized!", 'Equalizer_TC_alpha1');
  }
 
 /**
@@ -219,14 +242,14 @@ var FileLog MyLogfile;
 
 	if(NumHTTPRestarts < 4)
 	{
-		Log("Too many HTTP errors in one session, HTTP client restarting.", 'Equalizer_TC_alpha');
+		Log("Too many HTTP errors in one session, HTTP client restarting.", 'Equalizer_TC_alpha1');
 
 		InitHTTPFunctions();
 		NumHTTPRestarts++;
 	}
 	else
 	{
-		Log("Too many HTTP client restarts in one session, HTTP functions disabled.", 'Equalizer_TC_alpha');
+		Log("Too many HTTP client restarts in one session, HTTP functions disabled.", 'Equalizer_TC_alpha1');
 	}
  }
 
@@ -304,13 +327,13 @@ var FileLog MyLogfile;
  * @see GatherAndProcessInformation
  */
 
- function BalanceCTFTeams(bool actuallybalance)
+ function FullBalanceCTFTeams(bool actuallybalance, bool bTellEveryone)
  {
 	local int CacheMinPlayers;
 
 	if(EQPlayers.Length == 0)
 	{
-		Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer_TC_alpha');
+		Log("There is nothing in the EQPlayers array. Balancing can't happen this way.", 'Equalizer_TC_alpha1');
 		return;
 	}
 
@@ -327,10 +350,11 @@ var FileLog MyLogfile;
 		CTFGameInfo.KillBots(Level.Game.NumBots);
 	}
 
-	SortEQPInfoArray(7);   // BEScore **pigklet but currently hard coded to use PPH!
 
-	// Piglet's algorithm ...
-	NuclearShellFillAlgorithm(actuallybalance);
+	//This sort and fill only works on a single parameter. Where there is a need for more complexity around ensuring equal distribution of cappers and defenders etc this area will need to be reassessed.
+	SortEQPInfoArray(BalanceMethod);   
+	NuclearShellFillAlgorithm(actuallybalance, bTellEveryone);
+	//end sort and fill
 
 	// Restore the bot-crowd
 	if (actuallybalance)
@@ -345,7 +369,7 @@ var FileLog MyLogfile;
  * @since 0.3.6
  */
 
- function NuclearShellFillAlgorithm(bool actuallybalance)
+ function NuclearShellFillAlgorithm(bool actuallybalance, bool bTellEveryone)
  {
 	local int index, playercount;
 	local PlayerReplicationInfo LambPRI;
@@ -370,19 +394,21 @@ var FileLog MyLogfile;
 		}
 
 		if (!actuallybalance){
-			piglogwrite(index@"I would have balanced to team"@TeamToSwitchTo@LambPRI.PlayerName $ " : " $ EQPlayers[index].BEPPH);
+			piglogwrite(index@"I would have balanced to team"@TeamToSwitchTo@LambPRI.PlayerName $ " : " $ EQPlayers[index].BPValue(BalanceMethod));
 		}
+		
 
 		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
 			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
 		}
-
-		// Alternating team population procedure
-		// Need to find more appropriate logic for deciding team especially when
-		// new player with High PPH joins. The team decision logic should comply to scheme
-		// and blind alternating shouldn't be sole criteria.
+		else{
+			if (bTellEveryone)
+				Level.Game.BroadcastHandler.BroadcastLocalized(none, PlayerController(LambPRI.Owner), class'EQTeamSwitchMessage', TeamToSwitchTo, PlayerController(LambPRI.Owner).PlayerReplicationInfo);
+		}
 		
+		// Alternating team population procedure
+				
 		//First player to red, next two to blue, then alternate
 		if (++playercount != 2)
 			TeamToSwitchTo = 1 - TeamToSwitchTo;
@@ -395,11 +421,11 @@ var FileLog MyLogfile;
 /**
  * Simple selection sort based on desired parameter.
  *
- * @param BasisParameter     An Integer based on the declaration done in EQPlayerInformation::BPValue
+ * @param BalanceMethod     An Integer based on the declaration done in EQPlayerInformation::BPValue
  * @since 0.3.6
  */
 
- function SortEQPInfoArray(int BasisParameter)
+ function SortEQPInfoArray(int BalanceMethod)
  {
 	local int i, j;
 	local EQPlayerInformation tmp;
@@ -408,7 +434,7 @@ var FileLog MyLogfile;
 	{
 		for (j = i+1; j < EQPlayers.Length; j++)
 		{
-			if(!InOrder(EQPlayers[i], EQPlayers[j], BasisParameter))
+			if(!InOrder(EQPlayers[i], EQPlayers[j], BalanceMethod))
 			{
 				tmp = EQPlayers[i];
 				EQPlayers[i] = EQPlayers[j];
@@ -424,11 +450,11 @@ var FileLog MyLogfile;
  * Once the metric is defined this way, sorting is done in descending order.
  *
  * @param EQP1, EQP2     The EQPlayerInformation instances of the Humans (and Bots?) which need comparison
- * @param BasisParameter An Integer based on the declaration done in EQPlayerInformation::BPValue
+ * @param BalanceMethod An Integer based on the declaration done in EQPlayerInformation::BPValue
  * @since 0.3.6
  */
 
- function bool InOrder(EQPlayerInformation EQP1, EQPlayerInformation EQP2, int BasisParameter)
+ function bool InOrder(EQPlayerInformation EQP1, EQPlayerInformation EQP2, int BalanceMethod)
  {
 	local PlayerReplicationInfo P1, P2;
 
@@ -439,11 +465,11 @@ var FileLog MyLogfile;
 	if(P1 == none)
 	{
 		if (bDebugIt)
-			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha');
+			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP1.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha1');
 		if(P2 == none)
 		{
 			if (bDebugIt)
-				Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer_TC_alpha');
+				Log("Ok we can't really do anything now because both Owners are none. Even contextual ordering is rendered useless!", 'Equalizer_TC_alpha1');
 			return true;// Note this "true" is not the same "true" we gauge then we are satisfied with the order.  This true means order can't be determined and we are dealing with degeneracy.
 				    // Seems computationally it is no different from order satisfaction?
 		}
@@ -455,7 +481,7 @@ var FileLog MyLogfile;
 	else if(P2 == none)
 	{
 		if (bDebugIt)
-			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha');
+			Log("The OwnerPlayerReplicationInfo of Player with ID: " $ EQP2.EQIdentifier $ " does not exist! Normal order can't be determined. Trying Contextual Ordering.", 'Equalizer_TC_alpha1');
 		return true;
 	}
 
@@ -481,13 +507,7 @@ var FileLog MyLogfile;
 		return false;
 	}
 
-	/*
-	if(EQP1.BPValue(BasisParameter) <  EQP2.BPValue(BasisParameter))
-		return false;
-	
-	*/
-	//Piglet - for now, use pph
-	if(EQP1.BEPPH <  EQP2.BEPPH)
+	if(EQP1.BPValue(BalanceMethod) <  EQP2.BPValue(BalanceMethod))
 		return false;
 
 	return true;
@@ -502,7 +522,7 @@ var FileLog MyLogfile;
 
  function GenerateGAString(EQPlayerInformation EQPlayerInfo)
  {
-	Log("GenerateGAString: " $ EQPlayerInfo.EQIdentifier , 'Equalizer_TC_alpha');
+	Log("GenerateGAString: " $ EQPlayerInfo.EQIdentifier , 'Equalizer_TC_alpha1');
  
  	if(GArziString != "")
  	{
@@ -523,7 +543,7 @@ var FileLog MyLogfile;
  function SendArziToBE()
  {
 	if (bDebugIt)
-		Log("Global Arzi string is: " $ GArziString, 'Equalizer_TC_alpha');
+		Log("Global Arzi string is: " $ GArziString, 'Equalizer_TC_alpha1');
  	HttpClientInstance.SendData(GArziString, HttpClientInstance.QueryEQInfo);
  	GArziString = "";
  }
@@ -555,7 +575,7 @@ var FileLog MyLogfile;
 			if(!Exiting.PlayerReplicationInfo.bIsSpectator && !Exiting.PlayerReplicationInfo.bOnlySpectator)
 			{
 				if (bDebugIt)
-					Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer_TC_alpha');
+					Log("Player: " $ Exiting.PlayerReplicationInfo.PlayerName $ " logging out.", 'Equalizer_TC_alpha1');
 				SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 				EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 				EQPlayers[PlayerIndex].Destroy();
@@ -606,11 +626,11 @@ var FileLog MyLogfile;
 		if(Witness != none)
 		{
 			if (bDebugIt)
-				Log("Successfully Spawned the Witness"@Witness, 'Equalizer_TC_alpha');
+				Log("Successfully Spawned the Witness"@Witness, 'Equalizer_TC_alpha1');
 			Witness.PlayerReplicationInfo.PlayerName = "Witness";
 		}
 		else
-			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer_TC_alpha');
+			Log("ERROR! Couldn't Spawn the Witness", 'Equalizer_TC_alpha1');
 	}
 
 	if(NextMutator != None)
@@ -638,7 +658,7 @@ var FileLog MyLogfile;
 	else
 	{
 		if (bDebugIt)
-			Log("PlayerReplicationInfo is none and now waiting for the spawn.", 'Equalizer_TC_alpha');
+			Log("PlayerReplicationInfo is none and now waiting for the spawn.", 'Equalizer_TC_alpha1');
 		WaitingForPRIToSpawn(FreshMeat);
 	}
  }
@@ -694,6 +714,15 @@ var FileLog MyLogfile;
  {
 	local byte ContIndex;
 
+	if (myStartupStage != DeathMatch(level.game).startupStage){
+			myStartupStage = DeathMatch(level.game).startupStage;
+			if (myStartupStage == 3){
+				MatchAboutToStart();
+				if(ToBePRIs.Length == 0)
+					SetTimer(0.0f, false);
+			}
+	}
+
 	for(ContIndex = 0; ContIndex < ToBePRIs.Length; ContIndex++)
 	{
 		if(ToBePRIs[ContIndex].PlayerReplicationInfo != none)
@@ -702,7 +731,7 @@ var FileLog MyLogfile;
 
 			ToBePRIs.Remove(ContIndex, 1);
 
-			if(ToBePRIs.Length == 0)
+			if(ToBePRIs.Length == 0 && BMatchAboutToStartDone)
 			{
 				SetTimer(0.0f, false);
 			}
@@ -1072,7 +1101,7 @@ var FileLog MyLogfile;
  function PlayerBecameSpectator(EQPlayerInformation SpectatorJoinInfo)
  {
 	if (bDebugIt)
-		Log("PlayerBecameSpectator", 'Equalizer_TC_alpha');
+		Log("PlayerBecameSpectator", 'Equalizer_TC_alpha1');
 	SpectatorJoinInfo.PlayerBecameSpectator();
 	SendEQDataToBackEnd(SpectatorJoinInfo);
  }
@@ -1108,19 +1137,20 @@ var FileLog MyLogfile;
 
 		HttpClientInstance.SendData(DataToSend, HttpClientInstance.SubmitEQInfo);
 		if (bDebugIt){
-			Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer_TC_alpha');
-			Log(DataToSend, 'Equalizer_TC_alpha');
+			Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer_TC_alpha1');
+			Log(DataToSend, 'Equalizer_TC_alpha1');
 		}
-		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
-		if(Sender != none)
-		{
-			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-		}
+		
+		//Sender = PlayerController(EQPlayerInfo.Owner.Owner);
+		//if(Sender != none)
+		//{
+//			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+		//}
 		EQPlayerInfo.ClearData();
 	}
 	else
 	{
-		Log("SendEQDataToBackEnd: Can't find the HttpClient instance", 'Equalizer_TC_alpha');
+		Log("SendEQDataToBackEnd: Can't find the HttpClient instance", 'Equalizer_TC_alpha1');
 	}
  }
 
@@ -1298,7 +1328,7 @@ var FileLog MyLogfile;
 		}
 	}
 
-	Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer_TC_alpha');
+	Log("Couldn't locate the EQPlayerInformation object with IdentifierString: " $ IdentifierString, 'Equalizer_TC_alpha1');
 	return none;
  }
 
@@ -1337,12 +1367,12 @@ var FileLog MyLogfile;
 	local int PlayerIndex;
 
 	if (bDebugIt)
-		Log("Match End!!!", 'Equalizer_TC_alpha');
+		Log("Match End!!!", 'Equalizer_TC_alpha1');
 
 	for(PlayerIndex = EQPlayers.Length - 1; PlayerIndex >= 0; PlayerIndex--)
 	{
 		if (bDebugIt)
-			Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer_TC_alpha');
+			Log("Send Equalizer information of player: " $ PlayerReplicationInfo(EQPlayers[PlayerIndex].Owner).PlayerName, 'Equalizer_TC_alpha1');
 		SendEQDataToBackEnd(EQPlayers[PlayerIndex]);
 		EQPlayers[PlayerIndex].SetTimer(0.0f, false);
 		EQPlayers[PlayerIndex].Destroy();
@@ -1384,7 +1414,7 @@ var FileLog MyLogfile;
 					EQPlayerInfo = GetInfoByEQIdentifier(EQIdentifierString);
 					if(EQPlayerInfo == none)
 					{
-						Log("EQPlayerInfo is none. Coming out of the loop.", 'Equalizer_TC_alpha');
+						Log("EQPlayerInfo is none. Coming out of the loop.", 'Equalizer_TC_alpha1');
 						break;
 					}
 					continue;
@@ -1400,8 +1430,8 @@ var FileLog MyLogfile;
 
 		if(false)//bWannaBalance
 		{
-			Log("Trying to Balance teams.", 'Equalizer_TC_alpha');
-			BalanceCTFTeams(true);
+			Log("Trying to Balance teams.", 'Equalizer_TC_alpha1');
+			FullBalanceCTFTeams(true, false);
 			bWannaBalance = false;
 		}
 	}
@@ -1448,8 +1478,7 @@ var FileLog MyLogfile;
  }
 
 
-
-
+//Debug Logging. Saves having to go to the log and trawl through all the other junk
 function bool piglogopen(){
 	MyLogfile = Spawn(class'FileLog');
 	if (MyLogfile != None) {
@@ -1478,31 +1507,14 @@ function piglog(string what){
     }
 }
 
-function MatchStarting(){
+//Balance teams just before map start
+function MatchAboutToStart(){
 
-local byte i;
-
-	if (bDebugIt)
-		Log("**** Match Starting trigger Point", 'Equalizer_TC_alpha');
-	
 	if (bBalanceAtMapStart){
-		if (bSimulateBalance){
-			if (bDebugIt)
-				Log("Match Starting Simulate Balance", 'Equalizer_TC_alpha');
-			piglogopen();
-			piglogwrite("Before Balance");
-			for(i = 0; i < EQPlayers.Length; i++){
-				piglogwrite(i@PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEScore);
-			}
-			BalanceCTFTeams(False);
-			piglogclose();
-		}
-		else{
-			if (bDebugIt)
-				Log("Match Starting Balance", 'Equalizer_TC_alpha');
-			BalanceCTFTeams(true);
-		}
+			FullBalanceCTFTeams(true, true);
 	}
+	
+	BMatchAboutToStartDone = true;
 }
 
 
@@ -1517,93 +1529,82 @@ local byte i;
 
  function Mutate(string MutateString, PlayerController Sender)
  {
-	local byte i;
 	local int ConsoleStringPrintBoxWidth;
+	local byte i;
 
 	ConsoleStringPrintBoxWidth = 120;
 
-	if(Sender != none && Sender.PlayerReplicationInfo.bAdmin)
+	if(Sender != none && EQUniqueIdentifier.isAdmin(Sender))
 	{
-		if(MutateString ~= "bSimOn"){
-			bSimulateBalance = true;
-			Sender.ClientMessage("Simulate Balance on");
-			saveconfig();
-		}
-
-		if(MutateString ~= "bsimoff"){
-			bSimulateBalance = false;
-			Sender.ClientMessage("Simulate Balance off");
-			saveconfig();
-		}
-
 		if(MutateString ~= "debugon"){
 			bDebugIt = true;
-			Sender.ClientMessage("Debug on");
+			Sender.ClientMessage("Debug logic: on");
 			saveconfig();
 		}
 		
 		if(MutateString ~= "debugoff"){
-			Sender.ClientMessage("Debug off");
+			Sender.ClientMessage("Debug logic: off");
 			saveconfig();
 		}
 		
 		if(MutateString ~= "bmson"){
 			bBalanceAtMapStart = true;
-			Sender.ClientMessage("Balance Map Start on");
+			Sender.ClientMessage("Balance at map start: on");
 			saveconfig();
 		}
 		
 		if(MutateString ~= "bmsoff"){
 			bBalanceAtMapStart = false;
-			Sender.ClientMessage("Balance Map Start off");
+			Sender.ClientMessage("Balance at map start: off");
 			saveconfig();
 		}
 		
+		//show the config items.  At some point just add to the webadmin....
 		if (MutateString ~= "balshow"){
 			Sender.ClientMessage("Balance Map Start"@bBalanceAtMapStart);
-			Sender.ClientMessage("Simulate Balance"@bSimulateBalance);
 			Sender.ClientMessage("Debug"@bDebugIt);
 		}
 		
-		if(MutateString ~= "balancedebug"){
-			
-			if (piglogopen()){
-				piglogwrite("Before Balance");
-				for(i = 0; i < EQPlayers.Length; i++){
-					piglogwrite(i@PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ " : " $ EQPlayers[i].BEPPH);
-				}
-				BalanceCTFTeams(False);
-				piglogclose();
-			}
-			else{
-				Log("Error: Could not open debug log", 'Equalizer_TC_alpha');
-			}
-			
-		
+		//log the current player list and their stats in order
+		if(MutateString ~= "logstats"){
+			SortEQPInfoArray(BalanceMethod);
+			logstats();
 		}
 	
+		//show the current player list and their stats in order
+		if(MutateString ~= "showstats"){
+			SortEQPInfoArray(BalanceMethod);
+			logstats(Sender);
+		}
+	
+		//Do a full rebalance, telling only the swapped players. I only see this being needed in extreme circumstances
+		if(MutateString ~= "shuffle"){
+			FullBalanceCTFTeams(True, False);
+		}
+	
+		//Piglet: not sure this is needed any longer...and I don't much like ACEPadString :D
 		if(MutateString ~= "balanceteams")
 		{
-			Log("Mutate Stuff", 'Equalizer_TC_alpha');
+			Log("Mutate Stuff", 'Equalizer_TC_alpha1');
 			
 			if(bShowTeamsRollCall)
 			{
-				Sender.ClientMessage("Displaying Player BEScores before sorting");
+				Sender.ClientMessage("Displaying Player Values before sorting");
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
-				Sender.ClientMessage("Player name                  BEScore");
+				Sender.ClientMessage("Player name                  Value");
 			}
 			if(bLogTeamsRollCall)
 			{
-				Log("Displaying Player BEScores before sorting");
+				Log("Displaying Player Values before sorting");
 				Log("------------------------------------------------------------------------------------------------------------------------------------");
 			}
 
 			for(i = 0; i < EQPlayers.Length; i++)
 			{
 				if(bShowTeamsRollCall)
-					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
+					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BPValue(BalanceMethod));
 				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer_TC_alpha');
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BPValue(BalanceMethod), 'Equalizer_TC_alpha1');
 			}
 
 			if(bLogTeamsRollCall)
@@ -1611,29 +1612,29 @@ local byte i;
 			if(bShowTeamsRollCall)
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
 
-			BalanceCTFTeams(True);
+			FullBalanceCTFTeams(True, False);
 
 			if(bShowTeamsRollCall)
 			{
-				Sender.ClientMessage("Displaying Player BEScores after sorting");
+				Sender.ClientMessage("Displaying Player Values after sorting");
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
 			}
 
 			if(bLogTeamsRollCall)
 			{
-				Log("Displaying Player BEScores after sorting");
+				Log("Displaying Player Values after sorting");
 				Log("------------------------------------------------------------------------------------------------------------------------------------");
 			}
 
 			if(bShowTeamsRollCall)
-				Sender.ClientMessage("Player name                  BEScore");
+				Sender.ClientMessage("Player name                  Values");
 				
 			for(i = 0; i < EQPlayers.Length; i++)
 			{
 				if(bShowTeamsRollCall)
-					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BEScore);
+					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BPValue(BalanceMethod));
 				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BEScore, 'Equalizer_TC_alpha');
+					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BPValue(BalanceMethod), 'Equalizer_TC_alpha1');
 			}
 			if(bShowTeamsRollCall)
 				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
@@ -1647,6 +1648,72 @@ local byte i;
  }
 
 //////////////////////////////////////////////////////////////////////////////////// Helpers! ////////////////////////////////////////////////////////////////////////////////////
+//debug use
+function logstats(optional PlayerController Sender){  //if sender provided then show stats otherwise debug log
+	local byte i;
+	
+	if (Owner != None){
+		Sender.ClientMessage("Show Stats");
+		for(i = 0; i < EQPlayers.Length; i++){
+			Sender.ClientMessage(getlogstring(i));
+		}
+	}
+	else{
+		if (piglogopen()){
+			piglogwrite("Show Stats");
+			for(i = 0; i < EQPlayers.Length; i++){
+				piglogwrite(getlogstring(i));
+			}
+			piglogclose();
+		}
+		else{
+			Log("Error: Could not open debug log", 'Equalizer_TC_alpha1');
+		}
+	}
+}
+
+//debug use
+//A line of player logging of current Value
+function string getlogstring(byte i){
+
+	local string TheTeam;
+
+	if (EQPlayers[i].bIsBot)
+		TheTeam = "Bot ";
+	else
+	if (PlayerReplicationInfo(EQPlayers[i].Owner).bOnlySpectator)
+		TheTeam = "Spec";
+	else
+	if (PlayerReplicationInfo(EQPlayers[i].Owner).Team.TeamIndex ==0)
+		TheTeam = "Red ";
+	else
+		TheTeam = "Blue";
+	
+	return pad(i,2)@pad(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName,20) @ TheTeam @ " : " $ EQPlayers[i].BPValue(BalanceMethod);
+	
+}
+
+//debug use
+//nice even length strings for logging!
+function string pad(coerce string what, int max){
+
+local int strl;
+
+	strl = len(what);
+	
+	if (strl == max){
+		return what;
+	}
+	
+	if (strl < max){
+		while (len(what) < max) what $= " ";
+		return what;
+	}
+	
+	if (strl > max){
+		return left(what, max);
+	}
+}
 
 
 // This section has been ripped directly from https://github.com/stijn-volckaert/IACE/blob/dcdce5e1d8a796e663f1de9960a7cb2a8030e397/Classes/IACECommon.uc#L276-L320
@@ -1701,7 +1768,7 @@ function ACEPadLog(string LogString, optional string PaddingChar, optional strin
 		Result = FinalChar $ Result $ FinalChar;
 	}
 
-	Log(Result, 'Equalizer_TC_alpha');
+	Log(Result, 'Equalizer_TC_alpha1');
 }
 
 function string ACEPadString(string RString, optional string PaddingChar, optional string FinalChar,
@@ -1835,11 +1902,80 @@ function string IntToStr(int i, int StringLength)
 	return Result;
 }
 
+//kick off a routine to monitor the player numbers etc. This will happen after intial map starting balancing
+function MatchStarting(){
+
+	local class<TeamSizeBalancer> MyTeamSizeBalancerClass;
+
+	if (!bMidGameMonitoring) return;
+
+	if (bDebugIt) Log("******   MatchStarting", 'Equalizer_TC_alpha1');
+		
+	MyTeamSizeBalancerClass = class<TeamSizeBalancer>(DynamicLoadObject(TeamSizeBalancerClass, class'Class'));
+	if(MyTeamSizeBalancerClass != none){
+		if (bDebugIt)
+			Log("Successfully loaded MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
+	}
+	else
+		Log("Cannot loaded MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
+	
+	MyTeamSizeBalancer = Spawn(MyTeamSizeBalancerClass, self);
+	if(MyTeamSizeBalancer != none){
+		if (bDebugIt) 
+			Log("Successfully spawned MyTeamSizeBalancer instance", 'Equalizer_TC_alpha1');
+	
+	}
+	else
+		Log("Cannot spawn MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
+	
+	MyTeamSizeBalancer.MyMut = self;
+	
+}
+
+function int differenceToTeam(int diff){
+//difference to team number (-1 when same)
+        if (diff < 0)
+            diff = 0;
+        else if (diff > 0)
+            diff = 1;
+        else
+            diff = -1;
+}
+			
+
+function PlayerJoiningGame(out string Portal, out string Options) {
+//Pick the best team for any joining player. Lowest player count team, lower score team, random...in order
+    local int iTempInt, iTempInt2;
+    local string sTempStr;
+	local int ScoreTeam, SizeTeam, team;
+	
+	SizeTeam = differenceToTeam(Level.Game.GameReplicationInfo.Teams[0].size - Level.Game.GameReplicationInfo.Teams[1].size);
+	if (SizeTeam != -1){
+		team = SizeTeam;
+	}
+	else {
+		ScoreTeam = differenceToTeam(Level.Game.GameReplicationInfo.Teams[0].Score - Level.Game.GameReplicationInfo.Teams[1].Score);
+		if  (ScoreTeam != -1)
+			team = ScoreTeam;
+		else
+			team = Rand(1);
+	}
+	
+	iTempInt = InStr(Caps(Options), "?TEAM=");
+	sTempStr = Mid(Options, iTempInt + 1);
+	iTempInt2 = InStr(sTempStr, "?");
+	if (iTempInt2 != -1)
+		sTempStr = Left(Options, iTempInt) $ "?Team="$team$Mid(sTempStr, iTempInt2);
+	else
+		sTempStr = Left(Options, iTempInt) $ "?Team="$team;
+	Options = sTempStr;
+}
+
 
  defaultproperties
  {
-    Version="0.3.0"
-    BuildNumber=158
+    Version="0.4.0"
+    BuildNumber=20220129
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
     CoverReward=2
@@ -1850,15 +1986,18 @@ function string IntToStr(int i, int StringLength)
     bShowFCLocation=true
     SealDistance=2200
     FCProgressKillBonus=4
-    UniqueIdentifierClass="UniqueIdentifier.UniqueIdentifier"
+    UniqueIdentifierClass="Equalizer_TC_alpha1.UniqueIdentifier"
+	TeamSizeBalancerClass="Equalizer_TC_alpha1.TeamSizeBalancer"
     QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10
     bLogTeamsRollCall=true
     bShowTeamsRollCall=false
-	
+
+	BalanceMethod=0
+	MinimumTimePlayed=30
 	bBalanceAtMapStart=true
-	bSimulateBalance=true
+	bMidGameMonitoring=false
 	bDebugIt=true
  }

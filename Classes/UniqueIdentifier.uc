@@ -13,3 +13,9 @@ function string GetIdentifierString(int PlayerID){
 }	
 
 
+function bool isAdmin(PlayerController p){
+
+	return p.PlayerReplicationInfo.bAdmin;
+}	
+
+

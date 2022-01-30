@@ -127,8 +127,9 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  var    int    BECaptures, BEGrabs, BECovers, BESeals, BEFlagKills, BETeamKills, BEScore, BEFrags,
  BEHeadShots, BEShieldBelts, BEAmps, BESuicides, BETimePlayedHours, BETimePlayedMinutes;
  
- //Back End Points Per Hour
- var float BEPPH;
+ //Back End Points Per Hour & other state related variables
+ var int BEPPH;
+ var int MinutesPlayed;   //for ease of debug reporting. If no longer wanted for debug purposes should be put back as a local variable.
 
  /*
  *  Is the BE data updated and can we use it to equalize?
@@ -158,7 +159,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	// Necessary?
 	if(Owner == none || PlayerReplicationInfo(Owner) == none)
 	{
-		Log("No legitimate Owner. Destroying self...", 'Equalizer_TC_alpha');
+		Log("No legitimate Owner. Destroying self...", 'Equalizer_TC_alpha1');
 		super.PostBeginPlay();
 		Destroy(); // The dirty flag!
 		return;
@@ -195,10 +196,19 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  {
 	bIsBEReady = Decision;
 	
-	if (BETimePlayedMinutes > 0 || BETimePlayedHours > 0)
-		BEPPH = BEScore / (BETimePlayedMinutes/60 + BETimePlayedHours) ;
+
+	//Back End PPH calculation. Seems likely that more complex blends of cappers and defenders would need changes to the sorting algorithm, as this currently only uses one factor to sort, 
+	MinutesPlayed = BETimePlayedMinutes + BETimePlayedHours*60;
+	
+	if (MinutesPlayed > MYMUT.MinimumTimePlayed)
+		BEPPH = Round(BEScore / (MinutesPlayed/60.f));
 	else
-		BEPPH = 0.0f;
+		BEPPH = 0;   //will end up at the bottom of the PPH list, effectively randomly distributed
+
+
+	if (MYMUT.bDebugIt)
+		Log("**** "$PlayerReplicationInfo(Owner).PlayerName@ BEScore @ BETimePlayedMinutes @ BETimePlayedHours @ BEPPH, 'Equalizer_TC_alpha1');   
+
  }
 
 /**
@@ -225,31 +235,32 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 9: BETimePlayedHours = Value; break;
  		case 10: BEFrags = Value; break;
  		case 11: BESuicides = Value; break;
- 		default: Log("Can't apply the Value corresponding to the counter: " $ Counter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName , 'Equalizer_TC_alpha'); break;
+ 		default: Log("Can't apply the Value corresponding to the counter: " $ Counter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName , 'Equalizer_TC_alpha1'); break;
  	}
  }
 
 /**
- * The function returns the Value corresponding to BasisParameter.
+ * The function returns the Value corresponding to BalanceMethod.
  * A BP-Value dictionary so to speak!
  * Also think about ELO rating and sorts!
  *
- * @param BasisParameter     The sequence number to be based as metric for determining Natural order
+ * @param BalanceMethod     The sequence number to be based as metric for determining Natural order
  * @see #Equalizer::InOrder
  * @since 0.3.6
  */
 
-  function int BPValue(int BasisParameter)
+  function int BPValue(int BalanceMethod)
  {
- 	switch(BasisParameter)
+ 	switch(BalanceMethod)
  	{
- 		case 1: return BECaptures;
+ 		case 0: return BEPPH;
+		case 1: return BECaptures;
  		case 2: return BEGrabs;
  		case 3: return BECovers;
  		case 4: return BESeals;
  		case 5: return BEFlagKills;
  		case 6: return BETeamKills;
- 		case 7: log("Order decision on BEScore basis! which is: " $BEScore, 'Equalizer_TC_alpha'); return BEScore;
+ 		case 7: log("Order decision on BEScore basis! which is: " $BEScore, 'Equalizer_TC_alpha1'); return BEScore;
  		case 8: return BETimePlayedMinutes;
  		case 9: return BETimePlayedHours;
  		case 10: return BEFrags;
@@ -257,7 +268,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	
  	}
 
- 	Log("No BECategory corresponding to BasisParameter: " $ BasisParameter $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer_TC_alpha');
+ 	Log("No BECategory corresponding to BalanceMethod: " $ BalanceMethod $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer_TC_alpha1');
  	return -1;
  }
 
@@ -289,7 +300,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	EQUID = UniqueIdentifier(UID);
 	if(EQUID == none)
 	{
-		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer_TC_alpha');
+		Log("Could not associate UniqueIdentifier in EQPlayerInformation", 'Equalizer_TC_alpha1');
 	}
  }
 
@@ -359,13 +370,13 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  	}
  	else
  	{
- 		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer_TC_alpha');
+ 		Log("No PlayerReplicationInfo associated with the EQPlayerInformation. Assigning default name for record keeping", 'Equalizer_TC_alpha1');
  		PlayerName = "NONAME_StreetRat";
  	}
 
  	if(EQIdentifier ~= "")
  	{
- 		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer_TC_alpha');
+ 		Log("EQIdentifier has not been generated for " $ PlayerName $ ". We won't bother sending query!", 'Equalizer_TC_alpha1');
  		return "";
  	}
 
