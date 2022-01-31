@@ -4,11 +4,11 @@ var Equalizer MyMut;
 
 function BeginPlay()
 {
-	Log("Successfully spawned TeamSizeBalancer instance", 'Equalizer_TC_alpha1');
+	Log("Successfully spawned TeamSizeBalancer instance", class'Equalizer'.default.LogCompanionTag);
 
 	if(MyMut.bDebugIt)
 	{
-		Log("If debugit - test Successfully", 'Equalizer_TC_alpha1');
+		Log("If debugit - test Successfully", class'Equalizer'.default.LogCompanionTag);
 	}
 
 	setTimer(2, true);
