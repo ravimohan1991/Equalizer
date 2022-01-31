@@ -1,6 +1,6 @@
 /*
  *   ------------------------
- *  | EQBrowserHTTPClient.uc
+ *  | EQHTTPClient.uc
  *   ------------------------
  *   This file is part of Equalizer for UT2004.
  *
@@ -92,7 +92,9 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  		// strip out port number
  		if (InStr(EQMut.ResolvedAddress, ":") != -1)
+		{
  			EQMut.ResolvedAddress = Left(EQMut.ResolvedAddress, InStr(EQMut.resolvedAddress, ":"));
+		}
 
  		EQMut.SaveConfig();
 
@@ -174,7 +176,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  function HTTPReceivedData(string Data)
  {
  	local string Result;
-	
+
 	//Log("HTTPReceivedData Data ->"$Data$"<-", 'Equalizer_TC_alpha1');
 
  	Result = ParseString(Data);
@@ -432,7 +434,6 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  	PCRLF = InStr(GString, CR$LF);
 	PLF = InStr(GString, LF);
-	
 
  	if(PCRLF != -1)
  	{

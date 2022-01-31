@@ -195,20 +195,23 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function MakeActorReadyForEqualizer(bool Decision)
  {
 	bIsBEReady = Decision;
-	
 
 	//Back End PPH calculation. Seems likely that more complex blends of cappers and defenders would need changes to the sorting algorithm, as this currently only uses one factor to sort, 
 	MinutesPlayed = BETimePlayedMinutes + BETimePlayedHours*60;
 	
 	if (MinutesPlayed > MYMUT.MinimumTimePlayed)
+	{
 		BEPPH = Round(BEScore / (MinutesPlayed/60.f));
+	}
 	else
+	{
 		BEPPH = 0;   //will end up at the bottom of the PPH list, effectively randomly distributed
-
+	}
 
 	if (MYMUT.bDebugIt)
-		Log("**** "$PlayerReplicationInfo(Owner).PlayerName@ BEScore @ BETimePlayedMinutes @ BETimePlayedHours @ BEPPH, 'Equalizer_TC_alpha1');   
-
+	{
+		Log("**** "$PlayerReplicationInfo(Owner).PlayerName@ BEScore @ BETimePlayedMinutes @ BETimePlayedHours @ BEPPH, 'Equalizer_TC_alpha1');
+	}
  }
 
 /**
@@ -265,7 +268,6 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  		case 9: return BETimePlayedHours;
  		case 10: return BEFrags;
  		case 11: return BESuicides;
-	
  	}
 
  	Log("No BECategory corresponding to BalanceMethod: " $ BalanceMethod $ " in the EQPlayerInformation of " $ PlayerReplicationInfo(Owner).PlayerName, 'Equalizer_TC_alpha1');
@@ -344,9 +346,13 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  function ComputePPH()
  {
 	if(TimePlayedMinutes > 0)
+	{
  		PPH = Score / (TimePlayedHours + TimePlayedMinutes / 60.0);
+	}
  	else
+	{
  		PPH = 0;
+	}
  }
 
 /**
@@ -410,9 +416,13 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	{
 		LeftChar = Left(InputString, 1);
 		if (InStr(VALID_URL_CHARS, LeftChar) != -1)
+		{
 			OutputString $= LeftChar;
+		}
 		else
+		{
 			OutputString $= "%" $ Mid(HEX_DIGITS, Asc(LeftChar) >>> 4, 1) $ Mid(HEX_DIGITS, Asc(LeftChar) & 0xF, 1);
+		}
 		InputString = Mid(InputString, 1);
 	}
 

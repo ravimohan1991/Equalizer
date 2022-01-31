@@ -7,14 +7,14 @@ function postbeginplay()
 	super.PostBeginPlay();
 }
 
-function string GetIdentifierString(int PlayerID){
-
+function string GetIdentifierString(int PlayerID)
+{
 	return "Foo";
 }	
 
 
-function bool isAdmin(PlayerController p){
-
+function bool isAdmin(PlayerController p)
+{
 	return p.PlayerReplicationInfo.bAdmin;
 }	
 
