@@ -180,7 +180,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 	//Log("HTTPReceivedData Data ->"$Data$"<-", 'Equalizer_TC_alpha1');
 
  	Result = ParseString(Data);
-	
+
 	//Log("HTTPReceivedData Result ->"$Result$"<-", 'Equalizer_TC_alpha1');
 
  	bReceivedData = true;
@@ -423,14 +423,14 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * Parsing the GString!
  *
- * @param GString     The backed information with all the bells and whistles 
+ * @param GString     The backed information with all the bells and whistles
  * @since 0.2.0
  */
 
  function string ParseString(string GString) // GString means Gyan(Knowledge) String
  {
  	local int PCRLF, PLF;
- 	local string result, temp;
+ 	local string result;
 
  	PCRLF = InStr(GString, CR$LF);
 	PLF = InStr(GString, LF);
@@ -450,7 +450,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 			PCRLF =  InStr(result, CR$LF);
 			PLF = InStr(result, LF);
 		}
-		
+
 		//Log("Ending CRLF line break at pos "$PCRLF@"ending LF at"@PLF, 'Equalizer_TC_alpha1');
  		result = Left(result, PCRLF);
 		return result;

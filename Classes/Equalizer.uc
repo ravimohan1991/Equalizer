@@ -120,17 +120,17 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
  var()   config           float        FCProgressKillBonus;
  var()   config           string       UniqueIdentifierClass;
  var()   config           string       TeamSizeBalancerClass;
- 
- 
+
+
  //Balancing options
  var     config           bool         bBalanceAtMapStart;
  var     config           bool         bMidGameMonitoring;
- var     config           byte         BalanceMethod; 
+ var     config           byte         BalanceMethod;
  var     config           int          MinimumTimePlayed;   ///ignore players with this amount of minutes or fewer
- 
+
  //Debug options
  var     config           bool         bDebugIt;
- 
+
  /** The radius of the bubble around the flag for tracking seals. */
  var()   config           float        SealDistance;
 
@@ -160,6 +160,9 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
  /** Log the teams before and after sorting? */
  var()   config            bool         bLogTeamsRollCall;
 
+ /** Log label string. */
+ var()   config            name         LogCompanionTag;
+
 /**
  * The function gets called just after game begins. So we set up the
  * environmnet for Equalizer to operate.
@@ -188,7 +191,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 	CTFGameInfo = CTFGame(Level.Game);
 	if(CTFGameInfo == none)
 	{
-		Log("The GameType is not CTF. Why even bother running this mutator?!", 'Equalizer_TC_alpha1');
+		Log("The GameType is not CTF. Why even bother running this mutator?!", LogCompanionTag);
 		Destroyed();  //why not Destroy()?
 		return;
 	}
@@ -199,10 +202,10 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 	RegisterBroadcastHandler();
 	UniqueID = class<UniqueIdentifier>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
 	if(UniqueID != none && bDebugIt)
-		Log("Successfully loaded UniqueIdentifier class", 'Equalizer_TC_alpha1');
+		Log("Successfully loaded UniqueIdentifier class", LogCompanionTag);
 	EQUniqueIdentifier = Spawn(UniqueID, self);
 	if(EQUniqueIdentifier != none && bDebugIt)
-		Log("Successfully spawned UniqueIdentifier instance", 'Equalizer_TC_alpha1');
+		Log("Successfully spawned UniqueIdentifier instance", LogCompanionTag);
 	if(bShowFCLocation)
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
@@ -212,7 +215,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 	GArziString = "";
 	bWannaBalance = false;
 
-	Log("Equalizer_TC_alpha1 (v"$Version$") Initialized!", 'Equalizer_TC_alpha1');
+	Log("Equalizer_TC_alpha1 (v"$Version$") Initialized!", LogCompanionTag);
  }
 
 /**
@@ -342,12 +345,12 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 	// We want to seperate bots and Humans
 	// which is crucial for balancing during gameplay.
 	// Before the match starts, there are no bots.
-	
+
 	if (actuallybalance)
 	{
 		// For bot-crowd seperation from Humans and filtering
 		CacheMinPlayers = CTFGameInfo.MinPlayers;
-	
+
 		// Bots... don't interfare in Balancing!
 		CTFGameInfo.MinPlayers = 0;
 		CTFGameInfo.KillBots(Level.Game.NumBots);
@@ -355,7 +358,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 
 
 	//This sort and fill only works on a single parameter. Where there is a need for more complexity around ensuring equal distribution of cappers and defenders etc this area will need to be reassessed.
-	SortEQPInfoArray(BalanceMethod);   
+	SortEQPInfoArray(BalanceMethod);
 	NuclearShellFillAlgorithm(actuallybalance, bTellEveryone);
 	//end sort and fill
 
@@ -399,7 +402,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 		if (!actuallybalance){
 			piglogwrite(index@"I would have balanced to team"@TeamToSwitchTo@LambPRI.PlayerName $ " : " $ EQPlayers[index].BPValue(BalanceMethod));
 		}
-		
+
 
 		if(LambPRI.Team.TeamIndex != TeamToSwitchTo)
 		{
@@ -409,14 +412,14 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 			if (bTellEveryone)
 				Level.Game.BroadcastHandler.BroadcastLocalized(none, PlayerController(LambPRI.Owner), class'EQTeamSwitchMessage', TeamToSwitchTo, PlayerController(LambPRI.Owner).PlayerReplicationInfo);
 		}
-		
+
 		// Alternating team population procedure
-				
+
 		//First player to red, next two to blue, then alternate
 		if (++playercount != 2)
 			TeamToSwitchTo = 1 - TeamToSwitchTo;
-		
-		//piglet lets leave everyone available for now.  
+
+		//piglet lets leave everyone available for now.
 		//EQPlayers[index].bDisturbInLineUp = false;
 	}
  }
@@ -526,7 +529,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
  function GenerateGAString(EQPlayerInformation EQPlayerInfo)
  {
 	Log("GenerateGAString: " $ EQPlayerInfo.EQIdentifier , 'Equalizer_TC_alpha1');
- 
+
  	if(GArziString != "")
  	{
  		GArziString = GArziString $ "," $ EQPlayerInfo.EQIdentifier;
@@ -1118,7 +1121,6 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 
  function SendEQDataToBackEnd(EQPlayerInformation EQPlayerInfo)
  {
-	local PlayerController Sender;
 	local string DataToSend;
 
 	EQPlayerInfo.UpdateScore();
@@ -1143,14 +1145,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 			Log("SendEQDataToBackEnd: Sending equalizer data to MySQL database", 'Equalizer_TC_alpha1');
 			Log(DataToSend, 'Equalizer_TC_alpha1');
 		}
-		
-		/*
-		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
-		if(Sender != none)
-		{
-			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-		}
-		*/
+
 		EQPlayerInfo.ClearData();
 	}
 	else
@@ -1487,7 +1482,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 function bool piglogopen()
 {
 	MyLogfile = Spawn(class'FileLog');
-	if (MyLogfile != None) 
+	if (MyLogfile != None)
 	{
 		MyLogfile.OpenLog("Debug");
 		return true;
@@ -1498,25 +1493,25 @@ function bool piglogopen()
 	}
 }
 
-function bool piglogclose()
+function piglogclose()
 {
-		MyLogfile.CloseLog();
-		MyLogfile.Destroy();
+	MyLogfile.CloseLog();
+	MyLogfile.Destroy();
 }
 
 function piglogwrite(string what)
 {
-		MyLogfile.Logf(Level.Year $ "-" $ Right("0" $ Level.Month, 2) $ "-" $ Right("0" $ Level.Day, 2) @ Right("0" $ Level.Hour, 2) $ ":" $ Right("0" $ Level.Minute, 2) $ ":" $ Right("0" $ Level.Second, 2)
-		@ what);
+	MyLogfile.Logf(Level.Year $ "-" $ Right("0" $ Level.Month, 2) $ "-" $ Right("0" $ Level.Day, 2) @ Right("0" $ Level.Hour, 2) $ ":" $ Right("0" $ Level.Minute, 2) $ ":" $ Right("0" $ Level.Second, 2)
+	@ what);
 }
 
 function piglog(string what)
 {
-	if (piglogopen()) 
+	if (piglogopen())
 	{
 		piglogwrite(what);
 		piglogclose();
-    }
+	}
 }
 
 //Balance teams just before map start
@@ -1526,7 +1521,7 @@ function MatchAboutToStart()
 	{
 			FullBalanceCTFTeams(true, true);
 	}
-	
+
 	BMatchAboutToStartDone = true;
 }
 
@@ -1543,7 +1538,6 @@ function MatchAboutToStart()
  function Mutate(string MutateString, PlayerController Sender)
  {
 	local int ConsoleStringPrintBoxWidth;
-	local byte i;
 
 	ConsoleStringPrintBoxWidth = 120;
 
@@ -1554,47 +1548,47 @@ function MatchAboutToStart()
 			Sender.ClientMessage("Debug logic: on");
 			saveconfig();
 		}
-		
+
 		if(MutateString ~= "debugoff"){
 			Sender.ClientMessage("Debug logic: off");
 			saveconfig();
 		}
-		
+
 		if(MutateString ~= "bmson"){
 			bBalanceAtMapStart = true;
 			Sender.ClientMessage("Balance at map start: on");
 			saveconfig();
 		}
-		
+
 		if(MutateString ~= "bmsoff"){
 			bBalanceAtMapStart = false;
 			Sender.ClientMessage("Balance at map start: off");
 			saveconfig();
 		}
-		
+
 		//show the config items.  At some point just add to the webadmin....
 		if (MutateString ~= "balshow"){
 			Sender.ClientMessage("Balance Map Start"@bBalanceAtMapStart);
 			Sender.ClientMessage("Debug"@bDebugIt);
 		}
-		
+
 		//log the current player list and their stats in order
 		if(MutateString ~= "logstats"){
 			SortEQPInfoArray(BalanceMethod);
 			logstats();
 		}
-	
+
 		//show the current player list and their stats in order
 		if(MutateString ~= "showstats"){
 			SortEQPInfoArray(BalanceMethod);
 			logstats(Sender);
 		}
-	
+
 		//Do a full rebalance, telling only the swapped players. I only see this being needed in extreme circumstances
 		if(MutateString ~= "shuffle"){
 			FullBalanceCTFTeams(True, False);
 		}
-	
+
 		//Piglet: not sure this is needed any longer...and I don't much like ACEPadString :D
 		// some dirty stuff was here!
 	}
@@ -1608,7 +1602,7 @@ function MatchAboutToStart()
 function logstats(optional PlayerController Sender)
 {  //if sender provided then show stats otherwise debug log
 	local byte i;
-	
+
 	if (Owner != None)
 	{
 		Sender.ClientMessage("Show Stats");
@@ -1657,9 +1651,9 @@ function string getlogstring(byte i)
 	{
 		TheTeam = "Blue";
 	}
-	
+
 	return pad(i,2)@pad(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName,20) @ TheTeam @ " : " $ EQPlayers[i].BPValue(BalanceMethod);
-	
+
 }
 
 //debug use
@@ -1669,18 +1663,18 @@ function string pad(coerce string what, int max)
 	local int strl;
 
 	strl = len(what);
-	
+
 	if (strl == max)
 	{
 		return what;
 	}
-	
+
 	if (strl < max)
 	{
 		while (len(what) < max) what $= " ";
 		return what;
 	}
-	
+
 	if (strl > max)
 	{
 		return left(what, max);
@@ -1899,7 +1893,7 @@ function MatchStarting()
 	MyTeamSizeBalancer = Spawn(MyTeamSizeBalancerClass, self);
 	if(MyTeamSizeBalancer != none)
 	{
-		if (bDebugIt) 
+		if (bDebugIt)
 		{
 			Log("Successfully spawned MyTeamSizeBalancer instance", 'Equalizer_TC_alpha1');
 		}
@@ -1927,9 +1921,12 @@ function int differenceToTeam(int diff)
 	{
 		diff = -1;
 	}
+	// report to police :)
+	// we may wanna think why this happens in the fist place?
+	return 100;
 }
 
-function PlayerJoiningGame(out string Portal, out string Options) 
+function PlayerJoiningGame(out string Portal, out string Options)
 {
 	//Pick the best team for any joining player. Lowest player count team, lower score team, random...in order
 	local int iTempInt, iTempInt2;
@@ -1941,7 +1938,7 @@ function PlayerJoiningGame(out string Portal, out string Options)
 	{
 		team = SizeTeam;
 	}
-	else 
+	else
 	{
 		ScoreTeam = differenceToTeam(Level.Game.GameReplicationInfo.Teams[0].Score - Level.Game.GameReplicationInfo.Teams[1].Score);
 		if  (ScoreTeam != -1)
@@ -1996,4 +1993,5 @@ function PlayerJoiningGame(out string Portal, out string Options)
     bBalanceAtMapStart=true
     bMidGameMonitoring=false
     bDebugIt=true
+    LogCompanionTag=Equalizer_some_super_duper_cool_Name
  }
