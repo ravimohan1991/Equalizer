@@ -74,7 +74,7 @@ class EQTeamSwitchMessage extends CriticalEventPlus;
 				default.DrawColor.B = 0;
 				return RelatedPRI_1.PlayerName @ default.SwitchToRed;
 			}
-				break;
+			break;
 		case 1:  // Switch to Blue
 			if(RelatedPRI_1 != none)
 			{

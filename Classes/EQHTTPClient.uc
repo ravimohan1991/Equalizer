@@ -117,8 +117,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	if(bResolutionRequest)
  	{
- 		Log("Error while resolving" @ EQMut.QueryServerHost @ "to an IP.", 'Equalizer_TC_alpha1');
- 		Log("If the error continues this could indicate that the operating system is not configured to resolve DNS records.", 'Equalizer_TC_alpha1');
+ 		Log("Error while resolving" @ EQMut.QueryServerHost @ "to an IP.", class'Equalizer'.default.LogCompanionTag);
+ 		Log("If the error continues this could indicate that the operating system is not configured to resolve DNS records.", class'Equalizer'.default.LogCompanionTag);
 
  		EQMut.RestartHTTPClient();
  	}
@@ -177,11 +177,11 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	local string Result;
 
-	//Log("HTTPReceivedData Data ->"$Data$"<-", 'Equalizer_TC_alpha1');
+	//Log("HTTPReceivedData Data ->"$Data$"<-", class'Equalizer'.default.LogCompanionTag);
 
  	Result = ParseString(Data);
 
-	//Log("HTTPReceivedData Result ->"$Result$"<-", 'Equalizer_TC_alpha1');
+	//Log("HTTPReceivedData Result ->"$Result$"<-", class'Equalizer'.default.LogCompanionTag);
 
  	bReceivedData = true;
 
@@ -193,7 +193,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  		else
  		{
- 			Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer_TC_alpha1');
+ 			Log("Received data when EQMut is not aligned. Report to developer", class'Equalizer'.default.LogCompanionTag);
  		}
  	}
 
@@ -258,13 +258,13 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	switch(Code)
  	{
  		case -1:
- 			Log("Error in binding the port while connecting to " $ EQMut.QueryServerHost, 'Equalizer_TC_alpha1');
+ 			Log("Error in binding the port while connecting to " $ EQMut.QueryServerHost, class'Equalizer'.default.LogCompanionTag);
  			break;
  		case -2:
-			Log("Error while resolving the host " $ EQMut.QueryServerHost, 'Equalizer_TC_alpha1');
+			Log("Error while resolving the host " $ EQMut.QueryServerHost, class'Equalizer'.default.LogCompanionTag);
 			break;
  		case -3:
- 			Log(EQMut.QueryServerHost$" timed out after " $ string(EQMut.MaxTimeout)$" seconds", 'Equalizer_TC_alpha1');
+ 			Log(EQMut.QueryServerHost$" timed out after " $ string(EQMut.MaxTimeout)$" seconds", class'Equalizer'.default.LogCompanionTag);
  			break;
  		case -4:
  			Log("Error resolving to the host of the IP for the domain " $ EQMut.QueryServerHost);
@@ -307,7 +307,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	local int i;
  	local string QueryString;
 
-	Log("SendQueue invoked!", 'Equalizer_TC_alpha1');
+	Log("SendQueue invoked!", class'Equalizer'.default.LogCompanionTag);
 
  	CheckAddresses();
 
@@ -344,7 +344,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
-		Log("QueryString is: ?arpan=" $QueryString, 'Equalizer_TC_alpha1');
+		Log("QueryString is: ?arpan=" $QueryString, class'Equalizer'.default.LogCompanionTag);
  		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
 		return;
 	}
@@ -371,7 +371,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
-        Log("QueryString is: ?arzi=" $QueryString, 'Equalizer_TC_alpha1');
+        Log("QueryString is: ?arzi=" $QueryString, class'Equalizer'.default.LogCompanionTag);
 		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
 		return;
 	}
@@ -439,19 +439,19 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	{
 		result = GString;
 		while (PCRLF != -1 && PCRLF < 4){
-			//Log("CRLF removal CRLF line break detected at pos "$PCRLF@"LF at"@PLF, 'Equalizer_TC_alpha1');
+			//Log("CRLF removal CRLF line break detected at pos "$PCRLF@"LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
 			result = Right(result, len(result) - PCRLF - 2);
 			PCRLF =  InStr(result, CR$LF);
 			PLF = InStr(result, LF);
 		}
 		while (PLF != -1 && PLF < 4){
-			//Log("LF removal: CRLF line break detected at pos "$PCRLF@"LF at"@PLF, 'Equalizer_TC_alpha1');
+			//Log("LF removal: CRLF line break detected at pos "$PCRLF@"LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
 			result = Right(result, len(result) - PLF - 1);
 			PCRLF =  InStr(result, CR$LF);
 			PLF = InStr(result, LF);
 		}
 
-		//Log("Ending CRLF line break at pos "$PCRLF@"ending LF at"@PLF, 'Equalizer_TC_alpha1');
+		//Log("Ending CRLF line break at pos "$PCRLF@"ending LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
  		result = Left(result, PCRLF);
 		return result;
  		//return "";

@@ -25,7 +25,7 @@
  * Equalizer is a Mutator which makes sure that the CTF matches are		<br />
  * played between teams of equal calibre. It will further acknowledge and	<br />
  * encourage the team gameplay leading to a justly competitive match.		<br />
- * The aim is to gauge the match awareness, reactivity and commitment		<br />
+ * The aim is to gauge the match awareness, reactivity, and commitment		<br />
  * towards CTF goals.
  *
  * @author The_Cowboy
