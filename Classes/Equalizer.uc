@@ -99,12 +99,12 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
  var bool bWannaBalance;
 
 
-//piglet : GLobal things related to balancing
-var bool BMatchAboutToStartDone;
-var byte myStartupStage;
-var TeamSizeBalancer MyTeamSizeBalancer;
+ //piglet : GLobal things related to balancing
+ var bool BMatchAboutToStartDone;
+ var byte myStartupStage;
+ var TeamSizeBalancer MyTeamSizeBalancer;
 
-var FileLog MyLogfile;
+ var FileLog MyLogfile;
 
 
  /*
@@ -168,13 +168,15 @@ var FileLog MyLogfile;
  */
 
  // Set up timer to watch for ganme start countdown. Yes...there may be a better way, but this works for now.
- function PreBeginPlay(){
-
-	if (bBalanceAtMapStart){
+ function PreBeginPlay()
+ {
+	if (bBalanceAtMapStart)
+	{
 		setTimer(0.1f, True);
 		myStartupStage = -1;
 	}
-	else{
+	else
+	{
 		BMatchAboutToStartDone = true;
 	}
  }
@@ -341,7 +343,8 @@ var FileLog MyLogfile;
 	// which is crucial for balancing during gameplay.
 	// Before the match starts, there are no bots.
 	
-	if (actuallybalance){
+	if (actuallybalance)
+	{
 		// For bot-crowd seperation from Humans and filtering
 		CacheMinPlayers = CTFGameInfo.MinPlayers;
 	
@@ -1141,11 +1144,13 @@ var FileLog MyLogfile;
 			Log(DataToSend, 'Equalizer_TC_alpha1');
 		}
 		
-		//Sender = PlayerController(EQPlayerInfo.Owner.Owner);
-		//if(Sender != none)
-		//{
-//			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
-		//}
+		/*
+		Sender = PlayerController(EQPlayerInfo.Owner.Owner);
+		if(Sender != none)
+		{
+			Sender.ClientMessage(EQPlayerInfo.GenerateArpanString());
+		}
+		*/
 		EQPlayerInfo.ClearData();
 	}
 	else
@@ -1479,38 +1484,46 @@ var FileLog MyLogfile;
 
 
 //Debug Logging. Saves having to go to the log and trawl through all the other junk
-function bool piglogopen(){
+function bool piglogopen()
+{
 	MyLogfile = Spawn(class'FileLog');
-	if (MyLogfile != None) {
+	if (MyLogfile != None) 
+	{
 		MyLogfile.OpenLog("Debug");
 		return true;
 	}
-	else{
+	else
+	{
 		return false;
 	}
 }
 
-function bool piglogclose(){
+function bool piglogclose()
+{
 		MyLogfile.CloseLog();
 		MyLogfile.Destroy();
 }
 
-function piglogwrite(string what){
+function piglogwrite(string what)
+{
 		MyLogfile.Logf(Level.Year $ "-" $ Right("0" $ Level.Month, 2) $ "-" $ Right("0" $ Level.Day, 2) @ Right("0" $ Level.Hour, 2) $ ":" $ Right("0" $ Level.Minute, 2) $ ":" $ Right("0" $ Level.Second, 2)
 		@ what);
 }
 
-function piglog(string what){
-	if (piglogopen()) {
+function piglog(string what)
+{
+	if (piglogopen()) 
+	{
 		piglogwrite(what);
 		piglogclose();
     }
 }
 
 //Balance teams just before map start
-function MatchAboutToStart(){
-
-	if (bBalanceAtMapStart){
+function MatchAboutToStart()
+{
+	if (bBalanceAtMapStart)
+	{
 			FullBalanceCTFTeams(true, true);
 	}
 	
@@ -1583,64 +1596,7 @@ function MatchAboutToStart(){
 		}
 	
 		//Piglet: not sure this is needed any longer...and I don't much like ACEPadString :D
-		if(MutateString ~= "balanceteams")
-		{
-			Log("Mutate Stuff", 'Equalizer_TC_alpha1');
-			
-			if(bShowTeamsRollCall)
-			{
-				Sender.ClientMessage("Displaying Player Values before sorting");
-				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
-				Sender.ClientMessage("Player name                  Value");
-			}
-			if(bLogTeamsRollCall)
-			{
-				Log("Displaying Player Values before sorting");
-				Log("------------------------------------------------------------------------------------------------------------------------------------");
-			}
-
-			for(i = 0; i < EQPlayers.Length; i++)
-			{
-				if(bShowTeamsRollCall)
-					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BPValue(BalanceMethod));
-				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BPValue(BalanceMethod), 'Equalizer_TC_alpha1');
-			}
-
-			if(bLogTeamsRollCall)
-				Log("------------------------------------------------------------------------------------------------------------------------------------");
-			if(bShowTeamsRollCall)
-				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
-
-			FullBalanceCTFTeams(True, False);
-
-			if(bShowTeamsRollCall)
-			{
-				Sender.ClientMessage("Displaying Player Values after sorting");
-				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
-			}
-
-			if(bLogTeamsRollCall)
-			{
-				Log("Displaying Player Values after sorting");
-				Log("------------------------------------------------------------------------------------------------------------------------------------");
-			}
-
-			if(bShowTeamsRollCall)
-				Sender.ClientMessage("Player name                  Values");
-				
-			for(i = 0; i < EQPlayers.Length; i++)
-			{
-				if(bShowTeamsRollCall)
-					Sender.ClientMessage(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "                                 " $ EQPlayers[i].BPValue(BalanceMethod));
-				if(bLogTeamsRollCall)
-					Log(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName $ "            :            " $ EQPlayers[i].BPValue(BalanceMethod), 'Equalizer_TC_alpha1');
-			}
-			if(bShowTeamsRollCall)
-				Sender.ClientMessage(ACEPadString("", "-", "+", ConsoleStringPrintBoxWidth, true));
-			if(bLogTeamsRollCall)
-				Log("------------------------------------------------------------------------------------------------------------------------------------");
-		}
+		// some dirty stuff was here!
 	}
 
 	if (NextMutator != None)
@@ -1649,24 +1605,31 @@ function MatchAboutToStart(){
 
 //////////////////////////////////////////////////////////////////////////////////// Helpers! ////////////////////////////////////////////////////////////////////////////////////
 //debug use
-function logstats(optional PlayerController Sender){  //if sender provided then show stats otherwise debug log
+function logstats(optional PlayerController Sender)
+{  //if sender provided then show stats otherwise debug log
 	local byte i;
 	
-	if (Owner != None){
+	if (Owner != None)
+	{
 		Sender.ClientMessage("Show Stats");
-		for(i = 0; i < EQPlayers.Length; i++){
+		for(i = 0; i < EQPlayers.Length; i++)
+		{
 			Sender.ClientMessage(getlogstring(i));
 		}
 	}
-	else{
-		if (piglogopen()){
+	else
+	{
+		if (piglogopen())
+		{
 			piglogwrite("Show Stats");
-			for(i = 0; i < EQPlayers.Length; i++){
+			for(i = 0; i < EQPlayers.Length; i++)
+			{
 				piglogwrite(getlogstring(i));
 			}
 			piglogclose();
 		}
-		else{
+		else
+		{
 			Log("Error: Could not open debug log", 'Equalizer_TC_alpha1');
 		}
 	}
@@ -1674,20 +1637,26 @@ function logstats(optional PlayerController Sender){  //if sender provided then 
 
 //debug use
 //A line of player logging of current Value
-function string getlogstring(byte i){
-
+function string getlogstring(byte i)
+{
 	local string TheTeam;
 
 	if (EQPlayers[i].bIsBot)
+	{
 		TheTeam = "Bot ";
-	else
-	if (PlayerReplicationInfo(EQPlayers[i].Owner).bOnlySpectator)
+	}
+	else if (PlayerReplicationInfo(EQPlayers[i].Owner).bOnlySpectator)
+	{
 		TheTeam = "Spec";
-	else
-	if (PlayerReplicationInfo(EQPlayers[i].Owner).Team.TeamIndex ==0)
+	}
+	else if (PlayerReplicationInfo(EQPlayers[i].Owner).Team.TeamIndex ==0)
+	{
 		TheTeam = "Red ";
+	}
 	else
+	{
 		TheTeam = "Blue";
+	}
 	
 	return pad(i,2)@pad(PlayerReplicationInfo(EQPlayers[i].Owner).PlayerName,20) @ TheTeam @ " : " $ EQPlayers[i].BPValue(BalanceMethod);
 	
@@ -1695,22 +1664,25 @@ function string getlogstring(byte i){
 
 //debug use
 //nice even length strings for logging!
-function string pad(coerce string what, int max){
-
-local int strl;
+function string pad(coerce string what, int max)
+{
+	local int strl;
 
 	strl = len(what);
 	
-	if (strl == max){
+	if (strl == max)
+	{
 		return what;
 	}
 	
-	if (strl < max){
+	if (strl < max)
+	{
 		while (len(what) < max) what $= " ";
 		return what;
 	}
 	
-	if (strl > max){
+	if (strl > max)
+	{
 		return left(what, max);
 	}
 }
@@ -1903,71 +1875,96 @@ function string IntToStr(int i, int StringLength)
 }
 
 //kick off a routine to monitor the player numbers etc. This will happen after intial map starting balancing
-function MatchStarting(){
-
+function MatchStarting()
+{
 	local class<TeamSizeBalancer> MyTeamSizeBalancerClass;
 
 	if (!bMidGameMonitoring) return;
 
 	if (bDebugIt) Log("******   MatchStarting", 'Equalizer_TC_alpha1');
-		
+
 	MyTeamSizeBalancerClass = class<TeamSizeBalancer>(DynamicLoadObject(TeamSizeBalancerClass, class'Class'));
-	if(MyTeamSizeBalancerClass != none){
+	if(MyTeamSizeBalancerClass != none)
+	{
 		if (bDebugIt)
+		{
 			Log("Successfully loaded MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
+		}
 	}
 	else
+	{
 		Log("Cannot loaded MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
-	
+	}
+
 	MyTeamSizeBalancer = Spawn(MyTeamSizeBalancerClass, self);
-	if(MyTeamSizeBalancer != none){
+	if(MyTeamSizeBalancer != none)
+	{
 		if (bDebugIt) 
+		{
 			Log("Successfully spawned MyTeamSizeBalancer instance", 'Equalizer_TC_alpha1');
-	
+		}
 	}
 	else
+	{
 		Log("Cannot spawn MyTeamSizeBalancerClass class"@TeamSizeBalancerClass, 'Equalizer_TC_alpha1');
-	
+	}
+
 	MyTeamSizeBalancer.MyMut = self;
-	
 }
 
-function int differenceToTeam(int diff){
-//difference to team number (-1 when same)
-        if (diff < 0)
-            diff = 0;
-        else if (diff > 0)
-            diff = 1;
-        else
-            diff = -1;
+function int differenceToTeam(int diff)
+{
+	//difference to team number (-1 when same)
+	if (diff < 0)
+	{
+		diff = 0;
+	}
+	else if (diff > 0)
+	{
+		diff = 1;
+	}
+	else
+	{
+		diff = -1;
+	}
 }
-			
 
-function PlayerJoiningGame(out string Portal, out string Options) {
-//Pick the best team for any joining player. Lowest player count team, lower score team, random...in order
-    local int iTempInt, iTempInt2;
-    local string sTempStr;
+function PlayerJoiningGame(out string Portal, out string Options) 
+{
+	//Pick the best team for any joining player. Lowest player count team, lower score team, random...in order
+	local int iTempInt, iTempInt2;
+	local string sTempStr;
 	local int ScoreTeam, SizeTeam, team;
-	
+
 	SizeTeam = differenceToTeam(Level.Game.GameReplicationInfo.Teams[0].size - Level.Game.GameReplicationInfo.Teams[1].size);
-	if (SizeTeam != -1){
+	if (SizeTeam != -1)
+	{
 		team = SizeTeam;
 	}
-	else {
+	else 
+	{
 		ScoreTeam = differenceToTeam(Level.Game.GameReplicationInfo.Teams[0].Score - Level.Game.GameReplicationInfo.Teams[1].Score);
 		if  (ScoreTeam != -1)
+		{
 			team = ScoreTeam;
+		}
 		else
+		{
 			team = Rand(1);
+		}
 	}
-	
+
 	iTempInt = InStr(Caps(Options), "?TEAM=");
 	sTempStr = Mid(Options, iTempInt + 1);
 	iTempInt2 = InStr(sTempStr, "?");
 	if (iTempInt2 != -1)
+	{
 		sTempStr = Left(Options, iTempInt) $ "?Team="$team$Mid(sTempStr, iTempInt2);
+	}
 	else
+	{
 		sTempStr = Left(Options, iTempInt) $ "?Team="$team;
+	}
 	Options = sTempStr;
 }
 
@@ -1987,17 +1984,16 @@ function PlayerJoiningGame(out string Portal, out string Options) {
     SealDistance=2200
     FCProgressKillBonus=4
     UniqueIdentifierClass="Equalizer_TC_alpha1.UniqueIdentifier"
-	TeamSizeBalancerClass="Equalizer_TC_alpha1.TeamSizeBalancer"
+    TeamSizeBalancerClass="Equalizer_TC_alpha1.TeamSizeBalancer"
     QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
     MaxTimeout=10
     bLogTeamsRollCall=true
     bShowTeamsRollCall=false
-
-	BalanceMethod=0
-	MinimumTimePlayed=30
-	bBalanceAtMapStart=true
-	bMidGameMonitoring=false
-	bDebugIt=true
+    BalanceMethod=0
+    MinimumTimePlayed=30
+    bBalanceAtMapStart=true
+    bMidGameMonitoring=false
+    bDebugIt=true
  }
