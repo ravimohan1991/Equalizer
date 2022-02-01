@@ -1,0 +1,4 @@
+- Have Compassion
+- Try understanding the context first
+- Be merciful to the other opinion
+- Everything else is secondary
