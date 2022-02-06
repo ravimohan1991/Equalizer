@@ -18,7 +18,9 @@
  *   along with Equalizer.  if not, see <https://www.gnu.org/licenses/>.
  *
  *   Timeline:
- *   May, 2021: First inscription
+ *   May, 2021      :                         First inscription
+ *   September, 2021:                         v0.2.0 Release
+ *   January, 2022  :                         Backreactions from Miasma
  */
 
 /**
