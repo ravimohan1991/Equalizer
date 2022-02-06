@@ -315,7 +315,7 @@ class Equalizer extends Mutator config(Equalizer);
 			{
 				if(Cont != Witness)
 				{
-                    PlayerJoin(Cont);
+					PlayerJoin(Cont);
 				}
 				break;
 			}
@@ -403,7 +403,8 @@ class Equalizer extends Mutator config(Equalizer);
 			continue;
 		}
 
-		if (!actuallybalance){
+		if (!actuallybalance)
+		{
 			piglogwrite(index@"I would have balanced to team"@TeamToSwitchTo@LambPRI.PlayerName $ " : " $ EQPlayers[index].BPValue(BalanceMethod));
 		}
 
@@ -412,7 +413,8 @@ class Equalizer extends Mutator config(Equalizer);
 		{
 			EQGRules.ChangeTeam(PlayerController(LambPRI.Owner), TeamToSwitchTo);
 		}
-		else{
+		else
+		{
 			if (bTellEveryone)
 				Level.Game.BroadcastHandler.BroadcastLocalized(none, PlayerController(LambPRI.Owner), class'EQTeamSwitchMessage', TeamToSwitchTo, PlayerController(LambPRI.Owner).PlayerReplicationInfo);
 		}
