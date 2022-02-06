@@ -1,6 +1,6 @@
 /*
  *   ------------------------
- *  | EQBrowserHTTPClient.uc
+ *  | EQHTTPClient.uc
  *   ------------------------
  *   This file is part of Equalizer for UT2004.
  *
@@ -22,7 +22,8 @@
  */
 
 /**
- *
+ * The class responsible for establishing the communication channels between 
+ * UnrealScript instances and WebServer with PHPMySQL run database.
  *
  * @since 0.2.0
  */
@@ -33,7 +34,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  * Global Variables
  */
 
- /** The IpToNation Actor reference.*/
+ /** The mutator reference.*/
  var Equalizer EQMut;
 
  /** Query in progress logical switch.*/
@@ -92,7 +93,9 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  		// strip out port number
  		if (InStr(EQMut.ResolvedAddress, ":") != -1)
+		{
  			EQMut.ResolvedAddress = Left(EQMut.ResolvedAddress, InStr(EQMut.resolvedAddress, ":"));
+		}
 
  		EQMut.SaveConfig();
 
@@ -115,8 +118,8 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	if(bResolutionRequest)
  	{
- 		Log("Error while resolving" @ EQMut.QueryServerHost @ "to an IP.", 'Equalizer');
- 		Log("If the error continues this could indicate that the operating system is not configured to resolve DNS records.", 'Equalizer');
+ 		Log("Error while resolving" @ EQMut.QueryServerHost @ "to an IP.", class'Equalizer'.default.LogCompanionTag);
+ 		Log("If the error continues this could indicate that the operating system is not configured to resolve DNS records.", class'Equalizer'.default.LogCompanionTag);
 
  		EQMut.RestartHTTPClient();
  	}
@@ -175,7 +178,11 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  {
  	local string Result;
 
+	//Log("HTTPReceivedData Data ->"$Data$"<-", class'Equalizer'.default.LogCompanionTag);
+
  	Result = ParseString(Data);
+
+	//Log("HTTPReceivedData Result ->"$Result$"<-", class'Equalizer'.default.LogCompanionTag);
 
  	bReceivedData = true;
 
@@ -187,7 +194,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		}
  		else
  		{
- 			Log("Received data when EQMut is not aligned. Report to developer", 'Equalizer');
+ 			Log("Received data when EQMut is not aligned. Report to developer", class'Equalizer'.default.LogCompanionTag);
  		}
  	}
 
@@ -252,13 +259,13 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	switch(Code)
  	{
  		case -1:
- 			Log("Error in binding the port while connecting to " $ EQMut.QueryServerHost, 'Equalizer');
+ 			Log("Error in binding the port while connecting to " $ EQMut.QueryServerHost, class'Equalizer'.default.LogCompanionTag);
  			break;
  		case -2:
-			Log("Error while resolving the host " $ EQMut.QueryServerHost, 'Equalizer');
+			Log("Error while resolving the host " $ EQMut.QueryServerHost, class'Equalizer'.default.LogCompanionTag);
 			break;
  		case -3:
- 			Log(EQMut.QueryServerHost$" timed out after " $ string(EQMut.MaxTimeout)$" seconds", 'Equalizer');
+ 			Log(EQMut.QueryServerHost$" timed out after " $ string(EQMut.MaxTimeout)$" seconds", class'Equalizer'.default.LogCompanionTag);
  			break;
  		case -4:
  			Log("Error resolving to the host of the IP for the domain " $ EQMut.QueryServerHost);
@@ -301,7 +308,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  	local int i;
  	local string QueryString;
 
-	Log("SendQueue invoked!", 'Equalizer');
+	Log("SendQueue invoked!", class'Equalizer'.default.LogCompanionTag);
 
  	CheckAddresses();
 
@@ -338,7 +345,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
-		Log("QueryString is: ?arpan=" $QueryString, 'Equalizer');
+		Log("QueryString is: ?arpan=" $QueryString, class'Equalizer'.default.LogCompanionTag);
  		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arpan=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
 		return;
 	}
@@ -365,7 +372,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  		bQueryInProgress = True;
  		bReceivedData = False;
 
-        Log("QueryString is: ?arzi=" $QueryString, 'Equalizer');
+        Log("QueryString is: ?arzi=" $QueryString, class'Equalizer'.default.LogCompanionTag);
 		Browse(EQMut.ResolvedAddress, EQMut.QueryServerFilePath $ "?arzi=" $ QueryString, EQMut.QueryServerPort, EQMut.MaxTimeout);
 		return;
 	}
@@ -417,7 +424,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 /**
  * Parsing the GString!
  *
- * @param GString     The backed information with all the bells and whistles 
+ * @param GString     The backed information with all the bells and whistles
  * @since 0.2.0
  */
 
@@ -431,11 +438,24 @@ class EQHTTPClient extends EQBrowserHTTPClient;
 
  	if(PCRLF != -1)
  	{
- 		Log("CRLF line break detected. Are you using Windows OS server? Still? Anywho, report this log to the developer", 'Equalizer');
-		result = Right(GString, len(GString) - PCRLF - 2);
- 		PCRLF =  InStr(result, CR$LF);
+		result = GString;
+		while (PCRLF != -1 && PCRLF < 4){
+			//Log("CRLF removal CRLF line break detected at pos "$PCRLF@"LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
+			result = Right(result, len(result) - PCRLF - 2);
+			PCRLF =  InStr(result, CR$LF);
+			PLF = InStr(result, LF);
+		}
+		while (PLF != -1 && PLF < 4){
+			//Log("LF removal: CRLF line break detected at pos "$PCRLF@"LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
+			result = Right(result, len(result) - PLF - 1);
+			PCRLF =  InStr(result, CR$LF);
+			PLF = InStr(result, LF);
+		}
+
+		//Log("Ending CRLF line break at pos "$PCRLF@"ending LF at"@PLF, class'Equalizer'.default.LogCompanionTag);
  		result = Left(result, PCRLF);
- 		return "";
+		return result;
+ 		//return "";
  	}
  	else if(PLF != -1)
  	{
