@@ -32,13 +32,13 @@
  * @since 0.1.0
  */
 
-class Equalizer extends Mutator config(Equalizer_TC_alpha1);
+class Equalizer extends Mutator config(Equalizer);
 
 /*
  * Global Variables
  */
 
- /** String with Version of the Mutator. */
+ /** String with Version of the Mutator. The same string be used for Package name. */
  var   string                                     Version;
 
  /** Number of times Equalizer has been built. */
@@ -215,7 +215,7 @@ class Equalizer extends Mutator config(Equalizer_TC_alpha1);
 	GArziString = "";
 	bWannaBalance = false;
 
-	Log("Equalizer_TC_alpha1 (v"$Version$") Initialized!", LogCompanionTag);
+	Log("Equalizer" $ Version $ " (build: " $ BuildNumber $ ") Initialized!", LogCompanionTag);
  }
 
 /**
@@ -1968,7 +1968,7 @@ function PlayerJoiningGame(out string Portal, out string Options)
 
  defaultproperties
  {
-    Version="0.4.0"
+    Version="_TC_alpha1"
     BuildNumber=20220129
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
@@ -1980,8 +1980,8 @@ function PlayerJoiningGame(out string Portal, out string Options)
     bShowFCLocation=true
     SealDistance=2200
     FCProgressKillBonus=4
-    UniqueIdentifierClass="Equalizer_TC_alpha1.UniqueIdentifier"
-    TeamSizeBalancerClass="Equalizer_TC_alpha1.TeamSizeBalancer"
+    UniqueIdentifierClass="Equalizer" $ Version $ ".UniqueIdentifier"
+    TeamSizeBalancerClass="Equalizer" $ Version $ ".TeamSizeBalancer"
     QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
