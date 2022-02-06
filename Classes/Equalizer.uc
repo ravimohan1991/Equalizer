@@ -38,11 +38,13 @@ class Equalizer extends Mutator config(Equalizer);
  * Global Variables
  */
 
- /** String with Version of the Mutator. The same string be used for Package name. */
+ /** String with Version of the Mutator. The same string be used for Package name construction. */
  var   string                                     Version;
 
- /** Number of times Equalizer has been built. */
+ /** Number of times Equalizer has been built. The same float be used for Package name construction. */
  var   float                                      BuildNumber;
+ 
+ // PackageName = Equalizer + Version + BuildNumber
 
  /** For tracking the PlayerJoin. */
  var   int                                        CurrID;
@@ -1980,8 +1982,8 @@ function PlayerJoiningGame(out string Portal, out string Options)
     bShowFCLocation=true
     SealDistance=2200
     FCProgressKillBonus=4
-    UniqueIdentifierClass="Equalizer" $ Version $ ".UniqueIdentifier"
-    TeamSizeBalancerClass="Equalizer" $ Version $ ".TeamSizeBalancer"
+    UniqueIdentifierClass="Equalizer" $ Version $ BuildNumber $ ".UniqueIdentifier"
+    TeamSizeBalancerClass="Equalizer" $ Version $ BuildNumber $ ".TeamSizeBalancer"
     QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80
