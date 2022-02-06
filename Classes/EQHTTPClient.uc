@@ -22,7 +22,8 @@
  */
 
 /**
- *
+ * The class responsible for establishing the communication channels between 
+ * UnrealScript instances and WebServer with PHPMySQL run database.
  *
  * @since 0.2.0
  */
@@ -33,7 +34,7 @@ class EQHTTPClient extends EQBrowserHTTPClient;
  * Global Variables
  */
 
- /** The IpToNation Actor reference.*/
+ /** The mutator reference.*/
  var Equalizer EQMut;
 
  /** Query in progress logical switch.*/

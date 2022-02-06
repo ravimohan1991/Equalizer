@@ -115,7 +115,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
  /** Points per hour */
  var    float           PPH;
 
- /** This player killed the enemy FC at this distance from enemy flag */
+ /** This player killed the enemy FC at this distance from enemy flag. */
  var      vector                              KilledFCAtLocation;
 
  /** UniqueIdentifer and mutator reference */
