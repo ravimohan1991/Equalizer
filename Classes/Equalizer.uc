@@ -1135,9 +1135,9 @@ class Equalizer extends Mutator config(Equalizer);
 	if(EQPlayerInfo.bIsBot)
 	{
 		return;
-    }
+	}
 
-    if(HttpClientInstance != none)
+	if(HttpClientInstance != none)
 	{
 		DataToSend = EQPlayerInfo.GenerateArpanString();
 
@@ -1430,7 +1430,7 @@ class Equalizer extends Mutator config(Equalizer);
 			}
 			if(EQPlayerInfo != none)
 			{
-					EQPlayerInfo.MakeActorReadyForEqualizer(true);
+				EQPlayerInfo.MakeActorReadyForEqualizer(true);
 			}
 		}
 
