@@ -111,6 +111,7 @@ class Equalizer extends Mutator config(Equalizer);
  var()   config           bool         bShowFCLocation;
  var()   config           float        FCProgressKillBonus;
  var()   config           string       UniqueIdentifierClass;
+ var()   config           bool         bEQLogoFlash;
 
  /** The radius of the bubble around the flag for tracking seals. */
  var()   config           float        SealDistance;
@@ -174,6 +175,11 @@ class Equalizer extends Mutator config(Equalizer);
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
 
 	InitHTTPFunctions();
+
+	if(bEQLogoFlash)
+	{
+      Spawn(class'EQLogo');
+    }
 
 	// Fore safety!
 	GArziString = "";
@@ -1679,7 +1685,7 @@ function string IntToStr(int i, int StringLength)
 
  defaultproperties
  {
-    Version="0.3.0"
+    Version="030"//"0.3.0"
     BuildNumber=158
     Description="Equalizes and encourages CTF team gameplay."
     FriendlyName="DivineIntervention"
@@ -1698,4 +1704,5 @@ function string IntToStr(int i, int StringLength)
     MaxTimeout=10
     bLogTeamsRollCall=true
     bShowTeamsRollCall=true
+    bEQLogoFlash=true
  }
