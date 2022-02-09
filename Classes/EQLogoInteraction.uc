@@ -467,40 +467,40 @@ var config EQLogo.EFadeTransition TestTransition;
 	ConsoleCommand("shot");
 	switch (TestTransition)
 	{
-	case FT_Linear:
-			TestTransition = FT_Square;
-		break;
-	case FT_Square:
-			TestTransition = FT_Sqrt;
-		break;
-	case FT_Sqrt:
-			TestTransition = FT_ReverseSquare;
-		break;
-	case FT_ReverseSquare:
-			TestTransition = FT_ReverseSqrt;
-		break;
-	case FT_ReverseSqrt:
-			TestTransition = FT_Sin;
-		break;
-	case FT_Sin:
-			TestTransition = FT_Smooth;
-		break;
-	case FT_Smooth:
-			TestTransition = FT_SquareSmooth;
-		break;
-	case FT_SquareSmooth:
-			TestTransition = FT_SqrtSmooth;
-		break;
-	case FT_SqrtSmooth:
-			TestTransition = FT_ReverseSquareSmooth;
-		break;
-	case FT_ReverseSquareSmooth:
-			TestTransition = FT_ReverseSqrtSmooth;
-		break;
-	case FT_ReverseSqrtSmooth:
-			TestTransition = FT_SinSmooth;
-		break;
-	case FT_SinSmooth:
+		case FT_Linear:
+				TestTransition = FT_Square;
+			break;
+		case FT_Square:
+				TestTransition = FT_Sqrt;
+			break;
+		case FT_Sqrt:
+				TestTransition = FT_ReverseSquare;
+			break;
+		case FT_ReverseSquare:
+				TestTransition = FT_ReverseSqrt;
+			break;
+		case FT_ReverseSqrt:
+				TestTransition = FT_Sin;
+			break;
+		case FT_Sin:
+				TestTransition = FT_Smooth;
+			break;
+		case FT_Smooth:
+				TestTransition = FT_SquareSmooth;
+			break;
+		case FT_SquareSmooth:
+				TestTransition = FT_SqrtSmooth;
+			break;
+		case FT_SqrtSmooth:
+				TestTransition = FT_ReverseSquareSmooth;
+			break;
+		case FT_ReverseSquareSmooth:
+				TestTransition = FT_ReverseSqrtSmooth;
+			break;
+		case FT_ReverseSqrtSmooth:
+				TestTransition = FT_SinSmooth;
+			break;
+		case FT_SinSmooth:
 			TestTransition = FT_None;
 	}
  }
