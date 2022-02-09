@@ -40,7 +40,8 @@ class EQLogo extends ReplicationInfo
 // Enums
 //=============================================================================
 
-enum EFadeTransition {
+enum EFadeTransition
+{
   FT_None,
   FT_Linear,
   FT_Square,
@@ -61,12 +62,14 @@ enum EFadeTransition {
 // Structs
 //=============================================================================
 
-struct TScreenCoords {
+struct TScreenCoords
+{
   var() config float X;
   var() config float Y;
 };
 
-struct TTexRegion {
+struct TTexRegion
+{
   var() config int X;
   var() config int Y;
   var() config int W;
@@ -74,7 +77,8 @@ struct TTexRegion {
 };
 
 // replicated as a struct to make sure everything arrives at the same time
-struct TRepResources {
+struct TRepResources
+{
   var string Logo;
   var string FadeInSound;
   var string DisplaySound;
@@ -183,56 +187,67 @@ replication
 // Replicate all config variables.
 //=============================================================================
 
-simulated function PostBeginPlay()
-{
-  Super.PostBeginPlay();
+ simulated function PostBeginPlay()
+ {
+	Super.PostBeginPlay();
 
-  if ( Role == ROLE_Authority ) {
-    SaveConfig();
-    if ( int(Level.EngineVersion) > 3186 )
-      UpdatePackageMap();
+	if(Role == ROLE_Authority)
+	{
+		SaveConfig();
+		if(int(Level.EngineVersion) > 3186)
+		{
+			UpdatePackageMap();
+		}
 
-    Build = class'Equalizer'.default.BuildNumber;
-    Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
-    RLogoResources.Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
-    RLogoResources.FadeInSound = FadeInSound;
-    RLogoResources.DisplaySound = DisplaySound;
-    RLogoResources.FadeOutSound = FadeOutSound;
-    RAnnouncerSounds = AnnouncerSounds;
-    RLogoColor = LogoColor;
-    RLogoTexCoords = LogoTexCoords;
-    RStartLogoRotationRate = StartLogoRotationRate;
-    RLogoRotationRate = LogoRotationRate;
-    REndLogoRotationRate = EndLogoRotationRate;
-    RDrawPivot = DrawPivot;
-    RFadeInRotationTransition = FadeInRotationTransition;
-    RFadeOutRotationTransition = FadeOutRotationTransition;
-    RFadeInScaleTransition = FadeInScaleTransition;
-    RFadeOutScaleTransition = FadeOutScaleTransition;
-    RFadeInPosXTransition = FadeInPosXTransition;
-    RFadeInPosYTransition = FadeInPosYTransition;
-    RFadeOutPosXTransition = FadeOutPosXTransition;
-    RFadeOutPosYTransition = FadeOutPosYTransition;
-    RFadeInAlphaTransition = FadeInAlphaTransition;
-    RFadeOutAlphaTransition = FadeOutAlphaTransition;
-    if ( FadeInAlphaTransition > FT_None || FadeInScaleTransition > FT_None
-        || FadeInPosXTransition > FT_None || FadeInPosYTransition > FT_None
-        || FadeInRotationTransition > FT_None )
-      RFadeInDuration = FadeInDuration;
-    RDisplayDuration = DisplayDuration;
-    if ( FadeOutAlphaTransition > FT_None || FadeOutScaleTransition > FT_None
-        || FadeOutPosXTransition > FT_None || FadeOutPosYTransition > FT_None
-        || FadeOutRotationTransition > FT_None )
-      RFadeOutDuration = FadeOutDuration;
-    RInitialDelay = InitialDelay;
-    RStartPos = StartPos;
-    RPos = Pos;
-    REndPos = EndPos;
-    RStartScale = StartScale;
-    RScale = Scale;
-    REndScale = EndScale;
-  }
-}
+		Build = class'Equalizer'.default.BuildNumber;
+		Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
+		RLogoResources.Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
+		RLogoResources.FadeInSound = FadeInSound;
+		RLogoResources.DisplaySound = DisplaySound;
+		RLogoResources.FadeOutSound = FadeOutSound;
+		RAnnouncerSounds = AnnouncerSounds;
+		RLogoColor = LogoColor;
+		RLogoTexCoords = LogoTexCoords;
+		RStartLogoRotationRate = StartLogoRotationRate;
+		RLogoRotationRate = LogoRotationRate;
+		REndLogoRotationRate = EndLogoRotationRate;
+		RDrawPivot = DrawPivot;
+		RFadeInRotationTransition = FadeInRotationTransition;
+		RFadeOutRotationTransition = FadeOutRotationTransition;
+		RFadeInScaleTransition = FadeInScaleTransition;
+		RFadeOutScaleTransition = FadeOutScaleTransition;
+		RFadeInPosXTransition = FadeInPosXTransition;
+		RFadeInPosYTransition = FadeInPosYTransition;
+		RFadeOutPosXTransition = FadeOutPosXTransition;
+		RFadeOutPosYTransition = FadeOutPosYTransition;
+		RFadeInAlphaTransition = FadeInAlphaTransition;
+		RFadeOutAlphaTransition = FadeOutAlphaTransition;
+
+		if ( FadeInAlphaTransition > FT_None || FadeInScaleTransition > FT_None
+			|| FadeInPosXTransition > FT_None || FadeInPosYTransition > FT_None
+			|| FadeInRotationTransition > FT_None )
+		{
+			RFadeInDuration = FadeInDuration;
+		}
+
+		RDisplayDuration = DisplayDuration;
+
+		if ( FadeOutAlphaTransition > FT_None || FadeOutScaleTransition > FT_None
+			|| FadeOutPosXTransition > FT_None || FadeOutPosYTransition > FT_None
+			|| FadeOutRotationTransition > FT_None )
+		{
+			RFadeOutDuration = FadeOutDuration;
+		}
+
+		RInitialDelay = InitialDelay;
+		RStartPos = StartPos;
+		RPos = Pos;
+		REndPos = EndPos;
+		RStartScale = StartScale;
+		RScale = Scale;
+		REndScale = EndScale;
+	}
+ }
 
 
 //=============================================================================
@@ -241,34 +256,45 @@ simulated function PostBeginPlay()
 // Make sure the logo and sound packages are sent to clients.
 //=============================================================================
 
-function UpdatePackageMap()
-{
-  local int i;
-
-  AddToPackageMap();
-  if ( Logo != "" ) {
-    i = InStr(Logo, ".");
-    if ( i > -1 && DynamicLoadObject(Logo, class'Texture', true) != None ){
-      AddToPackageMap(Left(Logo, i));
-      Log("Update package"@Logo@i);
-    }
-  }
-  if ( FadeInSound != "" ) {
-    i = InStr(FadeInSound, ".");
-    if ( i > -1 && DynamicLoadObject(FadeInSound, class'Sound', true) != None )
-      AddToPackageMap(Left(FadeInSound, i));
-  }
-  if ( DisplaySound != "" ) {
-    i = InStr(DisplaySound, ".");
-    if ( i > -1 && DynamicLoadObject(DisplaySound, class'Sound', true) != None )
-      AddToPackageMap(Left(DisplaySound, i));
-  }
-  if ( FadeOutSound != "" ) {
-    i = InStr(FadeOutSound, ".");
-    if ( i > -1 && DynamicLoadObject(FadeOutSound, class'Sound', true) != None )
-      AddToPackageMap(Left(FadeOutSound, i));
-  }
-}
+ function UpdatePackageMap()
+ {
+	local int i;
+	
+	AddToPackageMap();
+	if(Logo != "")
+	{
+		i = InStr(Logo, ".");
+		if (i > -1 && DynamicLoadObject(Logo, class'Texture', true) != None)
+		{
+			AddToPackageMap(Left(Logo, i));
+			Log("Update package"@Logo@i, 'Equalizer');
+		}
+	}
+	if(FadeInSound != "")
+	{
+		i = InStr(FadeInSound, ".");
+		if(i > -1 && DynamicLoadObject(FadeInSound, class'Sound', true) != None)
+		{
+			AddToPackageMap(Left(FadeInSound, i));
+		}
+	}
+	if ( DisplaySound != "" )
+	{
+		i = InStr(DisplaySound, ".");
+		if(i > -1 && DynamicLoadObject(DisplaySound, class'Sound', true) != None)
+		{
+			AddToPackageMap(Left(DisplaySound, i));
+		}
+	}
+	if( FadeOutSound != "" )
+	{
+		i = InStr(FadeOutSound, ".");
+		if(i > -1 && DynamicLoadObject(FadeOutSound, class'Sound', true) != None)
+		{
+			AddToPackageMap(Left(FadeOutSound, i));
+		}
+	}
+ }
 
 
 //=============================================================================
@@ -277,11 +303,11 @@ function UpdatePackageMap()
 // Replicate all config variables.
 //=============================================================================
 
-simulated function PostNetBeginPlay()
-{
-  bReceivedVars = True;
-  Enable('Tick');
-}
+ simulated function PostNetBeginPlay()
+ {
+	bReceivedVars = True;
+	Enable('Tick');
+ }
 
 
 //=============================================================================
@@ -290,35 +316,44 @@ simulated function PostNetBeginPlay()
 // Initialize the Interaction and load the logo texture.
 //=============================================================================
 
-simulated function Tick(float DeltaTime)
-{
-  local PlayerController LocalPlayer;
-  local Interaction MyInteraction;
+ simulated function Tick(float DeltaTime)
+ {
+	local PlayerController LocalPlayer;
+	local Interaction MyInteraction;
+	
+	if(!bReceivedVars || Level.NetMode == NM_DedicatedServer)
+	{
+		Disable('Tick');
+		return;
+	}
+	else if(RLogoResources.Logo == "")
+	{
+		return;
+	}
+	else if( SpawnTime == 0.0 )
+	{
+		SpawnTime = Level.TimeSeconds;
+	}
+	
+	//log(Level.TimeSeconds@"LevelAction:"@Level.LevelAction);
+	
+	if(Level.TimeSeconds - SpawnTime < RInitialDelay)
+	{
+		return;
+	}
+	
+	LocalPlayer = Level.GetLocalPlayerController();
+	if(LocalPlayer != None)
+	{
+		MyInteraction = LocalPlayer.Player.InteractionMaster.AddInteraction(string(class'EQLogoInteraction'), LocalPlayer.Player);
+	}
+	if(EQLogoInteraction(MyInteraction) != None)
+	{
+		EQLogoInteraction(MyInteraction).ServerLogo = Self;
+	}
 
-  if ( !bReceivedVars || Level.NetMode == NM_DedicatedServer ) {
-    Disable('Tick');
-    return;
-  }
-  else if ( RLogoResources.Logo == "" ) {
-    return;
-  }
-  else if ( SpawnTime == 0.0 )
-    SpawnTime = Level.TimeSeconds;
-
-  //log(Level.TimeSeconds@"LevelAction:"@Level.LevelAction);
-
-  if ( Level.TimeSeconds - SpawnTime < RInitialDelay )
-    return;
-
-  LocalPlayer = Level.GetLocalPlayerController();
-  if ( LocalPlayer != None )
-    MyInteraction = LocalPlayer.Player.InteractionMaster.AddInteraction(string(class'EQLogoInteraction'), LocalPlayer.Player);
-
-  if ( EQLogoInteraction(MyInteraction) != None )
-    EQLogoInteraction(MyInteraction).ServerLogo = Self;
-
-  //log(Level.TimeSeconds@"Spawned"@MyInteraction@"for"@LocalPlayer);
-  Disable('Tick');
+	//log(Level.TimeSeconds@"Spawned"@MyInteraction@"for"@LocalPlayer);
+	Disable('Tick');
 }
 
 
@@ -326,8 +361,8 @@ simulated function Tick(float DeltaTime)
 // Default Properties
 //=============================================================================
 
-defaultproperties
-{
+ defaultproperties
+ {
     LogoColor=(B=255,G=255,R=255,A=255)
     LogoTexCoords=(X=0,Y=0,W=0,H=0)
     LogoRotationRate=0
@@ -356,4 +391,4 @@ defaultproperties
     EndLogoRotationRate=0
     FadeInRotationTransition=FT_None
     FadeOutRotationTransition=FT_None
-}
+ }
