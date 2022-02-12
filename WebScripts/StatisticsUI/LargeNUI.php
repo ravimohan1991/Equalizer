@@ -54,13 +54,15 @@ $mysqli->close();
     <title>GFG User Details</title>
     <!-- CSS FOR STYLING THE PAGE -->
     <style>
-        table {
+        table 
+        {
             margin: 0 auto;
             font-size: large;
-            border: 1px solid black;
+            border: 4px solid black;
         }
   
-        h1 {
+        h1 
+        {
             text-align: center;
             color: #006600;
             font-size: xx-large;
@@ -68,21 +70,31 @@ $mysqli->close();
             ' Calibri', 'Trebuchet MS', 'sans-serif';
         }
   
-        td {
-            background-color: #E4F5D4;
-            border: 1px solid black;
-        }
-  
-        th,
-        td {
+        td 
+        {
             font-weight: bold;
-            border: 1px solid black;
+            border: 1px solid purple;
             padding: 10px;
             text-align: center;
         }
+        
+        th
+        {
+            font-weight: bold;
+            border: 2px solid black;
+            padding: 10px;
+            text-align: center; 
+            background-color: #E4F5D4;
+        }
   
-        td {
+        td 
+        {
             font-weight: lighter;
+        }
+        
+        tr:hover
+        {
+            background-color: coral;
         }
     </style>
 </head>
@@ -120,7 +132,7 @@ $mysqli->close();
 <?php
 /*
  *
- *		                                  /\ 
+ *                                                /\ 
  *		                                 / /
  *		                              /\| |   
  *		                              | | |/\    
