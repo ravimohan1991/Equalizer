@@ -44,8 +44,8 @@ class Equalizer extends Mutator config(Equalizer);
  var   string                                     Version;
 
  /** Number of times Equalizer has been built. The same float be used for Package name construction. */
- var   float                                      BuildNumber;
- 
+ var   int                                      BuildNumber;
+
  // PackageName = Equalizer + Version + BuildNumber
 
  /** For tracking the PlayerJoin. */
@@ -191,35 +191,77 @@ class Equalizer extends Mutator config(Equalizer);
  function PostBeginPlay()
  {
 	local class<UniqueIdentifier> UniqueID;
+	local int LogLength;
+	local string HorizontalChar, VerticalChar, CornerChar;
+
+	LogLength = 120;
+	HorizontalChar = "#";
+	VerticalChar = "#";
+	CornerChar = "#";
+
+	ACEPadLog("", HorizontalChar, CornerChar, LogLength);
+	ACEPadLog("Initializing Equalizer Environment!", " ", VerticalChar, LogLength, true);
+	ACEPadLog("", " ", VerticalChar, LogLength);
+
+	if(UniqueIdentifierClass ~= "")
+	{
+		UniqueIdentifierClass = "Equalizer" $ Version $ BuildNumber $ ".UniqueIdentifier";
+	}
+	if(TeamSizeBalancerClass ~= "")
+	{
+		TeamSizeBalancerClass = "Equalizer" $ Version $ BuildNumber $ ".TeamSizeBalancer";
+	}
+	SaveConfig();
+
+	ACEPadLog("UniqueIdentifierClass: " $ UniqueIdentifierClass $ " identified.", " ", VerticalChar, LogLength, true);
+	ACEPadLog("TeamSizeBalancerClass: " $ TeamSizeBalancerClass $ " identified.", " ", VerticalChar, LogLength, true);
 
 	CTFGameInfo = CTFGame(Level.Game);
 	if(CTFGameInfo == none)
 	{
-		Log("The GameType is not CTF. Why even bother running this mutator?!", LogCompanionTag);
-		Destroyed();  //why not Destroy()?
+		ACEPadLog("The GameType (" $ Level.Game $ ") is not CTF. Why even bother running this mutator?! Destroying self ...", " ", VerticalChar, LogLength, true);
+		ACEPadLog("", HorizontalChar, CornerChar, LogLength);
+		Destroyed();  //why not Destroy()? Good question! So that the Mutator chain is not broken!
+		Destroy(); // And now we destroy! Thanks ^
 		return;
 	}
 
 	EQGRules = Level.Game.Spawn(class'EQGameRules', self, 'EndGame'); // for accessing PreventDeath function
+	ACEPadLog("The RuleBook: " $ EQGRules $ ".", " ", VerticalChar, LogLength, true);
 	EQGRules.EQMut = self;
 	Level.Game.AddGameModifier(EQGRules);// register the GameRules Modifier
 	RegisterBroadcastHandler();
 	UniqueID = class<UniqueIdentifier>(DynamicLoadObject(UniqueIdentifierClass, class'Class'));
-	if(UniqueID != none && bDebugIt)
-		Log("Successfully loaded UniqueIdentifier class", LogCompanionTag);
+	if(UniqueID != none)
+	{
+		ACEPadLog("Successfully loaded UniqueIdentifier class.", " ", VerticalChar, LogLength, true);
+	}
+	else
+	{
+		ACEPadLog("Couldn't load UniqueIdentifier (" $ UniqueIdentifierClass $ ") class.", " ", VerticalChar, LogLength, true);
+	}
 	EQUniqueIdentifier = Spawn(UniqueID, self);
-	if(EQUniqueIdentifier != none && bDebugIt)
-		Log("Successfully spawned UniqueIdentifier instance", LogCompanionTag);
+	if(EQUniqueIdentifier != none)
+	{
+		ACEPadLog("Successfully spawned UniqueIdentifier class.", " ", VerticalChar, LogLength, true);
+	}
 	if(bShowFCLocation)
+	{
 		Level.Game.HUDType = string(class'EQHUDFCLocation');
+		ACEPadLog("FlagCarrier location shall be rendered on HUD!", " ", VerticalChar, LogLength, true);
+	}
 
+	ACEPadLog("Initiating HTTP instances for WebQuery environment...", " ", VerticalChar, LogLength, true);
 	InitHTTPFunctions();
+	ACEPadLog("WebQuery environment generated.  HTTP instance: " $ HttpClientInstance $ ".", " ", VerticalChar, LogLength, true);
 
 	// Fore safety!
 	GArziString = "";
 	bWannaBalance = false;
 
-	Log("Equalizer" $ Version $ " (build: " $ BuildNumber $ ") Initialized!", LogCompanionTag);
+	ACEPadLog("", " ", VerticalChar, LogLength);
+	ACEPadLog("Equalizer" $ Version $ " (build: " $ BuildNumber $ ") Initialized! GLHF", " ", VerticalChar, LogLength, true);
+	ACEPadLog("", HorizontalChar, CornerChar, LogLength);
  }
 
 /**
@@ -1986,8 +2028,8 @@ function PlayerJoiningGame(out string Portal, out string Options)
     bShowFCLocation=true
     SealDistance=2200
     FCProgressKillBonus=4
-    UniqueIdentifierClass="Equalizer" $ Version $ BuildNumber $ ".UniqueIdentifier"
-    TeamSizeBalancerClass="Equalizer" $ Version $ BuildNumber $ ".TeamSizeBalancer"
+    UniqueIdentifierClass=""
+    TeamSizeBalancerClass=""
     QueryServerHost="localhost"
     QueryServerFilePath="/EqualizerBE/eqquery.php"
     QueryServerPort=80

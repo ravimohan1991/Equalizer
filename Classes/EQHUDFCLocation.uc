@@ -57,16 +57,16 @@ simulated function ShowTeamScorePassA(Canvas C)
 		TeamScoreBackground[0].Tints[TeamIndex].A = 150;
 		TeamScoreBackground[1].Tints[TeamIndex] = HudColorBlack;
 		TeamScoreBackground[1].Tints[TeamIndex].A = 150;
-		
+
 		DrawSpriteWidget (C, NewFlagWidgets[0]);
 		DrawSpriteWidget (C, NewFlagWidgets[1]);
-		
+
 		NewFlagWidgets[0].Tints[0] = HudColorTeam[0];
 		NewFlagWidgets[0].Tints[1] = HudColorTeam[0];
-		
+
 		NewFlagWidgets[1].Tints[0] = HudColorTeam[1];
 		NewFlagWidgets[1].Tints[1] = HudColorTeam[1];
-		
+
 		DrawSpriteWidget (C, VersusSymbol );
 	 	DrawNumericWidget (C, ScoreTeam[0], DigitsBig);
 		DrawNumericWidget (C, ScoreTeam[1], DigitsBig);
@@ -105,8 +105,8 @@ simulated function ShowTeamScorePassA(Canvas C)
 
 		for(i = 0; i < PlayerOwner.GameReplicationInfo.PRIArray.Length; i++)
 		{
-			if(PlayerOwner.GameReplicationInfo.PRIArray[i].HasFlag != none && PlayerOwner.PlayerReplicationInfo.Team.TeamIndex ==
-				PlayerOwner.GameReplicationInfo.PRIArray[i].Team.TeamIndex && PlayerOwner.PlayerReplicationInfo != PlayerOwner.GameReplicationInfo.PRIArray[i])
+			if(PlayerOwner.GameReplicationInfo.PRIArray[i].HasFlag != none && PlayerOwner.PlayerReplicationInfo.Team != none && PlayerOwner.GameReplicationInfo.PRIArray[i].Team != none &&
+		PlayerOwner.PlayerReplicationInfo.Team.TeamIndex == PlayerOwner.GameReplicationInfo.PRIArray[i].Team.TeamIndex && PlayerOwner.PlayerReplicationInfo != PlayerOwner.GameReplicationInfo.PRIArray[i])
 			{
 				LPRI = PlayerOwner.GameReplicationInfo.PRIArray[i];
 				C.Font = LoadFontStatic(7);
