@@ -1,4 +1,9 @@
 # UniqueIdentifier
+## The Need
+Since Equalizer generates and maintains its own database (PHP BackEnd), it becomes important to have a scheme which can identify the Human players uniquely. Now UT2004 has GUID for recognizing players, but some more useful and apt algorithm may be deployed for the purpose. Now it might so happen that the algorithm need be private to prevent spoof generation. Enter the ```UniqueIdentifier``` class!
+
+##
+
 This is an example of how a serverside class can use the player identification scheme (see [154b235](https://github.com/ravimohan1991/Equalizer/commit/154b235452e8d6ca79858ba0930beeabcfd3d0c0)). Clients don't need to download and know how the algorithm to compute unique identification is implemented.
 
 ```Java
