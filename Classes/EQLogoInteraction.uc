@@ -35,6 +35,7 @@ class EQLogoInteraction extends Interaction
 
 
 #exec texture Import File=Textures\thequalizer.pcx Name=theequalizer MIPS=OFF
+#exec AUDIO IMPORT FILE="Sounds\sawc1.wav" NAME="SawIntro"
 
 //=============================================================================
 // Constants
@@ -51,7 +52,7 @@ var EQLogo     ServerLogo;
 var Material   LogoMaterial;
 var TexRotator RotatingLogoMaterial;
 var Sound      FadeInSound;
-var Sound      DisplaySound;
+var sound      DisplaySound;
 var Sound      FadeOutSound;
 var float      StartupTime;
 
@@ -332,10 +333,10 @@ var config EQLogo.EFadeTransition TestTransition;
 	}
 
 	//log("Drawn"@X@Y@W@H);
-	
+
 	C.SetPos(X, Y);
 	C.DrawTileClipped(M, W, H, R.X, R.Y, R.W, R.H);
-	
+
 	PoweredText = "Equalizer"@class'Equalizer'.default.Version;
 	C.Font = GetSmallFontFor(C.ClipX, 0);
 	C.StrLen(PoweredText, XL, YL);
@@ -439,7 +440,7 @@ var config EQLogo.EFadeTransition TestTransition;
  function TransitionsTest(Canvas C)
  {
 	local float x, y;
-	
+
 	C.Reset();
 	C.Style = STY_Alpha;
 	C.DrawColor.R = 255;

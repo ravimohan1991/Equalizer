@@ -259,7 +259,7 @@ replication
  function UpdatePackageMap()
  {
 	local int i;
-	
+
 	AddToPackageMap();
 	if(Logo != "")
 	{
@@ -320,7 +320,7 @@ replication
  {
 	local PlayerController LocalPlayer;
 	local Interaction MyInteraction;
-	
+
 	if(!bReceivedVars || Level.NetMode == NM_DedicatedServer)
 	{
 		Disable('Tick');
@@ -334,14 +334,14 @@ replication
 	{
 		SpawnTime = Level.TimeSeconds;
 	}
-	
+
 	//log(Level.TimeSeconds@"LevelAction:"@Level.LevelAction);
-	
+
 	if(Level.TimeSeconds - SpawnTime < RInitialDelay)
 	{
 		return;
 	}
-	
+
 	LocalPlayer = Level.GetLocalPlayerController();
 	if(LocalPlayer != None)
 	{
@@ -373,11 +373,11 @@ replication
     StartScale=(X=1.000000,Y=1.000000)
     Scale=(X=1.000000,Y=1.000000)
     EndScale=(X=1.000000,Y=1.000000)
-    FadeInDuration=0.500000
+    FadeInDuration=1.00000
     DisplayDuration=3.000000
-    FadeOutDuration=1.500000
+    FadeOutDuration=1.00000
     InitialDelay=0.000000
-    DisplaySound="WeaponSounds.BLockOn1"
+    DisplaySound="Equalizer.SawIntro"
     AnnouncerSounds=False
     FadeInAlphaTransition=FT_Linear
     FadeOutAlphaTransition=FT_Linear
