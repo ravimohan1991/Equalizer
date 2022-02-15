@@ -4,7 +4,7 @@
 Follow these steps to generate a working instance of Equalizer on the server:
 
 
-- Extract the ```.zip``` file to some safe place. Look out for ```System``` folder and drop its contents (UPackage, meta, and ini files) in the game server's ```System`` folder.
+- Extract the ```.zip``` file to some safe place. Look out for ```System``` folder and drop its contents (UPackage, meta, and ini files) in the game server's ```System``` folder.
 
 - Open the ```Server.ini``` file (containing all the information about game server configuration and operations) and add the following line in the section ```Engine.GameEngine```
   like so
@@ -30,7 +30,7 @@ Follow these steps to generate a working instance of Equalizer on the server:
    
    
     - ## Equalizer for ServerActor (needs testing)
-      The first two steps shall remain same (as those of *Equalizer for Mutator*). In the third step, add the following line in the section ```Engine.GameEngine``` like so
+      In this context, we add the following line in the section ```Engine.GameEngine``` like so
       ```
       ServerActor=Equalizer020158.Equalizer
       ```
