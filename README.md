@@ -61,7 +61,7 @@ INI setting | Default value | Description
   FC: Flag Carrier (The player who is carrying the flag)
 
 ## Installation
-Pleae refer [Installation](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/Installation.md) document.
+Please refer [Installation](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/Installation.md) document.
 
 ## Balancing 
 At this point in time, the Balancing algorithm is fleshed out in full details [here](https://github.com/ravimohan1991/Equalizer/blob/main/BalancingAlgorithm.md).
