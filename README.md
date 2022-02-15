@@ -64,7 +64,7 @@ INI setting | Default value | Description
 Please refer [Installation](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/Installation.md) document.
 
 ## Balancing 
-At this point in time, the Balancing algorithm is fleshed out in full details [here](https://github.com/ravimohan1991/Equalizer/blob/main/BalancingAlgorithm.md).
+At this point in time, the Balancing algorithm is fleshed out in full details [here](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/BalancingAlgorithm.md).
 
 ## Caveats
 - The if player starts spectating after returning the flag then the additional score (3, 5 or 7) will not be taken into account for PPH computations. It is due to the [Epic's code](http://wormbo.de/uncodex/ut2004/Source_unrealgame/ctfgame.html#192) hooking appropriately is not possible.
