@@ -1,4 +1,10 @@
 # Requirements
+- GameServer
+    - [UT2004](https://www.gog.com/en/game/unreal_tournament_2004_ece) (Windows or Linux)
+- WebServer
+    - Relevant WebSpace
+    - [PHPMyAdmin](https://www.phpmyadmin.net/)
+- (Optional) [FileZilla](https://filezilla-project.org/) (an FTP client)
 
 # Installing
 Follow these steps to generate a working instance of Equalizer on the server:
@@ -32,7 +38,7 @@ Follow these steps to generate a working instance of Equalizer on the server:
     - ## Equalizer for ServerActor (needs testing)
       In this context, we add the following line in the section ```Engine.GameEngine``` like so
       ```
-      ServerActor=Equalizer020158.Equalizer
+      ServerActors=Equalizer020158.Equalizer
       ```
    <ins>Please note you need to follow **either** *Equalizer for Mutator* **or** *Equalizer for ServerActor*</ins>. Also note that the oder of loading the Equalizer class matters. 
    Based on the dependencies (for instance [UniqueIdentifier](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/UniqueIdentifier.md)) you may need to deduce the right order. Please
