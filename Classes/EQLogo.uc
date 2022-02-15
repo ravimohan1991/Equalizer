@@ -201,6 +201,7 @@ replication
 
 		Build = class'Equalizer'.default.BuildNumber;
 		Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
+		DisplaySound = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".SawIntro";
 		RLogoResources.Logo = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".theequalizer";
 		RLogoResources.FadeInSound = FadeInSound;
 		RLogoResources.DisplaySound = DisplaySound;
@@ -373,11 +374,10 @@ replication
     StartScale=(X=1.000000,Y=1.000000)
     Scale=(X=1.000000,Y=1.000000)
     EndScale=(X=1.000000,Y=1.000000)
-    FadeInDuration=1.00000
-    DisplayDuration=3.000000
-    FadeOutDuration=1.00000
+    FadeInDuration=1.50000
+    DisplayDuration=2.000000
+    FadeOutDuration=1.50000
     InitialDelay=0.000000
-    DisplaySound="Equalizer.SawIntro"
     AnnouncerSounds=False
     FadeInAlphaTransition=FT_Linear
     FadeOutAlphaTransition=FT_Linear

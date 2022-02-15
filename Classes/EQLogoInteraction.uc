@@ -35,7 +35,7 @@ class EQLogoInteraction extends Interaction
 
 
 #exec texture Import File=Textures\thequalizer.pcx Name=theequalizer MIPS=OFF
-#exec AUDIO IMPORT FILE="Sounds\sawc1.wav" NAME="SawIntro"
+#exec AUDIO IMPORT FILE="Sounds\sawc.wav" NAME="SawIntro"
 
 //=============================================================================
 // Constants
