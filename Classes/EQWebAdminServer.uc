@@ -32,34 +32,35 @@
 class EQWebAdminServer extends UTServerAdmin config;
 
 
-// =====================================================================================================================
-// =====================================================================================================================
-//  Initialization
-// =====================================================================================================================
-// =====================================================================================================================
-event Init()
-{
+/**
+ * We setup the environment for Equalizer's WebAdmin interface.
+ *
+ * @since 0.3.0
+ */
+ 
+ event Init()
+ {
 	local UTServerAdmin UTSA;
 	local byte index;
 
-    Super.Init();
+	Super.Init();
 
 	for(index = 0; index < 10; index++)
 	{
-     if(WebServer.ApplicationObjects[index] != none && WebServer.ApplicationObjects[index].IsA('UTServerAdmin'))
-     {
-         UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
-         // Assign the Admin spectator here.
-	 Log("Successfully assigned WebAdmin's AdminSpectator. Judicious eh!", 'Equalizer');
-         break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
-     }
-    }
+		if(WebServer.ApplicationObjects[index] != none && WebServer.ApplicationObjects[index].IsA('UTServerAdmin'))
+		{
+			UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
+			// Assign the Admin spectator here.
+			Log("Successfully assigned WebAdmin's AdminSpectator. Judicious eh!", 'Equalizer');
+			break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
+		}
+	}
 
-    if(UTSA == none)
-    {
-     Log("Couldn't find WebAdmin instance of the Game.", 'Equalizer');
-     return;
-    }
+	if(UTSA == none)
+	{
+		Log("Couldn't find WebAdmin instance of the Game.", 'Equalizer');
+		return;
+	}
 
 	// won't change as long as the server is up and the map hasnt changed
 	LoadQueryHandlers();
@@ -67,13 +68,13 @@ event Init()
 	ReplaceText( Initialized, "%class%", string(Class) );
 	ReplaceText( Initialized, "%port%", string(WebServer.ListenPort) );
 	Log(Initialized,'Equalizer');
-}
+ }
 
 
 defaultproperties
 {
-     QueryHandlerClasses(0)="XWebAdmin.xWebQueryCurrent"
-     QueryHandlerClasses(1)="XWebAdmin.xWebQueryDefaults"
-     QueryHandlerClasses(2)="XWebAdmin.xWebQueryAdmins"
-     Initialized="%class% Initialized on port %port%"
+    QueryHandlerClasses(0)="XWebAdmin.xWebQueryCurrent"
+    QueryHandlerClasses(1)="XWebAdmin.xWebQueryDefaults"
+    QueryHandlerClasses(2)="XWebAdmin.xWebQueryAdmins"
+    Initialized="%class% Initialized on port %port%"
 }
