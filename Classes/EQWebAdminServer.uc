@@ -49,7 +49,8 @@ event Init()
      if(WebServer.ApplicationObjects[index] != none && WebServer.ApplicationObjects[index].IsA('UTServerAdmin'))
      {
          UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
-         Log("Successfully assigned WebAdmin's AdminSpectator. Judicious eh!", 'Equalizer');
+         // Assign the Admin spectator here.
+	 Log("Successfully assigned WebAdmin's AdminSpectator. Judicious eh!", 'Equalizer');
          break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
      }
     }
