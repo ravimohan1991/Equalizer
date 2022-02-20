@@ -12,12 +12,12 @@ Follow these steps to generate a working instance of Equalizer on the server:
 
 - Extract the ```.zip``` file to some safe place. Look out for ```System``` folder and drop its contents (UPackage, meta, and ini files) in the game server's ```System``` folder.
 
-- Open the ```Server.ini``` file (containing all the information about game server configuration and operations) and add the following line in the section ```Engine.GameEngine```
+- Open the ```Server.ini``` file (containing all the information about game server configuration and operations) and add the following line in the section ```[Engine.GameEngine]```
   like so
   ```
   ServerPackages=Equalizer<UPackageIS>
   ```
-  where ```<UPackageIS>``` is the identifier string of Equalizer package that you extracted from the ```.zip``` file. For instance, "020158" in the UPackage "Equalizer020158.u". 
+  where ```<UPackageIS>``` is the identifier string of Equalizer package (basically ```Version + BuildNumber```) that you extracted from the ```.zip``` file. For instance, "020158" in the UPackage "Equalizer020158.u". For rest of the part of this document, we shall assume the ```Version = 020``` and ```BuildNumber = 158```
   <ins>Note</ins>: In this case the line to be added is
   ```
   ServerPackages=Equalizer020158
@@ -61,3 +61,16 @@ Follow these steps to generate a working instance of Equalizer on the server:
    QueryServerPort=80
    ```
    For the description of other fields, refer the [ReadMe](https://github.com/ravimohan1991/Equalizer/blob/miasmactivity/README.md)'s configuration section!
+   
+ - Finally, if you want to have web access to Equalizer, modify the section ```[UWeb.WebServer]``` in ```UT2004.ini``` like so
+   ```
+   Applications[0]=xWebAdmin.UTServerAdmin // Make sure this order is maintained with UTServerAdmin at top
+   ApplicationPaths[0]=/ServerAdmin
+   Applications[1]=xWebAdmin.UTImageServer // UTImage server is essential for displaying the relevant images
+   ApplicationPaths[1]=/images
+   Applications[2]=Equalizer020158.EQWebAdminServer // Finally we provide room to our own EQWebAdmin
+   ApplicationPaths[2]=/Equalizer
+   bEnabled=True // Should be set to true
+   ListenPort=8080 // Generally you won't need to change this until there is some faliure to bind at the default port
+   ```
+   Make sure to extract the contents of ```Equalizer-0.2.0/Web``` to ```/Web``` of UT2k4 installation.
