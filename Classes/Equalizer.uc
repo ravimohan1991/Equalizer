@@ -42,7 +42,7 @@ class Equalizer extends Mutator config(Equalizer);
  var   string                                     Version;
 
  /** Number of times Equalizer has been built. */
- var   float                                      BuildNumber;
+ var   int                                      BuildNumber;
 
  /** For tracking the PlayerJoin. */
  var   int                                        CurrID;
