@@ -144,16 +144,16 @@ class EQWebAdminServer extends UTServerAdmin config;
 	{
 		case "":
 		case RootFrame:
-				QueryRootFrame(Request, Response); 
+				QueryRootFrame(Request, Response);
 			return;
 		case HeaderPage:
-				QueryHeaderPage(Request, Response); 
+				QueryHeaderPage(Request, Response);
 			return;
 		case RestartPage:
-				if (!MapIsChanging()) QuerySubmitRestartPage(Request, Response); 
+				if (!MapIsChanging()) QuerySubmitRestartPage(Request, Response);
 			return;
 		case SiteCSSFile:
-				Response.SendCachedFile( Path $ SkinPath $ "/" $ Mid(Request.URI, 1), "text/css"); 
+				Response.SendCachedFile( Path $ SkinPath $ "/" $ Mid(Request.URI, 1), "text/css");
 			return;
 	}
 
@@ -269,4 +269,5 @@ defaultproperties
     MessagePage="message"
     RestartPage="server_restart"
     SiteCSSFile="equalizer.css"
+    htm=".htm"
 }
