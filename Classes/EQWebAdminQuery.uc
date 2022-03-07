@@ -89,7 +89,7 @@ class EQWebAdminQuery extends xWebQueryHandler config;
 /**
  * Case by case dealing of the queries as they come!
  *
- * @see #
+ * @see #EQWebAdminServer::Query(WebRequest Request, WebResponse Response)
  * @since 0.3.0
  */
 
@@ -122,23 +122,35 @@ class EQWebAdminQuery extends xWebQueryHandler config;
 	return false;
  }
 
-// The current frame displaying the page with PlayerList and various Equalizer operations
-function QueryCurrentFrame(WebRequest Request, WebResponse Response)
-{
-    local String Page;
+/**
+ * The current frame displaying the page with PlayerList and various Equalizer operations.
+ *
+ * @see Query(WebRequest Request, WebResponse Response)
+ * @since 0.3.0
+ */
+ 
+ function QueryCurrentFrame(WebRequest Request, WebResponse Response)
+ {
+ 	local String Page;
 
-	// if no page specified, use the default
-	Page = Request.GetVariable("Page", CurrentGamePage);
+ 	// if no page specified, use the default
+ 	Page = Request.GetVariable("Page", CurrentGamePage);
 
-    Log("In the EQwebAdminQuery, the Page string is: " $ Page);
+ 	Log("In the EQwebAdminQuery, the Page string is: " $ Page);
 
-	Response.Subst("IndexURI", 	CurrentIndexPage$"?Page="$Page);
-	Response.Subst("MainURI", 	Page);
+ 	Response.Subst("IndexURI", 	CurrentIndexPage$"?Page="$Page);
+ 	Response.Subst("MainURI", 	Page);
 
-	ShowFrame(Response, DefaultPage);
-}
+ 	ShowFrame(Response, DefaultPage);
+ }
 
-// Menu shown on right
+/**
+ * Query related to menu on the left.
+ *
+ * @see Query(WebRequest Request, WebResponse Response)
+ * @since 0.3.0
+ */
+ 
  function QueryCurrentMenu(WebRequest Request, WebResponse Response)
  {
 	local String Page;
@@ -164,6 +176,15 @@ function QueryCurrentFrame(WebRequest Request, WebResponse Response)
 
 	ShowPage(Response, CurrentIndexPage);
  }
+
+/**
+ * This routine deals with generation of team tables with appropriate
+ * filling of playernames along with the Equalizer's metric.
+ * Should be useful for monitoring purposes!
+ *
+ * @see Query(WebRequest Request, WebResponse Response)
+ * @since 0.3.0
+ */
 
  function QueryCurrentGame(WebRequest Request, WebResponse Response)
  {
@@ -255,7 +276,6 @@ function QueryCurrentFrame(WebRequest Request, WebResponse Response)
 
  			Response.Subst("StatRows", BlueGameState);
  			Response.Subst("BlueGameState", WebInclude(BlueStatTable));
-
  		}
 
  		MapTitle(Response);

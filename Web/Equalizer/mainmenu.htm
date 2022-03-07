@@ -1,50 +1,110 @@
-<html>
-<head>
-<title>Equalizer - Main Menu</title>
-<meta http-equiv="Content-Type" content="text/html; charset=<%charset%>">
-<link rel="stylesheet" type="text/css" href="<%CSS%>">
-</head>
+<!--   
+ *   --------------------------
+ *  |  mainmenu.htm
+ *   --------------------------
+ *   This file is part of Equalizer for UT2004.
+ *
+ *   Equalizer is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Equalizer is distributed in the hope and belief that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with Equalizer.  if not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Timeline:
+ *   May, 2021: First inscription
+-->
 
-<body bgcolor="<%BODYBG%>" topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
-<form method="post" action="rootframe" target="_parent">
-<table bgcolor="<%BODYBG%>" width="100%" cellspacing="4" cellpadding="0" border="0">
-  <tr>
-    <td width="1"><img src="/images/EQImages/1.gif" width=1 height=1 hspace=0 vspace=0></td>
-    <td>
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr>
-      <td width="111" rowspan="5" valign="top"><img src="/images/EQImages/image.bmp" width=111 height=109 hspace=0 vspace=0></td>
-    </tr>
-    <tr>
-      <td width="100%" height="6" valign="TOP" bgcolor="#3a7c8c"><img src="/images/EQImages/1.gif" width=1 height=1 hspace=0 vspace=0></td>
-    </tr>
-    <tr>
-      <td width="100%" height="59" bgcolor="#226474">
-	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
-        <tr>
-		  <td align=left valign="center" colspan="<%HeaderColSpan%>">
-		    &nbsp;&nbsp;<font size="5" face="Times New Roman, Arial" color="33cc66">Equalizer</font>&nbsp;&nbsp;
-		  </td>
-		  <td vcenter="top" align="right"><span class=location>Location: <span class=orange><%Location%></span></span><br><span class=location>Logged in as : <span class=orange><%AdminName%></span></span></td>
-		  <td align="right" nowrap><%WebSkinSelect%></td>
-		</tr>
-		<tr>
-		 <td width="1%" nowrap> &nbsp;&nbsp;<font size="-1" face="Times New Roman, Arial" color="33cc66"><u>Remote Intervention</u></font></td>
-		  <td colspan="4" align="right"><%HeaderMenu%></td>
-		</tr>
-	  </table>
-      </td>
-    </tr>
-    <tr>
-      <td height="6" width="100%" bgcolor="#3a7c8c"><img src="/images/EQImages/1.gif" width=1 height=1></td>
-    </tr>
-    <tr>
-      <td height="6" width="100%" bgcolor="black"><img src="/images/EQImages/1.gif" width=1 height=1></td>
-    </tr>
-    </table>
-</td>
-</tr>
-</table>
-</form>
-</body>
+<html>
+	<head>
+		<title>Equalizer - Main Menu</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=<%charset%>">
+		<link rel="stylesheet" type="text/css" href="<%CSS%>">
+	</head>
+
+	<body bgcolor="<%BODYBG%>" topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
+		<form method="post" action="rootframe" target="_parent">
+			<table bgcolor="<%BODYBG%>" width="100%" cellspacing="4" cellpadding="0" border="0">
+				<tr>
+					<td width="1"><img src="/images/EQImages/1.gif" width=1 height=1 hspace=0 vspace=0></td>
+					<td>
+						<table width="100%" cellspacing="0" cellpadding="0" border="0">
+							<tr>
+								<td width="111" rowspan="5" valign="top"><img src="/images/EQImages/image.bmp" width=111 height=109 hspace=0 vspace=0></td>
+							</tr>
+							<tr>
+								<td width="100%" height="6" valign="TOP" bgcolor="#3a7c8c"><img src="/images/EQImages/1.gif" width=1 height=1 hspace=0 vspace=0></td>
+							</tr>
+							<tr>
+								<td width="100%" height="59" bgcolor="#226474">
+									<table width="100%" cellspacing="0" cellpadding="0" border="0">
+										<tr>
+											<td align=left valign="center" colspan="<%HeaderColSpan%>">
+												&nbsp;&nbsp;<font size="5" face="Times New Roman, Arial" color="33cc66">Equalizer</font>&nbsp;&nbsp;
+											</td>
+											<td vcenter="top" align="right"><span class=location>Location: <span class=orange><%Location%></span></span><br><span class=location>Logged in as : <span class=orange><%AdminName%></span></span></td>
+											<td align="right" nowrap><%WebSkinSelect%></td>
+										</tr>
+										<tr>
+											<td width="1%" nowrap> &nbsp;&nbsp;<font size="-1" face="Times New Roman, Arial" color="33cc66"><u>Remote Intervention</u></font></td>
+											<td colspan="4" align="right"><%HeaderMenu%></td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td height="6" width="100%" bgcolor="#3a7c8c"><img src="/images/EQImages/1.gif" width=1 height=1></td>
+							</tr>
+							<tr>
+								<td height="6" width="100%" bgcolor="black"><img src="/images/EQImages/1.gif" width=1 height=1></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</body>
 </html>
+
+<!--   
+ *		                                  /\ 
+ *		                                 / /
+ *		                              /\| |   
+ *		                              | | |/\    
+ *		                              | | / /  
+ *		                              | `  /       
+ *		                              `\  (___ 
+ *		                             _.->  ,-.-.
+ *		                          _.'      |  \ \
+ *		                         /    _____| 0 |0\     
+ *		                        |    /`    `^-.\.-'`-._
+ *		                        |   |                  `-._ 
+ *		                        |   :                      `.
+ *		                        \    `._     `-.__         O.'
+ *		 _.--,                   \     `._     __.^--._O_..-'  
+ *		`---, `.                  `\     /` ` `
+ *		     `\ `,                  `\   |
+ *		      |   :                   ;  |
+ *		      /    `.              ___|__|___
+ *		     /       `.           (          ) 
+ *		    /    `---.:____...---' `--------`.
+ *		   /        (         `.      __      `.
+ *		  |          `---------' _   /  \       \
+ *		  |    .-.      _._     (_)  `--'        \
+ *		  |   (   )    /   \                       \
+ *		   \   `-'     \   /                       ;-._
+ *		    \           `-'           \           .'   `.
+ *		    /`.                  `\    `\     _.-'`-.    `.___
+ *		   |   `-._                `\    `\.-'       `-.   ,--`
+ *		    \      `--.___        ___`\    \           ||^\\
+ *		     `._        | ``----''     `.   `\         `'  `
+ *		        `--;     \  jgs          `.   `.
+ *		           //^||^\\               //^||^\\
+ *		           '  `'  `               '   '  `
+-->

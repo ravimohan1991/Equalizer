@@ -40,46 +40,46 @@ class EQWebAdminServer extends UTServerAdmin config;
 
  event Init()
  {
-	local UTServerAdmin UTSA;
-	local byte index;
+ 	local UTServerAdmin UTSA;
+ 	local byte index;
 
-	for(index = 0; index < 10; index++)
-	{
-		if(WebServer.ApplicationObjects[index] != none && WebServer.ApplicationObjects[index].IsA('UTServerAdmin'))
-		{
-			UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
-			Spectator = UTSA.Spectator;
-			Log("The WebAdmin Spectator is: " $ Spectator.Tag);
-			GamePI = UTSA.GamePI;
-			//CurAdmin = UTSA.CurAdmin;
-			Log("Successfully assigned WebAdmin's variables relevant to EQWebAdmin. Judicious eh!", 'Equalizer');
-			break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
-		}
-	}
+ 	for(index = 0; index < 10; index++)
+ 	{
+ 		if(WebServer.ApplicationObjects[index] != none && WebServer.ApplicationObjects[index].IsA('UTServerAdmin'))
+ 		{
+ 			UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
+ 			Spectator = UTSA.Spectator;
+ 			Log("The WebAdmin Spectator is: " $ Spectator.Tag);
+ 			GamePI = UTSA.GamePI;
+ 			//CurAdmin = UTSA.CurAdmin;
+ 			Log("Successfully assigned WebAdmin's variables relevant to EQWebAdmin. Judicious eh!", 'Equalizer');
+ 			break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
+ 		}
+ 	}
 
-	if(UTSA == none)
-	{
-		Log("Couldn't find WebAdmin instance of the Game.", 'Equalizer');
-		return;
-	}
+ 	if(UTSA == none)
+ 	{
+ 		Log("Couldn't find WebAdmin instance of the Game.", 'Equalizer');
+ 		return;
+ 	}
 
-	QueryHandlerClasses.Remove(0, QueryHandlerClasses.Length);  // Jugaad for now!
-	if(QueryHandlerClasses.Length == 0)
-	{
-		QueryHandlerClasses[0] = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".EQWebAdminQuery";
-		Log("QueryHandlerClass: " $ QueryHandlerClasses[0]);
-	}
+ 	QueryHandlerClasses.Remove(0, QueryHandlerClasses.Length);  // Jugaad for now!
+ 	if(QueryHandlerClasses.Length == 0)
+ 	{
+ 		QueryHandlerClasses[0] = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".EQWebAdminQuery";
+ 		Log("QueryHandlerClass: " $ QueryHandlerClasses[0]);
+ 	}
 
-	// won't change as long as the server is up and the map hasnt changed
-	LoadQueryHandlers();
+ 	// won't change as long as the server is up and the map hasnt changed
+ 	LoadQueryHandlers();
 
-	// we are not disturbing them, for now!
-	//AExcMutators = New(None) class'StringArray';
-	//AIncMutators = New(None) class'SortedStringArray';
+ 	// we are not disturbing them, for now!
+ 	//AExcMutators = New(None) class'StringArray';
+ 	//AIncMutators = New(None) class'SortedStringArray';
 
-	ReplaceText( Initialized, "%class%", string(Class) );
-	ReplaceText( Initialized, "%port%", string(WebServer.ListenPort) );
-	Log(Initialized,'Equalizer');
+ 	ReplaceText(Initialized, "%class%", string(Class));
+ 	ReplaceText(Initialized, "%port%", string(WebServer.ListenPort));
+ 	Log(Initialized, 'Equalizer');
  }
 
 
@@ -89,30 +89,42 @@ class EQWebAdminServer extends UTServerAdmin config;
 // =====================================================================================================================
 // =====================================================================================================================
 
+/**
+ * In this routine we load our favorite skin with relevant 
+ * UI scheme.
+ *
+ * @since 0.3.0
+ */
+
  function LoadSkins()
  {
-	local string 			S;
-	local class<WebSkin> 	SkinClass;
+ 	local string 			S;
+ 	local class<WebSkin> 	SkinClass;
 
-	Skins = new(None) class'StringArray';
-	S = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".EQWebSkin";
-	Log("The String being dynamically loaded is: " $ S);
+ 	Skins = new(None) class'StringArray';
+ 	S = "Equalizer" $ class'Equalizer'.default.Version $ class'Equalizer'.default.BuildNumber $ ".EQWebSkin";
+ 	Log("The String being dynamically loaded is: " $ S);
 
-	SkinClass = class<WebSkin>(DynamicLoadObject(S, class'Class'));
-	if (SkinClass != None)
-	{
-		Skins.Add(Level.GetItemName(string(SkinClass)), SkinClass.default.DisplayName);
-		WebSkins[WebSkins.Length] = SkinClass;
-	}
+ 	SkinClass = class<WebSkin>(DynamicLoadObject(S, class'Class'));
+ 	if (SkinClass != None)
+ 	{
+ 		Skins.Add(Level.GetItemName(string(SkinClass)), SkinClass.default.DisplayName);
+ 		WebSkins[WebSkins.Length] = SkinClass;
+ 	}
 
-	ApplySkinSettings();
+ 	ApplySkinSettings();
  }
 
  function string SetGamePI(optional string GameType)
  {
-	return "";
+ 	return "";
  }
 
+/**
+ * Initialize the skin environment.
+ *
+ * @since 0.3.0
+ */
 
  function ApplySkinSettings()
  {
@@ -122,80 +134,88 @@ class EQWebAdminServer extends UTServerAdmin config;
 	Log("Current Skin is: " $ CurrentSkin.default.DisplayName $ " with css files as: " $ CurrentSkin.default.SkinCSS);
  }
 
-
-// Page Generations
+/**
+ * Query for primitive skeletal generation of WebPage.
+ * The sructure is: Header with Logo, side menu, and current context.
+ *
+ * @since 0.3.0
+ */
 
  event Query(WebRequest Request, WebResponse Response)
  {
  	local byte i;
-	Log("WebRequest Response");
+ 	Log("WebRequest Response");
 
-	// Ok so this the the place were the query first appears in the web applicaiton
+ 	// Ok so this the the place were the query first appears in the web applicaiton
 
-	//Response.Subst("BugAddress", "webadminbugs"$Level.EngineVersion$"@epicgames.com");
+ 	//Response.Subst("BugAddress", "webadminbugs"$Level.EngineVersion$"@epicgames.com");
 
-	//Modify a substitution variable which will be used during the IncludeUHTM and LoadParsedUHTM functions.
-	//The third optional argument allows you to remove a previously declared variable.
-	// We are introducting field and value in the response
-	Response.Subst("CSS", SiteCSSFile);
-	Response.Subst("BODYBG", SiteBG);
+ 	//Modify a substitution variable which will be used during the IncludeUHTM and LoadParsedUHTM functions.
+ 	//The third optional argument allows you to remove a previously declared variable.
+ 	// We are introducting field and value in the response
+ 	Response.Subst("CSS", SiteCSSFile);
+ 	Response.Subst("BODYBG", SiteBG);
 
-	Log("Request URI is: " $ Request.URI); // /mainmenu for entry point into Equalizer Web Application
-	// Check how we're supposed to handle this query
-	switch (Mid(Request.URI, 1))
-	{
-		case "":
-		case RootFrame:
-				QueryRootFrame(Request, Response);
-			return;
-		case HeaderPage:
-				QueryHeaderPage(Request, Response);
-			return;
-		case RestartPage:
-				if (!MapIsChanging()) QuerySubmitRestartPage(Request, Response);
-			return;
-		case SiteCSSFile:
-				Response.SendCachedFile( Path $ SkinPath $ "/" $ Mid(Request.URI, 1), "text/css");
-			return;
-	}
+ 	Log("Request URI is: " $ Request.URI); // /mainmenu for entry point into Equalizer Web Application
+ 	// Check how we're supposed to handle this query
+ 	switch (Mid(Request.URI, 1))
+ 	{
+ 		case "":
+ 		case RootFrame:
+ 				QueryRootFrame(Request, Response);
+ 			return;
+ 		case HeaderPage:
+ 				QueryHeaderPage(Request, Response);
+ 			return;
+ 		case RestartPage:
+ 				if (!MapIsChanging()) QuerySubmitRestartPage(Request, Response);
+ 			return;
+ 		case SiteCSSFile:
+ 				Response.SendCachedFile( Path $ SkinPath $ "/" $ Mid(Request.URI, 1), "text/css");
+ 			return;
+ 	}
 
-	// If not, allow each query handler a chance to process this query.  Show error message if no query handlers
-	// were able to handle the query
-	for (i=0; i<QueryHandlers.Length; i++)
-	{
-		Log("Giving QueryHandlers the request and response " $ QueryHandlers[i].Title $ " and page is " $ QueryHandlers[i].DefaultPage);
-		if (QueryHandlers[i].Query(Request, Response))
-		{
-			return;
-		}
-	}
+ 	// If not, allow each query handler a chance to process this query.  Show error message if no query handlers
+ 	// were able to handle the query
+ 	for (i=0; i<QueryHandlers.Length; i++)
+ 	{
+ 		Log("Giving QueryHandlers the request and response " $ QueryHandlers[i].Title $ " and page is " $ QueryHandlers[i].DefaultPage);
+ 		if (QueryHandlers[i].Query(Request, Response))
+ 		{
+ 			return;
+ 		}
+ 	}
 
-	ShowMessage(Response, Error, "Page not found!");
-	return;
+ 	ShowMessage(Response, Error, "Page not found!");
+ 	return;
  }
 
+/**
+ * Generates the HTML for the top frame, which displays the available areas of webadmin.
+ *
+ * @since 0.3.0
+ */
 
-// Generates the HTML for the top frame, which displays the available areas of webadmin and webadmin skin selector
  function QueryHeaderPage(WebRequest Request, WebResponse Response)
  {
  	local string menu, GroupPage, CurPageTitle;
 
-	Response.Subst("AdminName", CurAdmin.UserName);
-	Response.Subst("HeaderColSpan", "2");
+ 	Response.Subst("AdminName", CurAdmin.UserName);
+ 	Response.Subst("HeaderColSpan", "2");
 
-	Log("The current admin IS: " $ CurAdmin.UserName);
+ 	Log("The current admin IS: " $ CurAdmin.UserName);
 
-	Log("Working with Query Handler: " $ QueryHandlerClasses[0]);
+ 	Log("Working with Query Handler: " $ QueryHandlerClasses[0]);
 
-	GroupPage = Request.GetVariable("Group", QueryHandlers[0].DefaultPage);
+ 	GroupPage = Request.GetVariable("Group", QueryHandlers[0].DefaultPage);
 
-	Log("Setting GroupPage: " $ QueryHandlers[0].DefaultPage);
+ 	Log("Setting GroupPage: " $ QueryHandlers[0].DefaultPage);
 
-	// We build a multi-column table for each QueryHandler
-	menu = "";
-	CurPageTitle = "";
+ 	// We build a multi-column table for each QueryHandler
+ 	menu = "";
+ 	CurPageTitle = "";
 
-	CurPageTitle = QueryHandlers[0].Title;
+ 	CurPageTitle = QueryHandlers[0].Title;
 
 /*
 	Dis = "";
@@ -217,10 +237,15 @@ class EQWebAdminServer extends UTServerAdmin config;
 	}
 */
 
-	// Set URIs
-	ShowPage(Response, HeaderPage);
-}
+ 	// Set URIs
+ 	ShowPage(Response, HeaderPage);
+ }
 
+/**
+ * For including relevant HTML files in Web/Equalizer directory.
+ *
+ * @since 0.3.0
+ */
 
  function bool ShowFrame(WebResponse Response, string Page)
  {
@@ -233,32 +258,44 @@ class EQWebAdminServer extends UTServerAdmin config;
 	return true;
  }
 
-function bool ShowPage(WebResponse Response, string Page)
-{
-	Log("Showing Page");
+/**
+ * For including relevant HTML files in Web/Equalizer directory.
+ * Try to contrast with above function!!
+ *
+ * @since 0.3.0
+ */
 
-	if (CurrentSkin != None && CurrentSkin.HandleHTM(Response, Page))
-	{
-		Response.ClearSubst();
-		return true;
-	}
-	Response.IncludeUHTM( Path $ SkinPath $ "/" $ Page $ htm);
-	Response.ClearSubst();
-	return true;
-}
+ function bool ShowPage(WebResponse Response, string Page)
+ {
+ 	Log("Showing Page");
 
-// Loads an .inc file into the current WebResponse object
+ 	if (CurrentSkin != None && CurrentSkin.HandleHTM(Response, Page))
+ 	{
+ 		Response.ClearSubst();
+ 		return true;
+ 	}
+ 	Response.IncludeUHTM( Path $ SkinPath $ "/" $ Page $ htm);
+ 	Response.ClearSubst();
+ 	return true;
+ }
+
+/**
+ * Loads an .inc file into the current WebResponse object
+ *
+ * @since 0.3.0
+ */
+ 
  function string WebInclude(string file)
  {
-	local string S;
-	if (CurrentSkin != None)
-	{
-		S = CurrentSkin.HandleWebInclude(Resp, file);
-		if (S != "") return S;
-	}
+ 	local string S;
+ 	if (CurrentSkin != None)
+ 	{
+ 		S = CurrentSkin.HandleWebInclude(Resp, file);
+ 		if (S != "") return S;
+ 	}
 
-	Log("Loading and Returning .inc file");
-	return Resp.LoadParsedUHTM(Path $ SkinPath $ "/" $ file $ ".inc");
+ 	Log("Loading and Returning .inc file");
+ 	return Resp.LoadParsedUHTM(Path $ SkinPath $ "/" $ file $ ".inc");
  }
 
 defaultproperties
