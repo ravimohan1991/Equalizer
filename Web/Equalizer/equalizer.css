@@ -52,10 +52,10 @@ Intro text box		16			text offset top/left
 */
 
 /*---Links & Mouse-Overs---*/
-A:link		{color: #FFCC66; text-decoration: none}}
-A:visited	{color: #FFCC66; text-decoration: none}}
-A:active	{color: #FFCC66; text-decoration: underline}}
-A:hover		{color: #FFFFFF; text-decoration: underline}}
+A:link		{color: #FFCC66; text-decoration: none}
+A:visited	{color: #FFCC66; text-decoration: none}
+A:active	{color: #FFCC66; text-decoration: underline}
+A:hover		{color: #FFFFFF; text-decoration: underline}
 
 
 /*---Span classes - Text---*/

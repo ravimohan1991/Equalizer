@@ -269,7 +269,7 @@ class EQPlayerInformation extends Actor dependson (UniqueIdentifier);
 	Score = PlayerReplicationInfo(Owner).Score;
  }
 
- /**
+/**
  * Method to associate UniqueIdentifier reference.
  *
  * @since 0.2.0

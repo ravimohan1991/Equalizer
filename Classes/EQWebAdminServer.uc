@@ -49,8 +49,10 @@ class EQWebAdminServer extends UTServerAdmin config;
 		{
 			UTSA = UTServerAdmin (WebServer.ApplicationObjects[index]);
 			Spectator = UTSA.Spectator;
+			Log("The WebAdmin Spectator is: " $ Spectator.Tag);
 			GamePI = UTSA.GamePI;
-			Log("Successfully assigned WebAdmin's AdminSpectator. Judicious eh!", 'Equalizer');
+			//CurAdmin = UTSA.CurAdmin;
+			Log("Successfully assigned WebAdmin's variables relevant to EQWebAdmin. Judicious eh!", 'Equalizer');
 			break;// Assumption: UTServerAdmin be the first in the list of ApplicaitonObjects declaration!
 		}
 	}
@@ -125,7 +127,7 @@ class EQWebAdminServer extends UTServerAdmin config;
 
  event Query(WebRequest Request, WebResponse Response)
  {
-
+ 	local byte i;
 	Log("WebRequest Response");
 
 	// Ok so this the the place were the query first appears in the web applicaiton
@@ -176,10 +178,12 @@ class EQWebAdminServer extends UTServerAdmin config;
 // Generates the HTML for the top frame, which displays the available areas of webadmin and webadmin skin selector
  function QueryHeaderPage(WebRequest Request, WebResponse Response)
  {
- 	local string menu, GroupPage, Dis, CurPageTitle;
+ 	local string menu, GroupPage, CurPageTitle;
 
 	Response.Subst("AdminName", CurAdmin.UserName);
 	Response.Subst("HeaderColSpan", "2");
+
+	Log("The current admin IS: " $ CurAdmin.UserName);
 
 	Log("Working with Query Handler: " $ QueryHandlerClasses[0]);
 
